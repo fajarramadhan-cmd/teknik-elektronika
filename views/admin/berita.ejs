@@ -1,7 +1,49 @@
 <%- include('../partials/header') %>
 
 <style>
-  ... (sama)
+  .berita-table th {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: none;
+  }
+  .berita-table td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+  }
+  .btn-action {
+    margin: 2px;
+    border-radius: 8px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  }
+  .thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .filter-card {
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .table-responsive {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  }
 </style>
 
 <div class="container-fluid mt-4">
@@ -33,38 +75,45 @@
         </tr>
       </thead>
       <tbody>
-        <% if (berita.length === 0) { %>
+        <% if (!berita || berita.length === 0) { %>
           <tr>
             <td colspan="5" class="text-center py-5">
               <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
               <p class="text-muted">Belum ada berita.</p>
             </td>
           </tr>
+        <% } else { %>
+          <% berita.forEach(b => { %>
+          <tr>
+            <td>
+              <% if (b.gambar) { %>
+                <img src="<%= b.gambar %>" alt="thumbnail" class="thumbnail">
+              <% } else { %>
+                <span class="text-muted">-</span>
+              <% } %>
+            </td>
+            <td><strong><%= b.judul || '-' %></strong></td>
+            <td><%= b.penulis || '-' %></td>
+            <td>
+              <% if (b.tanggal) { %>
+                <%= new Date(b.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+            <td>
+              <a href="/admin-content/berita/<%= b.id %>/edit" class="btn btn-sm btn-warning btn-action">
+                <i class="bi bi-pencil"></i> Edit
+              </a>
+              <form method="POST" action="/admin-content/berita/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus berita ini?')">
+                <button type="submit" class="btn btn-sm btn-danger btn-action">
+                  <i class="bi bi-trash"></i> Hapus
+                </button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
         <% } %>
-        <% berita.forEach(b => { %>
-        <tr>
-          <td>
-            <% if (b.gambar) { %>
-              <img src="<%= b.gambar %>" alt="thumbnail" class="thumbnail">
-            <% } else { %>
-              <span class="text-muted">-</span>
-            <% } %>
-          </td>
-          <td><strong><%= b.judul %></strong></td>
-          <td><%= b.penulis %></td>
-          <td><%= new Date(b.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></td>
-          <td>
-            <a href="/admin-content/berita/<%= b.id %>/edit" class="btn btn-sm btn-warning btn-action">
-              <i class="bi bi-pencil"></i> Edit
-            </a>
-            <form method="POST" action="/admin-content/berita/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus berita ini?')">
-              <button type="submit" class="btn btn-sm btn-danger btn-action">
-                <i class="bi bi-trash"></i> Hapus
-              </button>
-            </form>
-          </td>
-        </tr>
-        <% }) %>
       </tbody>
     </table>
   </div>

@@ -1,0 +1,272 @@
+<%- include('partials/header-landing') %>
+
+<style>
+  /* ===== VARIABLES ===== */
+  :root {
+    --primary: #2193b0;
+    --secondary: #6dd5ed;
+    --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --shadow-sm: 0 5px 20px rgba(0,0,0,0.05);
+    --shadow-hover: 0 15px 30px rgba(33,147,176,0.15);
+    --border-radius: 1rem;
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* Hero Section */
+  .hero-detail {
+    background: var(--gradient);
+    padding: 4rem 0;
+    color: white;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-detail::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    animation: rotate 30s linear infinite;
+  }
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .hero-detail .container {
+    position: relative;
+    z-index: 2;
+  }
+  .hero-detail h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    text-shadow: 2px 4px 15px rgba(0,0,0,0.2);
+    margin-bottom: 0.5rem;
+  }
+
+  /* Breadcrumb Modern */
+  .breadcrumb-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    box-shadow: var(--shadow-sm);
+  }
+  .breadcrumb-modern a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+  .breadcrumb-modern a:hover {
+    color: var(--secondary);
+    text-decoration: underline;
+  }
+  .breadcrumb-modern span {
+    color: #6c757d;
+  }
+  .breadcrumb-modern i {
+    font-size: 0.8rem;
+    color: #adb5bd;
+  }
+
+  /* Meta Info Card */
+  .meta-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem 2rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #2c3e50;
+  }
+  .meta-item i {
+    font-size: 1.5rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .meta-item span {
+    font-weight: 500;
+  }
+
+  /* Gambar Utama */
+  .featured-image {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .featured-image:hover {
+    transform: scale(1.01);
+    box-shadow: 0 20px 40px rgba(33,147,176,0.2);
+  }
+
+  /* Konten Berita */
+  .content-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .content-body {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #1e293b;
+  }
+  .content-body p {
+    margin-bottom: 1.5rem;
+  }
+  .content-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .content-body h2, .content-body h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+  }
+  .content-body blockquote {
+    padding: 1rem 1.5rem;
+    border-left: 5px solid var(--primary);
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    font-style: italic;
+    margin: 1.5rem 0;
+  }
+
+  /* Tombol Kembali */
+  .btn-back {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+    padding: 0.8rem 2.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+    font-size: 1rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-back:hover {
+    background: var(--gradient);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .hero-detail {
+      padding: 2.5rem 0;
+    }
+    .meta-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.2rem;
+    }
+    .content-card {
+      padding: 1.5rem;
+    }
+    .content-body {
+      font-size: 1rem;
+    }
+    .btn-back {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<!-- Hero Section (judul) -->
+<section class="hero-detail">
+  <div class="container">
+    <h1><%= berita.judul %></h1>
+  </div>
+</section>
+
+<!-- Konten utama -->
+<div class="container mb-5">
+  <div class="row">
+    <div class="col-lg-10 offset-lg-1">
+      <!-- Breadcrumb Modern -->
+      <div class="breadcrumb-modern">
+        <a href="/">Beranda</a> <i class="bi bi-chevron-right"></i>
+        <a href="/#berita">Berita</a> <i class="bi bi-chevron-right"></i>
+        <span><%= berita.judul.length > 30 ? berita.judul.substring(0,30)+'...' : berita.judul %></span>
+      </div>
+
+      <!-- Meta info (tanggal & penulis) dalam satu card -->
+      <div class="meta-card">
+        <div class="meta-item">
+          <i class="bi bi-calendar3"></i>
+          <span><%= new Date(berita.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></span>
+        </div>
+        <div class="meta-item">
+          <i class="bi bi-person-circle"></i>
+          <span><%= berita.penulis || 'Admin' %></span>
+        </div>
+        <div class="meta-item">
+          <i class="bi bi-eye"></i>
+          <span>Dibaca <%= berita.dilihat || 0 %> kali</span>
+        </div>
+      </div>
+
+      <!-- Gambar utama (jika ada) -->
+      <% if (berita.gambar) { 
+        const fileId = berita.gambar.match(/[?&]id=([^&]+)/)?.[1] || berita.gambar.split('/').pop();
+      %>
+        <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w1000" 
+             alt="<%= berita.judul %>" 
+             class="featured-image"
+             onerror="this.onerror=null; this.src='<%= berita.gambar %>';">
+      <% } %>
+
+      <!-- Isi berita -->
+      <div class="content-card">
+        <div class="content-body">
+          <!-- Render HTML dari isi berita (jika isi berupa HTML) -->
+          <%- berita.isi %>
+        </div>
+      </div>
+
+      <!-- Tombol kembali -->
+      <div class="text-center">
+        <a href="/#berita" class="btn-back">
+          <i class="bi bi-arrow-left"></i> Kembali ke Berita
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer-landing') %>

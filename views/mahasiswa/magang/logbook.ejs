@@ -1,288 +1,499 @@
 <%- include('../../partials/header') %>
 
 <style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
   .magang-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .magang-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
   }
   .magang-header h2 {
     font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
   }
-  .logbook-table th {
-    background: #f8f9fa;
+  .magang-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .magang-header .btn-light {
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+  }
+  .magang-header .btn-light:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .logbook-table {
+    margin-bottom: 0;
+  }
+  .logbook-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
-    color: #1e293b;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--primary-start);
+    padding: 1rem 0.75rem;
   }
+  .logbook-table tbody tr {
+    transition: all 0.2s;
+  }
+  .logbook-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
+  }
+  .logbook-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+
+  /* ===== TOMBOL GRADIEN ===== */
   .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
     padding: 0.6rem 1.5rem;
     border-radius: 50px;
     transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
   }
   .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
     color: white;
   }
   .btn-outline-gradient {
     background: transparent;
-    border: 2px solid #2193b0;
-    color: #2193b0;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
     font-weight: 500;
-    padding: 0.6rem 1.5rem;
+    padding: 0.5rem 1.5rem;
     border-radius: 50px;
     transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
   }
   .btn-outline-gradient:hover {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-color: transparent;
     color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
   }
   .modal-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
+    border-bottom: none;
+    padding: 1.5rem;
   }
-  .badge-status {
-    padding: 0.4rem 1rem;
-    border-radius: 50px;
-    font-weight: 500;
+  .modal-header .btn-close {
+    background: rgba(255,255,255,0.8);
+    opacity: 0.8;
+    transition: all 0.2s;
   }
-  .badge-pending { background: #ffc107; color: #212529; }
-  .badge-approved { background: #28a745; color: white; }
-  .badge-rejected { background: #dc3545; color: white; }
-  .gallery-img {
+  .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+  }
+  .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .modal-body {
+    padding: 2rem;
+  }
+  .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.5rem;
+  }
+  .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+  .form-control, .form-select {
+    border-radius: 1rem;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  textarea.form-control {
+    min-height: 100px;
+  }
+
+  /* ===== GALLERY ===== */
+  .gallery-thumb {
     width: 50px;
     height: 50px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .gallery-thumb:hover {
+    border-color: var(--primary-start);
+    transform: scale(1.1);
   }
   .lightbox-modal .modal-body {
-    text-align: center;
+    padding: 0;
+    background: #000;
   }
-  .lightbox-modal img {
-    max-width: 100%;
+  .carousel-item img {
     max-height: 80vh;
+    object-fit: contain;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ===== PRINT BUTTON ===== */
+  .print-btn {
+    background: #28a745;
+    border-radius: 50px;
+    padding: 0.6rem 1.8rem;
+    font-weight: 500;
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(40,167,69,0.2);
+  }
+  .print-btn:hover {
+    background: #218838;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(40,167,69,0.3);
+    color: white;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <!-- Header -->
-  <div class="magang-header d-flex justify-content-between align-items-center">
+  <!-- HEADER DENGAN GRADIEN -->
+  <div class="magang-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
       <h2><i class="bi bi-journal-bookmark-fill me-2"></i>Logbook Magang</h2>
-      <p class="mb-0 opacity-75">Catat kegiatan harian magang Anda</p>
+      <p class="mb-0">Catat kegiatan harian magang Anda dan pantau status verifikasi</p>
     </div>
     <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addLogbookModal">
       <i class="bi bi-plus-circle me-2"></i>Tambah Logbook
     </button>
   </div>
 
-  <!-- Tabel Logbook -->
-  <div class="table-responsive">
-    <table class="table table-hover align-middle logbook-table">
-      <thead>
-        <tr>
-          <th>Tanggal</th>
-          <th>Kegiatan</th>
-          <th>Lokasi</th>
-          <th>Durasi</th>
-          <th>MK / Semester</th>
-          <th>Gambar</th>
-          <th>Status</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (logbook.length === 0) { %>
+  <!-- TABEL LOGBOOK DENGAN CONTAINER -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table logbook-table">
+        <thead>
           <tr>
-            <td colspan="8" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada catatan logbook.</p>
-            </td>
+            <th>Tanggal</th>
+            <th>Kegiatan</th>
+            <th>Lokasi</th>
+            <th>Durasi</th>
+            <th>MK / Semester</th>
+            <th>Dokumentasi</th>
+            <th>Status</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% logbook.forEach(item => { %>
-          <tr>
-            <td><%= new Date(item.tanggal).toLocaleDateString('id-ID') %></td>
-            <td><%= item.kegiatan %></td>
-            <td><%= item.lokasi || '-' %></td>
-            <td><%= item.durasi || '-' %></td>
-            <td><%= item.semester || '-' %></td>
-            <td>
-              <% if (item.imageUrls && item.imageUrls.length > 0) { %>
-                <button class="btn btn-sm btn-info" onclick="lihatGambar(<%= JSON.stringify(item.imageUrls) %>)">
-                  <i class="bi bi-images"></i> <%= item.imageUrls.length %>
-                </button>
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td>
-              <% if (item.status === 'pending') { %>
-                <span class="badge-status badge-pending">Pending</span>
-              <% } else if (item.status === 'approved') { %>
-                <span class="badge-status badge-approved">Disetujui</span>
-              <% } else if (item.status === 'rejected') { %>
-                <span class="badge-status badge-rejected">Ditolak</span>
-              <% } %>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-warning" onclick="editLogbook('<%= item.id %>')">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <form method="POST" action="/mahasiswa/magang/logbook/<%= item.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
-                <button type="submit" class="btn btn-sm btn-danger">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (logbook.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Catatan</h4>
+                  <p>Mulai tambahkan logbook pertama Anda dengan klik tombol "Tambah Logbook" di atas.</p>
+                </div>
+              </td>
+            </tr>
+          <% } %>
+          <% logbook.forEach(item => { %>
+            <tr>
+              <td><span class="fw-semibold"><%= new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></span></td>
+              <td><%= item.kegiatan.length > 50 ? item.kegiatan.substring(0,50)+'...' : item.kegiatan %></td>
+              <td><%= item.lokasi || '-' %></td>
+              <td><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
+              <td><small><%= item.semester || '-' %></small></td>
+              <td>
+                <% if (item.imageUrls && item.imageUrls.length > 0) { %>
+                  <button class="btn btn-sm btn-outline-gradient btn-icon" onclick="lihatGambar(<%= JSON.stringify(item.imageUrls) %>)">
+                    <i class="bi bi-images"></i> <%= item.imageUrls.length %>
+                  </button>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (item.status === 'pending') { %>
+                  <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
+                <% } else if (item.status === 'approved') { %>
+                  <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                <% } else if (item.status === 'rejected') { %>
+                  <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-warning btn-icon" onclick="editLogbook('<%= item.id %>')" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <form method="POST" action="/mahasiswa/magang/logbook/<%= item.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus logbook ini?')">
+                    <button type="submit" class="btn btn-sm btn-danger btn-icon" title="Hapus">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tombol Cetak -->
+    <div class="mt-4 text-end">
+      <a href="/mahasiswa/magang/logbook-print" class="print-btn" target="_blank">
+        <i class="bi bi-printer"></i> Cetak Logbook
+      </a>
+    </div>
   </div>
 
-<!-- Di bagian bawah setelah tabel, atau di header -->
-<div class="mt-4">
-  <a href="/mahasiswa/magang/logbook-print" class="btn btn-success" target="_blank">
-    <i class="bi bi-printer me-2"></i>Cetak Logbook
-  </a>
-</div>
-
-<!-- Modal Tambah Logbook -->
+<!-- MODAL TAMBAH LOGBOOK -->
 <div class="modal fade" id="addLogbookModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Logbook</h5>
+        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Tambah Logbook</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="/mahasiswa/magang/logbook" enctype="multipart/form-data">
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="courseId" class="form-label fw-semibold">Mata Kuliah</label>
-            <select class="form-select" id="courseId" name="courseId" required>
-              <option value="">Pilih Mata Kuliah PDK</option>
-              <% pdkCourses.forEach(course => { %>
-                <option value="<%= course.id %>"><%= course.kode %> - <%= course.nama %></option>
-              <% }) %>
-            </select>
-          </div>
-        <div class="mb-3">
-          <label for="semester" class="form-label fw-semibold">Semester</label>
-          <select class="form-select" id="semester" name="semester" required>
-            <option value="">Pilih Semester</option>
-            <option value="Genap 2025/2026">Genap 2025/2026</option>
-            <option value="Ganjil 2025/2026">Ganjil 2025/2026</option>
-            <option value="Genap 2026/2027">Genap 2026/2027</option>
-            <option value="Ganjil 2026/2027">Ganjil 2026/2027</option>
-          </select>
-        </div>
-          <div class="mb-3">
-            <label for="tanggal" class="form-label fw-semibold">Tanggal Kegiatan</label>
-            <input type="date" class="form-control" id="tanggal" name="tanggal" required>
-          </div>
-          <div class="mb-3">
-            <label for="kegiatan" class="form-label fw-semibold">Kegiatan</label>
-            <textarea class="form-control" id="kegiatan" name="kegiatan" rows="3" required></textarea>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="lokasi" class="form-label fw-semibold">Lokasi</label>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="courseId" class="form-label">Mata Kuliah</label>
+              <select class="form-select" id="courseId" name="courseId" required>
+                <option value="">Pilih Mata Kuliah PDK</option>
+                <% pdkCourses.forEach(course => { %>
+                  <option value="<%= course.id %>"><%= course.kode %> - <%= course.nama %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="semester" class="form-label">Semester</label>
+              <select class="form-select" id="semester" name="semester" required>
+                <option value="">Pilih Semester</option>
+                <option value="Genap 2025/2026">Genap 2025/2026</option>
+                <option value="Ganjil 2025/2026">Ganjil 2025/2026</option>
+                <option value="Genap 2026/2027">Genap 2026/2027</option>
+                <option value="Ganjil 2026/2027">Ganjil 2026/2027</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="tanggal" class="form-label">Tanggal Kegiatan</label>
+              <input type="date" class="form-control" id="tanggal" name="tanggal" required>
+            </div>
+            <div class="col-md-6">
+              <label for="lokasi" class="form-label">Lokasi</label>
               <input type="text" class="form-control" id="lokasi" name="lokasi">
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="durasi" class="form-label fw-semibold">Durasi (jam)</label>
-              <input type="number" class="form-control" id="durasi" name="durasi" step="0.5">
+            <div class="col-md-12">
+              <label for="kegiatan" class="form-label">Deskripsi Kegiatan</label>
+              <textarea class="form-control" id="kegiatan" name="kegiatan" rows="4" required></textarea>
             </div>
-          </div>
-          <div class="mb-3">
-            <label for="images" class="form-label fw-semibold">Dokumentasi (maks 5 gambar)</label>
-            <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
-            <small class="text-muted">Format JPG/PNG, maks 5 file</small>
+            <div class="col-md-6">
+              <label for="durasi" class="form-label">Durasi (jam)</label>
+              <input type="number" class="form-control" id="durasi" name="durasi" step="0.5" min="0">
+            </div>
+            <div class="col-md-12">
+              <label for="images" class="form-label">Dokumentasi (maks 5 gambar)</label>
+              <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
+              <small class="text-muted">Format JPG/PNG, maks 5 file, masing-masing maks 2MB</small>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary">Simpan</button>
+          <button type="submit" class="btn btn-gradient">Simpan Logbook</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Modal Edit Logbook -->
+<!-- MODAL EDIT LOGBOOK -->
 <div class="modal fade" id="editLogbookModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Logbook</h5>
+        <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Logbook</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="" id="editForm">
         <input type="hidden" name="id" id="editId">
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="editCourseId" class="form-label fw-semibold">Mata Kuliah</label>
-            <select class="form-select" id="editCourseId" name="courseId" required>
-              <% pdkCourses.forEach(course => { %>
-                <option value="<%= course.id %>"><%= course.kode %> - <%= course.nama %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="editSemester" class="form-label fw-semibold">Semester</label>
-            <input type="text" class="form-control" id="editSemester" name="semester" required>
-          </div>
-          <div class="mb-3">
-            <label for="editTanggal" class="form-label fw-semibold">Tanggal</label>
-            <input type="date" class="form-control" id="editTanggal" name="tanggal" required>
-          </div>
-          <div class="mb-3">
-            <label for="editKegiatan" class="form-label fw-semibold">Kegiatan</label>
-            <textarea class="form-control" id="editKegiatan" name="kegiatan" rows="3" required></textarea>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="editLokasi" class="form-label fw-semibold">Lokasi</label>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="editCourseId" class="form-label">Mata Kuliah</label>
+              <select class="form-select" id="editCourseId" name="courseId" required>
+                <% pdkCourses.forEach(course => { %>
+                  <option value="<%= course.id %>"><%= course.kode %> - <%= course.nama %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="editSemester" class="form-label">Semester</label>
+              <input type="text" class="form-control" id="editSemester" name="semester" required>
+            </div>
+            <div class="col-md-6">
+              <label for="editTanggal" class="form-label">Tanggal</label>
+              <input type="date" class="form-control" id="editTanggal" name="tanggal" required>
+            </div>
+            <div class="col-md-6">
+              <label for="editLokasi" class="form-label">Lokasi</label>
               <input type="text" class="form-control" id="editLokasi" name="lokasi">
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="editDurasi" class="form-label fw-semibold">Durasi (jam)</label>
-              <input type="number" class="form-control" id="editDurasi" name="durasi" step="0.5">
+            <div class="col-md-12">
+              <label for="editKegiatan" class="form-label">Kegiatan</label>
+              <textarea class="form-control" id="editKegiatan" name="kegiatan" rows="4" required></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="editDurasi" class="form-label">Durasi (jam)</label>
+              <input type="number" class="form-control" id="editDurasi" name="durasi" step="0.5" min="0">
             </div>
           </div>
-          <!-- Gambar tidak bisa diupdate di sini, bisa ditambahkan fitur terpisah jika diperlukan -->
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary">Update</button>
+          <button type="submit" class="btn btn-gradient">Update Logbook</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Modal Lightbox Gambar -->
+<!-- MODAL LIGHTBOX GAMBAR -->
 <div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Dokumentasi</h5>
+        <h5 class="modal-title"><i class="bi bi-images"></i> Dokumentasi Kegiatan</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body p-0">
         <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
           <div class="carousel-inner" id="galleryCarouselInner"></div>
           <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
@@ -305,13 +516,12 @@
       .then(res => res.json())
       .then(data => {
         document.getElementById('editId').value = id;
-        document.getElementById('editCourseId').value = data.courseId;
-        document.getElementById('editSemester').value = data.semester;
-        document.getElementById('editTanggal').value = data.tanggal.split('T')[0];
-        document.getElementById('editKegiatan').value = data.kegiatan;
+        document.getElementById('editCourseId').value = data.courseId || '';
+        document.getElementById('editSemester').value = data.semester || '';
+        document.getElementById('editTanggal').value = data.tanggal ? data.tanggal.split('T')[0] : '';
+        document.getElementById('editKegiatan').value = data.kegiatan || '';
         document.getElementById('editLokasi').value = data.lokasi || '';
         document.getElementById('editDurasi').value = data.durasi || '';
-        // Set action
         document.getElementById('editForm').action = `/mahasiswa/magang/logbook/${id}`;
         new bootstrap.Modal(document.getElementById('editLogbookModal')).show();
       })
@@ -322,9 +532,9 @@
     const inner = document.getElementById('galleryCarouselInner');
     inner.innerHTML = '';
     imageUrls.forEach((url, index) => {
-      const activeClass = index === 0 ? 'active' : '';
+      const activeClass = index === 0 ? ' active' : '';
       const item = `
-        <div class="carousel-item ${activeClass}">
+        <div class="carousel-item${activeClass}">
           <img src="${url}" class="d-block w-100" alt="Dokumentasi">
         </div>
       `;

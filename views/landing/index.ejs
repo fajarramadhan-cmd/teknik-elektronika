@@ -135,7 +135,24 @@
             transform: translateY(0);
         }
     }
-
+    /* ===== RESPONSIVE HERO UNTUK HP ===== */
+    @media (max-width: 576px) {
+        .hero-section {
+            aspect-ratio: auto; /* lepaskan rasio tetap */
+            min-height: 80vh;   /* beri tinggi minimal agar gambar lebih luas */
+        }
+        .hero-content h1 {
+            font-size: 1.5rem;
+        }
+        .hero-content p {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .hero-buttons .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+    }
     /* ===== STATISTICS CARDS ===== */
     .stat-card {
         background: white;
@@ -554,8 +571,8 @@
     </div>
     <div class="hero-overlay">
         <div class="hero-content">
-            <h1>Selamat Datang di <span style="color: white;">Teknik Elektronika</span></h1>
-            <p>Mencetak insinyur dan teknisi handal di bidang elektronika industri, telekomunikasi, dan instrumentasi.</p>
+            <h1>Selamat Datang di <span style="color: white;"> Program Studi Teknik Elektronika</span></h1>
+            <p>Mencetak lulusan handal di bidang elektronika industri, telekomunikasi, dan instrumentasi.</p>
             <div class="hero-buttons">
                 <a href="#berita" class="btn btn-light">Jelajahi Prodi</a>
                 <a href="/auth/login" class="btn btn-outline-light">Portal Mahasiswa</a>
@@ -915,16 +932,16 @@
                 <div class="mitra-item"><img src="https://image.indonetwork.co.id/companies/thumbs/400x300/2020/06/25/764823d5-147c-4a45-85ed-5123b5e766d8.jpeg" alt="Mitra"></div>
             </div>
             <div class="col-6 col-md-2">
-                <div class="mitra-item"><img src="https://via.placeholder.com/150x50?text=Samsung" alt="Mitra"></div>
+                <div class="mitra-item"><img src="https://i.ibb.co.com/m51k6j91/image.png" alt="Mitra"></div>
             </div>
             <div class="col-6 col-md-2">
-                <div class="mitra-item"><img src="https://via.placeholder.com/150x50?text=Telkom" alt="Mitra"></div>
+                <div class="mitra-item"><img src="https://i.ibb.co.com/pjqQkgbz/image.png" alt="Mitra"></div>
             </div>
             <div class="col-6 col-md-2">
-                <div class="mitra-item"><img src="https://via.placeholder.com/150x50?text=Siemens" alt="Mitra"></div>
+                <div class="mitra-item"><img src="https://i.ibb.co.com/1G8Xn9QR/image.png" alt="Mitra"></div>
             </div>
             <div class="col-6 col-md-2">
-                <div class="mitra-item"><img src="https://via.placeholder.com/150x50?text=Schneider" alt="Mitra"></div>
+                <div class="mitra-item"><img src="https://i.ibb.co.com/5h2FWN6F/image.png" alt="Mitra"></div>
             </div>
         </div>
     </section>
@@ -973,5 +990,8 @@
         </div>
     </section>
 </div>
+  <div class="text-center text-muted mt-5 mb-3">
+    <small><i class="bi bi-shield-check me-1"></i> Sistem Informasi Program Studi Elektronika- Politeknik Dewantara 2025 by Fajar Elektrik</small>
+  </div>
 
 <%- include('../partials/footer-landing') %>

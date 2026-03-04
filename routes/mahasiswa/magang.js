@@ -1,6 +1,6 @@
 /**
  * routes/mahasiswa/magang.js
- * Modul ELK‑Magang: logbook, permohonan seminar, upload laporan akhir
+ * Modul ELK‑Magang: logbook, permohonan seminar, upload laporan akhir (3 laporan)
  */
 
 const express = require('express');
@@ -78,7 +78,7 @@ async function getEnrolledPdkCourses(userId) {
   return courses;
 }
 
-// --- Untuk laporan magang ---
+// --- Untuk laporan magang (3 laporan) ---
 async function getLaporanFolderId() {
   const folderName = 'Laporan_Magang';
   const query = await drive.files.list({
@@ -114,36 +114,22 @@ async function getMahasiswaLaporanFolder(nim, userId) {
   }
 }
 
-// ============================================================================
-// CETAK LOGBOOK (RUTE KHUSUS)
-// ============================================================================
-router.get('/logbook-print', async (req, res) => {
-  console.log('✅ RUTE CETAK DIPANGGIL!');
-  try {
-    const snapshot = await db.collection('logbookMagang')
-      .where('userId', '==', req.user.id)
-      .orderBy('tanggal', 'asc')
-      .get();
-
-    const logbook = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    const mahasiswaDoc = await db.collection('users').doc(req.user.id).get();
-    const mahasiswa = mahasiswaDoc.exists ? mahasiswaDoc.data() : { nama: req.user.nama, nim: req.user.nim };
-
-    const totalDurasi = logbook.reduce((sum, item) => sum + (parseFloat(item.durasi) || 0), 0);
-
-    res.render('mahasiswa/magang/print', {
-      title: 'Cetak Logbook',
-      mahasiswa,
-      logbook,
-      totalDurasi,
-      totalEntries: logbook.length,
-      generatedAt: new Date().toLocaleString('id-ID')
-    });
-  } catch (error) {
-    console.error('❌ Error print logbook:', error);
-    res.status(500).send('Gagal mencetak logbook');
+function getAngkatanFromNim(nim) {
+  if (!nim || nim.length < 2) return new Date().getFullYear().toString();
+  if (nim.length >= 4 && !isNaN(parseInt(nim.substring(0,4)))) {
+    return nim.substring(0,4);
   }
+  return '20' + nim.substring(0,2);
+}
+
+// ============================================================================
+// HALAMAN UTAMA MAGANG (menu pilihan)
+// ============================================================================
+router.get('/', (req, res) => {
+  res.render('mahasiswa/magang/index', {
+    title: 'ELK-Magang',
+    user: req.user
+  });
 });
 
 // ============================================================================
@@ -310,6 +296,158 @@ router.post('/logbook/:id/delete', async (req, res) => {
   }
 });
 
+/**
+ * GET /mahasiswa/magang/logbook-print
+ * Cetak logbook (PDF)
+ */
+router.get('/logbook-print', async (req, res) => {
+  console.log('✅ RUTE CETAK DIPANGGIL!');
+  try {
+    const snapshot = await db.collection('logbookMagang')
+      .where('userId', '==', req.user.id)
+      .orderBy('tanggal', 'asc')
+      .get();
+
+    const logbook = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const mahasiswaDoc = await db.collection('users').doc(req.user.id).get();
+    const mahasiswa = mahasiswaDoc.exists ? mahasiswaDoc.data() : { nama: req.user.nama, nim: req.user.nim };
+
+    const totalDurasi = logbook.reduce((sum, item) => sum + (parseFloat(item.durasi) || 0), 0);
+
+    res.render('mahasiswa/magang/print', {
+      title: 'Cetak Logbook',
+      mahasiswa,
+      logbook,
+      totalDurasi,
+      totalEntries: logbook.length,
+      generatedAt: new Date().toLocaleString('id-ID')
+    });
+  } catch (error) {
+    console.error('❌ Error print logbook:', error);
+    res.status(500).send('Gagal mencetak logbook');
+  }
+});
+
+// ============================================================================
+// LAPORAN MAGANG (3 laporan)
+// ============================================================================
+
+/**
+ * GET /mahasiswa/magang/laporan
+ * Menampilkan halaman laporan magang (Laporan 1,2,3)
+ */
+router.get('/laporan', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const laporanList = [];
+    for (let i = 1; i <= 3; i++) {
+      const docId = `${userId}_${i}`;
+      const doc = await db.collection('laporanMagang').doc(docId).get();
+      laporanList.push({
+        ke: i,
+        exists: doc.exists,
+        data: doc.exists ? doc.data() : null
+      });
+    }
+    res.render('mahasiswa/magang/laporan', {
+      title: 'Laporan Magang',
+      user: req.user,
+      laporanList
+    });
+  } catch (error) {
+    console.error('Error muat halaman laporan:', error);
+    res.status(500).send('Gagal memuat halaman');
+  }
+});
+
+/**
+ * POST /mahasiswa/magang/laporan/upload
+ * Upload file laporan magang ke Google Drive (untuk laporan tertentu)
+ */
+router.post('/laporan/upload', upload.single('file'), async (req, res) => {
+  try {
+    const { laporanKe } = req.body; // 1,2,3
+    const file = req.file;
+    if (!laporanKe || !file) {
+      return res.status(400).send('Laporan ke dan file wajib diisi');
+    }
+
+    const userId = req.user.id;
+    const nim = req.user.nim;
+    const nama = (req.user.nama || 'mahasiswa').replace(/\s+/g, '_');
+    const angkatan = getAngkatanFromNim(nim);
+    const timestamp = Date.now();
+    const fileName = `${nama}_${nim}_laporan_${laporanKe}_${timestamp}.pdf`;
+
+    const folderId = await getMahasiswaLaporanFolder(nim, userId);
+    const fileMetadata = { name: fileName, parents: [folderId] };
+    const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+    const response = await drive.files.create({
+      resource: fileMetadata,
+      media,
+      fields: 'id, webViewLink'
+    });
+
+    await drive.permissions.create({
+      fileId: response.data.id,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
+
+    const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
+    const docId = `${userId}_${laporanKe}`;
+
+    await db.collection('laporanMagang').doc(docId).set({
+      userId,
+      nim,
+      nama: req.user.nama,
+      laporanKe: parseInt(laporanKe),
+      fileUrl,
+      fileId: response.data.id,
+      fileName,
+      uploadedAt: new Date().toISOString(),
+      status: 'submitted' // submitted, approved, rejected
+    });
+
+    res.redirect('/mahasiswa/magang/laporan');
+  } catch (error) {
+    console.error('Error upload laporan:', error);
+    res.status(500).send('Gagal upload laporan');
+  }
+});
+
+/**
+ * POST /mahasiswa/magang/laporan/hapus
+ * Hapus laporan (hanya jika status submitted)
+ */
+router.post('/laporan/hapus', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const laporanRef = db.collection('laporanMagang').doc(userId);
+    const doc = await laporanRef.get();
+    if (!doc.exists) return res.status(404).send('Laporan tidak ditemukan');
+    const data = doc.data();
+
+    if (data.status !== 'submitted') {
+      return res.status(400).send('Hanya laporan dengan status submitted yang dapat dihapus');
+    }
+
+    if (data.fileId) {
+      try {
+        await drive.files.delete({ fileId: data.fileId });
+      } catch (err) {
+        console.error('Gagal hapus file Drive:', err);
+      }
+    }
+
+    await laporanRef.delete();
+    res.redirect('/mahasiswa/magang/laporan');
+  } catch (error) {
+    console.error('Error hapus laporan:', error);
+    res.status(500).send('Gagal hapus laporan');
+  }
+});
+
 // ============================================================================
 // PERMOHONAN SEMINAR MAGANG
 // ============================================================================
@@ -436,192 +574,6 @@ router.post('/seminar/:id/batal', async (req, res) => {
     console.error('Error batal seminar:', error);
     res.status(500).send('Gagal membatalkan');
   }
-});
-
-// ============================================================================
-// UPLOAD LAPORAN MAGANG (mendukung 3 laporan)
-// ============================================================================
-
-/**
- * Fungsi untuk mendapatkan angkatan dari NIM
- */
-function getAngkatanFromNim(nim) {
-  if (!nim || nim.length < 2) return new Date().getFullYear().toString();
-  if (nim.length >= 4 && !isNaN(parseInt(nim.substring(0,4)))) {
-    return nim.substring(0,4);
-  }
-  return '20' + nim.substring(0,2);
-}
-
-/**
- * GET /mahasiswa/magang/laporan
- * Menampilkan halaman laporan magang (Laporan 1,2,3)
- */
-router.get('/laporan', async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const laporanList = [];
-    for (let i = 1; i <= 3; i++) {
-      const docId = `${userId}_${i}`;
-      const doc = await db.collection('laporanMagang').doc(docId).get();
-      laporanList.push({
-        ke: i,
-        exists: doc.exists,
-        data: doc.exists ? doc.data() : null
-      });
-    }
-    res.render('mahasiswa/magang/laporan', {
-      title: 'Laporan Magang',
-      user: req.user,
-      laporanList
-    });
-  } catch (error) {
-    console.error('Error muat halaman laporan:', error);
-    res.status(500).send('Gagal memuat halaman');
-  }
-});
-
-/**
- * POST /mahasiswa/magang/laporan/upload
- * Upload file laporan magang ke Google Drive (untuk laporan tertentu)
- */
-router.post('/laporan/upload', upload.single('file'), async (req, res) => {
-  try {
-    const { laporanKe } = req.body; // 1,2,3
-    const file = req.file;
-    if (!laporanKe || !file) {
-      return res.status(400).send('Laporan ke dan file wajib diisi');
-    }
-
-    const userId = req.user.id;
-    const nim = req.user.nim;
-    const nama = (req.user.nama || 'mahasiswa').replace(/\s+/g, '_');
-    const angkatan = getAngkatanFromNim(nim);
-    const timestamp = Date.now();
-    const fileName = `${nama}_${nim}_laporan_${laporanKe}_${timestamp}.pdf`;
-
-    const folderId = await getMahasiswaLaporanFolder(nim, userId);
-    const fileMetadata = { name: fileName, parents: [folderId] };
-    const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
-    const response = await drive.files.create({
-      resource: fileMetadata,
-      media,
-      fields: 'id, webViewLink'
-    });
-
-    await drive.permissions.create({
-      fileId: response.data.id,
-      requestBody: { role: 'reader', type: 'anyone' }
-    });
-
-    const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
-    const docId = `${userId}_${laporanKe}`;
-
-    await db.collection('laporanMagang').doc(docId).set({
-      userId,
-      nim,
-      nama: req.user.nama,
-      laporanKe: parseInt(laporanKe),
-      fileUrl,
-      fileId: response.data.id,
-      fileName,
-      uploadedAt: new Date().toISOString(),
-      status: 'submitted' // submitted, approved, rejected
-    });
-
-    res.redirect('/mahasiswa/magang/laporan');
-  } catch (error) {
-    console.error('Error upload laporan:', error);
-    res.status(500).send('Gagal upload laporan');
-  }
-});
-
-/**
- * POST /mahasiswa/magang/laporan/upload
- * Upload file laporan magang ke Google Drive
- */
-router.post('/laporan/upload', upload.single('file'), async (req, res) => {
-  try {
-    const file = req.file;
-    if (!file) return res.status(400).send('Tidak ada file yang diupload');
-
-    const userId = req.user.id;
-    const nim = req.user.nim;
-    const folderId = await getMahasiswaLaporanFolder(nim, userId);
-
-    const fileName = `Laporan_Magang_${nim}_${Date.now()}.pdf`;
-    const fileMetadata = { name: fileName, parents: [folderId] };
-    const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
-    const response = await drive.files.create({
-      resource: fileMetadata,
-      media,
-      fields: 'id, webViewLink'
-    });
-
-    await drive.permissions.create({
-      fileId: response.data.id,
-      requestBody: { role: 'reader', type: 'anyone' }
-    });
-
-    const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
-
-    // Simpan ke Firestore
-    const laporanRef = db.collection('laporanMagang').doc(userId);
-    await laporanRef.set({
-      userId,
-      nim,
-      nama: req.user.nama,
-      fileUrl,
-      fileId: response.data.id,
-      fileName,
-      uploadedAt: new Date().toISOString(),
-      status: 'submitted' // submitted, approved, rejected
-    }, { merge: true });
-
-    res.redirect('/mahasiswa/magang/laporan');
-  } catch (error) {
-    console.error('Error upload laporan:', error);
-    res.status(500).send('Gagal upload laporan');
-  }
-});
-
-/**
- * POST /mahasiswa/magang/laporan/hapus
- * Hapus laporan (hanya jika status submitted)
- */
-router.post('/laporan/hapus', async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const laporanRef = db.collection('laporanMagang').doc(userId);
-    const doc = await laporanRef.get();
-    if (!doc.exists) return res.status(404).send('Laporan tidak ditemukan');
-    const data = doc.data();
-
-    if (data.status !== 'submitted') {
-      return res.status(400).send('Hanya laporan dengan status submitted yang dapat dihapus');
-    }
-
-    if (data.fileId) {
-      try {
-        await drive.files.delete({ fileId: data.fileId });
-      } catch (err) {
-        console.error('Gagal hapus file Drive:', err);
-      }
-    }
-
-    await laporanRef.delete();
-    res.redirect('/mahasiswa/magang/laporan');
-  } catch (error) {
-    console.error('Error hapus laporan:', error);
-    res.status(500).send('Gagal hapus laporan');
-  }
-});
-
-// ============================================================================
-// HALAMAN UTAMA MAGANG (redirect ke logbook)
-// ============================================================================
-router.get('/', (req, res) => {
-  res.redirect('/mahasiswa/magang/logbook');
 });
 
 module.exports = router;

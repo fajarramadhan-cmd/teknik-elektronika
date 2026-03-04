@@ -72,9 +72,6 @@ app.use('/dosen', dosenRoutes);
 const adminRoutes = require('./routes/admin/index');
 app.use('/admin', adminRoutes);
 
-// Admin content (berita, statistik, seminar, aktivitas, jadwal penting, track lulusan)
-const adminContentRoutes = require('./routes/admin-content');
-app.use('/admin-content', adminContentRoutes);
 
 // ============================================================================
 // DASHBOARD REDIRECT (setelah login)

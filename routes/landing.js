@@ -196,25 +196,11 @@ router.get('/aktivitas/:id', async (req, res) => {
 // ============================================================================
 router.get('/berita/:id', async (req, res) => {
   try {
-    const doc = await db.collection('berita').doc(req.params.id).get();
-    if (!doc.exists) {
-      return res.status(404).render('error', {
-        title: 'Tidak Ditemukan',
-        message: 'Berita tidak ditemukan'
-      });
-    }
-    const berita = { id: doc.id, ...doc.data() };
-    res.render('berita_detail', {
-      title: berita.judul,
-      berita,
-      user: req.user || null
-    });
+    const berita = await db.collection('berita').doc(req.params.id).get();
+    if (!berita.exists) return res.status(404).send('Berita tidak ditemukan');
+    res.render('berita_detail', { berita: berita.data() });
   } catch (error) {
-    console.error('Error detail berita:', error);
-    res.status(500).render('error', {
-      title: 'Error',
-      message: 'Terjadi kesalahan'
-    });
+    res.status(500).send('Error');
   }
 });
 

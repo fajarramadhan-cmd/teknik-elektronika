@@ -74,10 +74,10 @@ router.use('/emagang', require('./emagang'));
 router.use('/surat', require('./surat'));
 
 // Kelola Berita (menggunakan modul admin-content)
-router.use('/berita', require('../admin-content'));
+router.use('/berita', require('../admin-content/berita'));
 
 // Statistik Prodi (menggunakan modul admin-content)
-router.use('/statistik', require('../admin-content'));
+
 
 // Kelola Jadwal Penting
 router.use('/jadwalpenting', require('./jadwalpenting'));
