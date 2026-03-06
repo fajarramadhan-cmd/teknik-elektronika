@@ -1,45 +1,161 @@
 <%- include('../../partials/header') %>
 
+<%
+  // Fungsi untuk mendapatkan thumbnail dari Google Drive
+  const getDriveThumbnail = (url, size = 300) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w${size}`;
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w${size}`;
+    return url;
+  };
+  const fotoThumb = user.foto ? getDriveThumbnail(user.foto, 300) : null;
+  const angkatan = user.nim && user.nim.length >= 2 ? '20' + user.nim.substring(0,2) : '-';
+%>
+
 <style>
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Header */
   .biodata-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .biodata-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
   }
   .biodata-header h2 {
     font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
   }
+  .biodata-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .biodata-header .btn-light {
+    background: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 1.8rem;
+    font-weight: 600;
+    color: var(--primary-start);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .biodata-header .btn-light:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* Profile Card */
   .profile-card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .profile-left {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.05));
+    padding: 2rem;
+    text-align: center;
+    border-right: 1px solid rgba(33,147,176,0.1);
   }
   .profile-avatar {
     width: 120px;
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #2193b0;
-    margin: 0 auto 1rem;
+    border: 4px solid white;
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    margin-bottom: 1rem;
   }
   .avatar-circle {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 600;
     margin: 0 auto 1rem;
+    border: 4px solid white;
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+  .profile-left h5 {
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .profile-left .text-muted {
+    color: #64748b;
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    margin-top: 1rem;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+
+  /* Info Items */
+  .info-items {
+    padding: 1.5rem;
   }
   .info-item {
-    padding: 1rem;
+    display: flex;
+    padding: 1rem 0;
     border-bottom: 1px solid #e9ecef;
   }
   .info-item:last-child {
@@ -50,60 +166,46 @@
     color: #1e293b;
     width: 120px;
   }
-  .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.6rem 1.5rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
+  .info-value {
+    color: #334155;
   }
-  .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
-    color: white;
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .profile-left {
+      border-right: none;
+      border-bottom: 1px solid rgba(33,147,176,0.1);
+    }
+    .info-item {
+      flex-direction: column;
+    }
+    .info-label {
+      width: 100%;
+      margin-bottom: 0.2rem;
+    }
   }
 </style>
 
-<%
-  // Fungsi untuk mengekstrak file ID dari URL Google Drive
-  const getFileIdFromUrl = (url) => {
-    if (!url) return null;
-    let match = url.match(/[?&]id=([^&]+)/);
-    if (match) return match[1];
-    match = url.match(/\/d\/([^\/]+)/);
-    if (match) return match[1];
-    return null;
-  };
-  const fileId = user.foto ? getFileIdFromUrl(user.foto) : null;
-%>
-
 <div class="container-fluid mt-4">
   <!-- Header -->
-  <div class="biodata-header d-flex justify-content-between align-items-center">
+  <div class="biodata-header">
     <div>
-      <h2><i class="bi bi-person-circle me-2"></i>Biodata Saya</h2>
-      <p class="mb-0 opacity-75">Informasi pribadi mahasiswa</p>
+      <h2><i class="bi bi-person-circle"></i> Biodata Saya</h2>
+      <p class="mb-0">Informasi pribadi mahasiswa</p>
     </div>
-    <a href="/mahasiswa/dashboard" class="btn btn-light">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+    <a href="/mahasiswa/dashboard" class="btn-light">
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
   <!-- Profile Card -->
   <div class="profile-card">
     <div class="row g-0">
-      <div class="col-md-4 text-center p-4 bg-light">
-        <% if (fileId) { %>
-          <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w300" 
-               alt="foto" 
-               class="profile-avatar"
-               onerror="this.onerror=null; this.src='https://drive.google.com/uc?export=view&id=<%= fileId %>';">
+      <div class="col-md-4 profile-left">
+        <% if (fotoThumb) { %>
+          <img src="<%= fotoThumb %>" alt="foto <%= user.nama %>" class="profile-avatar" 
+               onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(user.nama) %>&background=2193b0&color=fff&size=120';">
         <% } else if (user.foto) { %>
-          <!-- Fallback jika URL tidak bisa diekstrak -->
           <img src="<%= user.foto %>" alt="foto" class="profile-avatar">
         <% } else { %>
           <div class="avatar-circle">
@@ -112,34 +214,34 @@
         <% } %>
         <h5 class="fw-bold mt-2"><%= user.nama %></h5>
         <p class="text-muted"><%= user.nim || '-' %></p>
-        <a href="/mahasiswa/biodata/edit" class="btn-gradient btn-sm">
-          <i class="bi bi-pencil me-2"></i>Edit Profil
+        <a href="/mahasiswa/biodata/edit" class="btn-gradient">
+          <i class="bi bi-pencil"></i> Edit Profil
         </a>
       </div>
-      <div class="col-md-8">
-        <div class="info-item d-flex">
+      <div class="col-md-8 info-items">
+        <div class="info-item">
           <span class="info-label">NIM</span>
-          <span>: <%= user.nim || '-' %></span>
+          <span class="info-value">: <%= user.nim || '-' %></span>
         </div>
-        <div class="info-item d-flex">
+        <div class="info-item">
           <span class="info-label">Nama</span>
-          <span>: <%= user.nama || '-' %></span>
+          <span class="info-value">: <%= user.nama || '-' %></span>
         </div>
-        <div class="info-item d-flex">
+        <div class="info-item">
           <span class="info-label">Email</span>
-          <span>: <%= user.email || '-' %></span>
+          <span class="info-value">: <%= user.email || '-' %></span>
         </div>
-        <div class="info-item d-flex">
+        <div class="info-item">
           <span class="info-label">No. HP</span>
-          <span>: <%= user.noHp || '-' %></span>
+          <span class="info-value">: <%= user.noHp || '-' %></span>
         </div>
-        <div class="info-item d-flex">
+        <div class="info-item">
           <span class="info-label">Program Studi</span>
-          <span>: Teknik Elektronika</span>
+          <span class="info-value">: Teknik Elektronika</span>
         </div>
-        <div class="info-item d-flex">
+        <div class="info-item">
           <span class="info-label">Angkatan</span>
-          <span>: <%= user.nim && user.nim.length >= 2 ? '20' + user.nim.substring(0,2) : '-' %></span>
+          <span class="info-value">: <%= angkatan %></span>
         </div>
       </div>
     </div>

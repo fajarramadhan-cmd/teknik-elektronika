@@ -1,143 +1,282 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    // Format: https://drive.google.com/uc?export=view&id=XXX
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    // Format: https://drive.google.com/file/d/XXX/view
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .dosen-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    color: white;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .dosen-table {
+    margin-bottom: 0;
+  }
+  .dosen-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    border: none;
-  }
-  .dosen-table td {
-    vertical-align: middle;
+    border-bottom: 2px solid var(--primary-start);
     padding: 1rem 0.75rem;
   }
-  .btn-action {
-    margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
+  .dosen-table tbody tr {
     transition: all 0.2s;
   }
-  .btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  .dosen-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
   }
-  .filter-card {
-    border-radius: 1rem;
+  .dosen-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== TOMBOL GRADIEN ===== */
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
   }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    color: white;
+    margin: 0 2px;
+  }
+  .btn-icon-sm i {
+    font-size: 1rem;
+  }
+  .btn-edit {
+    background: #ffc107;
+  }
+  .btn-edit:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(255,193,7,0.3);
+  }
+  .btn-delete {
+    background: #dc3545;
+  }
+  .btn-delete:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(220,53,69,0.3);
+  }
+
+  /* ===== AVATAR ===== */
   .avatar-circle {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 1.2rem;
+    box-shadow: 0 5px 10px rgba(33,147,176,0.2);
   }
   .foto-dosen {
     width: 40px;
     height: 40px;
     object-fit: cover;
     border-radius: 50%;
+    border: 2px solid var(--primary-start);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.2);
+  }
+
+  /* ===== BADGE MATA KULIAH ===== */
+  .mk-badge {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.2rem 0.5rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    display: inline-block;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ===== ALERT ===== */
+  .alert-custom {
+    border-radius: 1rem;
+    border-left: 4px solid;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Kelola Dosen</h2>
-    <a href="/admin/dosen/create" class="btn btn-primary">
-      <i class="bi bi-plus-circle me-2"></i>Tambah Dosen
+  <!-- Header dengan tombol tambah -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-people-fill me-2" style="color: var(--primary-start);"></i>Kelola Dosen</h2>
+    <a href="/admin/dosen/create" class="btn-gradient">
+      <i class="bi bi-plus-circle"></i> Tambah Dosen
     </a>
   </div>
 
   <!-- Notifikasi Sukses (opsional) -->
   <% if (typeof success !== 'undefined' && success) { %>
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    <div class="alert alert-success alert-dismissible fade show mb-4 alert-custom" role="alert" style="border-left-color: #28a745;">
       <i class="bi bi-check-circle-fill me-2"></i>Data dosen berhasil <%= success %>.
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   <% } %>
 
   <!-- Tabel Dosen -->
-  <div class="table-responsive">
-    <table class="table dosen-table">
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>NIP</th>
-          <th>Nama</th>
-          <th>Email</th>
-          <th>Kontak</th>
-          <th>Mata Kuliah Diampu</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (dosen.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table dosen-table">
+        <thead>
           <tr>
-            <td colspan="7" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada data dosen.</p>
-            </td>
+            <th>Foto</th>
+            <th>NUPTK</th>
+            <th>Nama</th>
+            <th>Email</th>
+            <th>Kontak</th>
+            <th>Mata Kuliah Diampu</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% dosen.forEach(d => { %>
-        <tr>
-          <td>
-            <% if (d.foto) { %>
-              <img src="<%= d.foto %>" alt="foto" class="foto-dosen">
-            <% } else { %>
-              <div class="avatar-circle"><%= (d.nama || '?').charAt(0).toUpperCase() %></div>
-            <% } %>
-          </td>
-          <td><%= d.nip || '-' %></td>
-          <td><%= d.nama %></td>
-          <td><%= d.email %></td>
-          <td><%= d.kontak || '-' %></td>
-          <td>
-            <% if (d.mataKuliahIds && d.mataKuliahIds.length > 0) { %>
-              <ul class="list-unstyled mb-0 small">
-                <% d.mataKuliahIds.slice(0, 3).forEach(mkId => { %>
-                  <li><span class="badge bg-primary bg-opacity-10 text-primary"><%= mkId %></span></li>
-                <% }) %>
-                <% if (d.mataKuliahIds.length > 3) { %>
-                  <li class="text-muted">+ <%= d.mataKuliahIds.length - 3 %> lainnya</li>
+        </thead>
+        <tbody>
+          <% if (dosen.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Data Dosen</h4>
+                  <p class="text-muted">Silakan tambahkan dosen pertama dengan klik tombol "Tambah Dosen".</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% dosen.forEach(d => { %>
+            <tr>
+              <td>
+                <% if (d.foto) { 
+                  const fileId = getFileIdFromUrl(d.foto);
+                  if (fileId) { %>
+                    <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w100" 
+                         alt="foto" 
+                         class="foto-dosen"
+                         onerror="this.onerror=null; this.src='<%= d.foto %>';">
+                  <% } else { %>
+                    <img src="<%= d.foto %>" 
+                         alt="foto" 
+                         class="foto-dosen"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/40?text=<%= (d.nama || '?').charAt(0).toUpperCase() %>';">
+                  <% } %>
+                <% } else { %>
+                  <div class="avatar-circle"><%= (d.nama || '?').charAt(0).toUpperCase() %></div>
                 <% } %>
-              </ul>
-            <% } else { %>
-              <span class="text-muted">-</span>
-            <% } %>
-          </td>
-          <td>
-            <a href="/admin/dosen/<%= d.id %>/edit" class="btn btn-sm btn-warning btn-action" title="Edit">
-              <i class="bi bi-pencil"></i> Edit
-            </a>
-            <form method="POST" action="/admin/dosen/<%= d.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus dosen ini?')">
-              <button type="submit" class="btn btn-sm btn-danger btn-action" title="Hapus">
-                <i class="bi bi-trash"></i> Hapus
-              </button>
-            </form>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
+              </td>
+              <td><span class="fw-semibold"><%= d.nip || '-' %></span></td>
+              <td><%= d.nama %></td>
+              <td><%= d.email %></td>
+              <td><%= d.kontak || '-' %></td>
+              <td>
+                <% if (d.mataKuliahIds && d.mataKuliahIds.length > 0) { %>
+                  <div>
+                    <% d.mataKuliahIds.slice(0, 3).forEach(mkId => { %>
+                      <span class="mk-badge"><%= mkId %></span>
+                    <% }) %>
+                    <% if (d.mataKuliahIds.length > 3) { %>
+                      <span class="mk-badge bg-secondary text-white">+ <%= d.mataKuliahIds.length - 3 %> lainnya</span>
+                    <% } %>
+                  </div>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <a href="/admin/dosen/<%= d.id %>/edit" class="btn-icon-sm btn-edit" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <form method="POST" action="/admin/dosen/<%= d.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus dosen ini?')">
+                    <button type="submit" class="btn-icon-sm btn-delete" title="Hapus">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

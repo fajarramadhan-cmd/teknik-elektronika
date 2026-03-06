@@ -1,0 +1,175 @@
+<%- include('../partials/header') %>
+
+<style>
+  .detail-header {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border-radius: 1rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+  }
+  .profile-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #2193b0;
+  }
+  .avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 600;
+  }
+  .info-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+  }
+  .info-item:last-child {
+    border-bottom: none;
+  }
+  .info-label {
+    font-weight: 600;
+    width: 120px;
+    color: #1e293b;
+  }
+  .mk-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+    height: 100%;
+  }
+  .mk-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+  }
+  .nilai-badge {
+    background: #28a745;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+  }
+  .btn-back {
+    background: transparent;
+    border: 2px solid #2193b0;
+    color: #2193b0;
+    font-weight: 600;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-back:hover {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border-color: transparent;
+    color: white;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="detail-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-person-badge me-2"></i>Detail Mahasiswa</h2>
+    </div>
+    <a href="/dosen/mahasiswa" class="btn btn-light">
+      <i class="bi bi-arrow-left me-2"></i>Kembali
+    </a>
+  </div>
+
+  <!-- Profil Mahasiswa -->
+  <div class="profile-card">
+    <div class="row">
+      <div class="col-md-3 text-center">
+        <% if (mahasiswa.foto) { %>
+          <img src="<%= mahasiswa.foto %>" alt="foto" class="profile-avatar mb-3">
+        <% } else { %>
+          <div class="avatar-circle mb-3">
+            <%= (mahasiswa.nama || '?').charAt(0).toUpperCase() %>
+          </div>
+        <% } %>
+        <h4 class="fw-bold"><%= mahasiswa.nama %></h4>
+        <p class="text-muted"><%= mahasiswa.nim %></p>
+      </div>
+      <div class="col-md-9">
+        <div class="info-item">
+          <span class="info-label">NIM</span>
+          <span>: <%= mahasiswa.nim || '-' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Nama</span>
+          <span>: <%= mahasiswa.nama || '-' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <span>: <%= mahasiswa.email || '-' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">No HP</span>
+          <span>: <%= mahasiswa.noHp || '-' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Program Studi</span>
+          <span>: Teknik Elektronika</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Angkatan</span>
+          <span>: <%= mahasiswa.nim ? '20' + mahasiswa.nim.substring(0,2) : '-' %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mata Kuliah yang Diambil (dari dosen ini) -->
+  <h4 class="fw-bold mb-3">Mata Kuliah yang Diambil</h4>
+  <div class="row g-4 mb-5">
+    <% if (mkDiambil.length === 0) { %>
+      <div class="col-12">
+        <div class="alert alert-info">Mahasiswa ini tidak mengambil mata kuliah yang Anda ampu.</div>
+      </div>
+    <% } else { %>
+      <% mkDiambil.forEach(mk => { 
+        const nilai = nilaiList.find(n => n.mk.id === mk.id);
+      %>
+        <div class="col-md-4">
+          <div class="mk-card">
+            <div class="card-body">
+              <h5 class="fw-bold"><%= mk.kode %></h5>
+              <p class="card-text"><%= mk.nama %></p>
+              <p class="small text-muted">
+                <i class="bi bi-clock"></i> <%= mk.sks %> SKS
+              </p>
+              <% if (nilai && nilai.nilai) { %>
+                <div class="mt-2">
+                  <% Object.entries(nilai.nilai).forEach(([tipe, val]) => { %>
+                    <span class="badge bg-primary me-1"><%= tipe %>: <%= val %></span>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <p class="text-muted small">Belum ada nilai</p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

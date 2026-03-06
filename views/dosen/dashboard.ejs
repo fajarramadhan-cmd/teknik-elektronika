@@ -4,18 +4,94 @@
   // Set default values for optional variables to prevent undefined errors
   if (typeof events === 'undefined') events = [];
   if (typeof berita === 'undefined') berita = [];
+
+  // Fungsi untuk mendapatkan URL gambar dari Google Drive
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w200-h200`;
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w200-h200`;
+    return url;
+  };
 %>
 
 <style>
-  .stat-card {
-    border: none;
-    border-radius: 1rem;
-    transition: transform 0.3s, box-shadow 0.3s;
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Welcome Card */
+  .welcome-card {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
     overflow: hidden;
   }
+  .welcome-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .welcome-card h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .welcome-card p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.5);
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  .profile-avatar i {
+    font-size: 3rem;
+    color: white;
+  }
+
+  /* Statistik Cards */
+  .stat-card {
+    border: none;
+    border-radius: 1.2rem;
+    transition: all 0.3s;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    border: 1px solid rgba(33,147,176,0.1);
+    height: 100%;
+    text-decoration: none;
+    display: block;
+  }
   .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15) !important;
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15) !important;
+    border-color: transparent;
+  }
+  .stat-card .card-body {
+    padding: 1.5rem;
   }
   .stat-icon {
     width: 60px;
@@ -25,78 +101,135 @@
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
+    transition: all 0.3s;
+  }
+  .stat-card:hover .stat-icon {
+    transform: scale(1.1);
   }
   .stat-value {
     font-size: 2rem;
     font-weight: 700;
     line-height: 1.2;
+    color: #1e293b;
   }
   .stat-label {
-    color: #6c757d;
-    font-size: 0.9rem;
+    color: #64748b;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  .welcome-card {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: white;
+
+  /* Aksi Cepat Cards */
+  .quick-action-row {
     margin-bottom: 2rem;
   }
   .mk-card {
     border: none;
-    border-radius: 1rem;
+    border-radius: 1.2rem;
     transition: all 0.3s;
     overflow: hidden;
     background: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    border: 1px solid rgba(33,147,176,0.1);
     height: 100%;
+    text-decoration: none;
+    display: block;
+    padding: 1.5rem 1rem;
   }
   .mk-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+    border-color: transparent;
   }
-  .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.6rem 1.5rem;
-    border-radius: 50px;
+  .mk-card .stat-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
     transition: all 0.3s;
   }
-  .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
-    color: white;
+  .mk-card:hover .stat-icon {
+    transform: scale(1.1);
   }
-  .profile-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid white;
-    object-fit: cover;
+  .mk-card h6 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.3rem;
   }
+  .mk-card p {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-bottom: 0;
+  }
+
+  /* Event Card */
   .event-card {
     background: #f8f9fa;
-    border-left: 4px solid #2193b0;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0.5rem;
+    border-left: 4px solid var(--primary-start);
+    padding: 1rem 1.2rem;
+    border-radius: 1rem;
+    transition: all 0.2s;
+    height: 100%;
+  }
+  .event-card:hover {
+    background: white;
+    box-shadow: 0 10px 20px rgba(33,147,176,0.1);
+    transform: translateY(-3px);
   }
   .event-date {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--primary-start);
+    font-weight: 600;
+    margin-bottom: 0.3rem;
   }
+  .event-card strong {
+    color: #1e293b;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Section Title */
   .section-title {
     font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+    font-weight: 700;
     color: #1e293b;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-left: 1rem;
   }
-  .quick-action-row {
-    margin-bottom: 2rem;
+  .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.2rem;
+    bottom: 0.2rem;
+    width: 5px;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 5px;
+  }
+
+  /* Tombol */
+  .btn-outline-primary {
+    border: 1.5px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-outline-primary:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .welcome-card { padding: 1.5rem; }
+    .profile-avatar { width: 60px; height: 60px; }
+    .stat-value { font-size: 1.5rem; }
   }
 </style>
 
@@ -105,22 +238,14 @@
   <div class="welcome-card">
     <div class="d-flex align-items-center">
       <div class="flex-shrink-0">
-        <%
-          const getFileIdFromUrl = (url) => {
-            if (!url) return null;
-            let match = url.match(/[?&]id=([^&]+)/);
-            if (match) return match[1];
-            match = url.match(/\/d\/([^\/]+)/);
-            if (match) return match[1];
-            return null;
-          };
-          const fileId = dosen && dosen.foto ? getFileIdFromUrl(dosen.foto) : null;
+        <% 
+          const fotoUrl = dosen && dosen.foto ? getImageUrl(dosen.foto) : null;
+          if (fotoUrl) { 
         %>
-        <% if (fileId) { %>
-          <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" alt="foto" class="profile-avatar">
+          <img src="<%= fotoUrl %>" alt="foto <%= dosen.nama %>" class="profile-avatar" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(dosen.nama) %>&background=2193b0&color=fff&size=80';">
         <% } else { %>
-          <div class="profile-avatar bg-white text-primary d-flex align-items-center justify-content-center" style="font-size: 2.5rem;">
-            <i class="bi bi-person-circle"></i>
+          <div class="profile-avatar bg-white d-flex align-items-center justify-content-center">
+            <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
           </div>
         <% } %>
       </div>
@@ -133,11 +258,12 @@
 
   <!-- Statistik Cards (baris pertama) -->
   <div class="row g-4 mb-5">
+    <!-- Card Mata Kuliah Diampu -->
     <div class="col-md-3">
-      <div class="stat-card card shadow-sm">
+      <a href="/dosen/mk" class="stat-card">
         <div class="card-body">
           <div class="d-flex align-items-center">
-            <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+            <div class="stat-icon" style="background: rgba(13,110,253,0.1); color: #0d6efd; margin-right: 1rem;">
               <i class="bi bi-book"></i>
             </div>
             <div>
@@ -146,13 +272,14 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
     </div>
+    <!-- Card Mahasiswa Bimbingan -->
     <div class="col-md-3">
-      <div class="stat-card card shadow-sm">
+      <a href="/dosen/mahasiswa" class="stat-card">
         <div class="card-body">
           <div class="d-flex align-items-center">
-            <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+            <div class="stat-icon" style="background: rgba(25,135,84,0.1); color: #198754; margin-right: 1rem;">
               <i class="bi bi-people"></i>
             </div>
             <div>
@@ -161,37 +288,35 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
     </div>
+    <!-- Card Tugas Aktif -->
     <div class="col-md-3">
-      <a href="/dosen/tugas" class="text-decoration-none">
-        <div class="stat-card card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex align-items-center">
-              <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
-                <i class="bi bi-file-earmark-text"></i>
-              </div>
-              <div>
-                <div class="stat-value"><%= tugasAktif || 0 %></div>
-                <div class="stat-label">Tugas Aktif</div>
-              </div>
+      <a href="/dosen/tugas" class="stat-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon" style="background: rgba(255,193,7,0.1); color: #ffc107; margin-right: 1rem;">
+              <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div>
+              <div class="stat-value"><%= tugasAktif || 0 %></div>
+              <div class="stat-label">Tugas Aktif</div>
             </div>
           </div>
         </div>
       </a>
     </div>
+    <!-- Card Belum Dinilai -->
     <div class="col-md-3">
-      <a href="/dosen/nilai" class="text-decoration-none">
-        <div class="stat-card card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex align-items-center">
-              <div class="stat-icon bg-danger bg-opacity-10 text-danger me-3">
-                <i class="bi bi-clock-history"></i>
-              </div>
-              <div>
-                <div class="stat-value"><%= pengumpulanBelumDinilai || 0 %></div>
-                <div class="stat-label">Belum Dinilai</div>
-              </div>
+      <a href="/dosen/nilai" class="stat-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon" style="background: rgba(220,53,69,0.1); color: #dc3545; margin-right: 1rem;">
+              <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+              <div class="stat-value"><%= pengumpulanBelumDinilai || 0 %></div>
+              <div class="stat-label">Belum Dinilai</div>
             </div>
           </div>
         </div>
@@ -200,149 +325,113 @@
   </div>
 
   <!-- Aksi Cepat (baris pertama: 4 menu) -->
-  <h4 class="fw-bold mb-3">Aksi Cepat</h4>
+  <h4 class="section-title">Fitur Dosen</h4>
   <div class="row g-4 quick-action-row">
+    <!-- Buat Tugas -->
     <div class="col-md-3">
-      <a href="/dosen/tugas/create" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-              <i class="bi bi-plus-circle"></i>
-            </div>
-            <h6 class="fw-bold">Buat Tugas</h6>
-            <p class="text-muted small">Buat tugas baru</p>
+      <a href="/dosen/tugas/create" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(13,110,253,0.1); color: #0d6efd;">
+            <i class="bi bi-plus-circle"></i>
           </div>
+          <h6 class="fw-bold">Buat Tugas</h6>
+          <p class="text-muted">Buat tugas baru</p>
         </div>
       </a>
     </div>
+    <!-- Input Nilai -->
     <div class="col-md-3">
-      <a href="/dosen/nilai" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto mb-3">
-              <i class="bi bi-bar-chart"></i>
-            </div>
-            <h6 class="fw-bold">Input Nilai</h6>
-            <p class="text-muted small">Rekap nilai</p>
+      <a href="/dosen/nilai" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(25,135,84,0.1); color: #198754;">
+            <i class="bi bi-bar-chart"></i>
           </div>
+          <h6 class="fw-bold">Input Nilai</h6>
+          <p class="text-muted">Rekap nilai</p>
         </div>
       </a>
     </div>
+    <!-- Mata Kuliah -->
     <div class="col-md-3">
-      <a href="/dosen/mk" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto mb-3">
-              <i class="bi bi-book"></i>
-            </div>
-            <h6 class="fw-bold">Mata Kuliah</h6>
-            <p class="text-muted small">Lihat progress</p>
+      <a href="/dosen/mk" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(23,162,184,0.1); color: #17a2b8;">
+            <i class="bi bi-book"></i>
           </div>
+          <h6 class="fw-bold">Mata Kuliah</h6>
+          <p class="text-muted">Lihat progress</p>
         </div>
       </a>
     </div>
+    <!-- Daftar Tugas (sekarang di baris pertama menggantikan Biodata) -->
     <div class="col-md-3">
-      <a href="/dosen/biodata" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary mx-auto mb-3">
-              <i class="bi bi-person"></i>
-            </div>
-            <h6 class="fw-bold">Biodata</h6>
-            <p class="text-muted small">Edit profil</p>
+      <a href="/dosen/tugas" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(13,110,253,0.1); color: #0d6efd;">
+            <i class="bi bi-list-task"></i>
           </div>
+          <h6 class="fw-bold">Daftar Tugas</h6>
+          <p class="text-muted">Lihat semua tugas</p>
         </div>
       </a>
     </div>
   </div>
 
-  <!-- Aksi Cepat (baris kedua: 4 menu tambahan) -->
+  <!-- Aksi Cepat (baris kedua: 4 menu) -->
   <div class="row g-4 quick-action-row">
+    <!-- Monitoring Magang -->
     <div class="col-md-3">
-      <a href="/dosen/magang" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto mb-3">
-              <i class="bi bi-journal-bookmark-fill"></i>
-            </div>
-            <h6 class="fw-bold">Monitoring Magang</h6>
-            <p class="text-muted small">Lihat logbook mahasiswa</p>
+      <a href="/dosen/magang" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(23,162,184,0.1); color: #17a2b8;">
+            <i class="bi bi-journal-bookmark-fill"></i>
           </div>
+          <h6 class="fw-bold">Monitoring Magang</h6>
+          <p class="text-muted">Lihat logbook mahasiswa</p>
         </div>
       </a>
     </div>
+    <!-- Kalender Akademik -->
     <div class="col-md-3">
-      <a href="/dosen/kalender" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto mb-3">
-              <i class="bi bi-calendar-event"></i>
-            </div>
-            <h6 class="fw-bold">Kalender Akademik</h6>
-            <p class="text-muted small">Jadwal penting</p>
+      <a href="/dosen/kalender" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(255,193,7,0.1); color: #ffc107;">
+            <i class="bi bi-calendar-event"></i>
           </div>
+          <h6 class="fw-bold">Kalender Akademik</h6>
+          <p class="text-muted">Jadwal penting</p>
         </div>
       </a>
     </div>
+    <!-- MyRPS -->
     <div class="col-md-3">
-      <a href="/dosen/rps" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto mb-3">
-              <i class="bi bi-file-text"></i>
-            </div>
-            <h6 class="fw-bold">MyRPS</h6>
-            <p class="text-muted small">RPS mata kuliah</p>
+      <a href="/dosen/rps" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(25,135,84,0.1); color: #198754;">
+            <i class="bi bi-file-text"></i>
           </div>
+          <h6 class="fw-bold">MyRPS</h6>
+          <p class="text-muted">RPS mata kuliah</p>
         </div>
       </a>
     </div>
+    <!-- Biodata (sekarang di baris kedua paling akhir) -->
     <div class="col-md-3">
-      <a href="/dosen/tugas" class="text-decoration-none">
-        <div class="mk-card p-3">
-          <div class="text-center">
-            <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-              <i class="bi bi-list-task"></i>
-            </div>
-            <h6 class="fw-bold">Daftar Tugas</h6>
-            <p class="text-muted small">Lihat semua tugas</p>
+      <a href="/dosen/biodata" class="mk-card">
+        <div class="text-center">
+          <div class="stat-icon" style="background: rgba(108,117,125,0.1); color: #6c757d;">
+            <i class="bi bi-person"></i>
           </div>
+          <h6 class="fw-bold">Biodata</h6>
+          <p class="text-muted">Edit profil</p>
         </div>
       </a>
     </div>
-  </div>
-
-  <!-- Daftar Mata Kuliah Diampu -->
-  <h4 class="fw-bold mb-3">Mata Kuliah Diampu</h4>
-  <div class="row g-4 mb-5">
-    <% if (mkList && mkList.length > 0) { %>
-      <% mkList.forEach(mk => { %>
-        <div class="col-md-4">
-          <div class="mk-card">
-            <div class="card-body">
-              <h5 class="card-title fw-bold"><%= mk.kode %></h5>
-              <p class="card-text"><%= mk.nama %></p>
-              <p class="small text-muted">
-                <i class="bi bi-calendar"></i> Semester <%= mk.semester || '-' %> |
-                <i class="bi bi-clock"></i> <%= mk.sks %> SKS
-              </p>
-              <a href="/dosen/mk/<%= mk.id %>" class="btn btn-sm btn-outline-primary w-100">
-                <i class="bi bi-eye"></i> Detail
-              </a>
-            </div>
-          </div>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <div class="col-12">
-        <div class="alert alert-info">Anda belum mengampu mata kuliah apapun.</div>
-      </div>
-    <% } %>
   </div>
 
   <!-- Bagian Kalender Singkat (jika ada data event) -->
   <% if (events.length > 0) { %>
-    <h4 class="fw-bold mb-3">Acara Mendatang</h4>
+    <h4 class="section-title">Acara Mendatang</h4>
     <div class="row g-4 mb-5">
       <% events.slice(0, 4).forEach(ev => { %>
         <div class="col-md-3">
@@ -354,36 +443,22 @@
         </div>
       <% }) %>
       <div class="col-12 text-end">
-        <a href="/dosen/kalender" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+        <a href="/dosen/kalender" class="btn-outline-primary btn-sm">Lihat Semua</a>
       </div>
     </div>
   <% } %>
-    <div class="col-md-3">
-  <a href="/dosen/laporan-magang" class="text-decoration-none">
-    <div class="mk-card p-3">
-      <div class="text-center">
-        <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto mb-3">
-          <i class="bi bi-file-earmark-pdf"></i>
-        </div>
-        <h6 class="fw-bold">Laporan Magang</h6>
-        <p class="text-muted small">Lihat laporan mahasiswa</p>
-      </div>
-    </div>
-  </a>
-</div>
+
   <!-- Pengumuman atau Berita (opsional) -->
   <% if (berita.length > 0) { %>
-    <h4 class="fw-bold mb-3">Pengumuman</h4>
+    <h4 class="section-title">Pengumuman</h4>
     <div class="row g-4 mb-5">
       <% berita.slice(0, 3).forEach(b => { %>
         <div class="col-md-4">
-          <div class="mk-card">
-            <div class="card-body">
-              <h5 class="fw-bold"><%= b.judul %></h5>
-              <p class="small text-muted"><%= new Date(b.tanggal).toLocaleDateString('id-ID') %></p>
-              <p><%= b.isi.substring(0, 80) %>...</p>
-              <a href="/berita/<%= b.id %>" class="btn btn-sm btn-outline-primary">Baca</a>
-            </div>
+          <div class="mk-card p-3">
+            <h5 class="fw-bold"><%= b.judul %></h5>
+            <p class="small text-muted"><%= new Date(b.tanggal).toLocaleDateString('id-ID') %></p>
+            <p><%= b.isi.substring(0, 80) %>...</p>
+            <a href="/berita/<%= b.id %>" class="btn-outline-primary btn-sm">Baca</a>
           </div>
         </div>
       <% }) %>

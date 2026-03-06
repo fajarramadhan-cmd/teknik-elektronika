@@ -1,103 +1,366 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mendapatkan URL gambar dari Google Drive (sama seperti halaman lain)
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100-h100`;
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100-h100`;
+    return url;
+  };
+%>
+
 <style>
-  .magang-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Page Header */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-header .btn-back {
+    background: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 1.8rem;
+    font-weight: 600;
+    color: var(--primary-start);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+  .page-header .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* Tabel Container */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+    padding: 0;
+  }
+  .table-responsive {
+    margin: 0;
+  }
+  .magang-table {
+    margin-bottom: 0;
+  }
+  .magang-table thead th {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     border: none;
+    padding: 1.2rem 1rem;
+    white-space: nowrap;
+    text-align: center;
   }
-  .magang-table td {
+  .magang-table tbody td {
     vertical-align: middle;
-    padding: 1rem 0.75rem;
+    padding: 1.2rem 1rem;
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .magang-table tbody tr:hover td {
+    background-color: #f8f9fa;
   }
+
+  /* Avatar dan Foto */
   .avatar-circle {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.2rem;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(33,147,176,0.3);
+    flex-shrink: 0;
+  }
+  .foto-mahasiswa {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+
+  /* Info Mahasiswa */
+  .mahasiswa-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .mahasiswa-info .nama {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+  }
+  .mahasiswa-info .nim {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  /* Badge statistik */
+  .badge-stat {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 70px;
+    text-align: center;
+  }
+  .badge-total {
+    background: var(--primary-light);
+    color: var(--primary-start);
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .badge-zero {
+    background: #e9ecef;
+    color: #6c757d;
+  }
+
+  /* Tombol aksi */
+  .btn-action {
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+  }
+  .btn-view {
+    background: transparent;
+    border-color: var(--primary-start);
+    color: var(--primary-start);
+  }
+  .btn-view:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(33,147,176,0.3);
+  }
+
+  /* Alert styling */
+  .custom-alert {
+    border-radius: 1rem;
+    border-left: 4px solid var(--primary-start);
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    color: var(--primary-dark);
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 4rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1rem;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .page-header .btn-back {
+      width: 100%;
+      justify-content: center;
+    }
+    .magang-table thead {
+      display: none;
+    }
+    .magang-table, .magang-table tbody, .magang-table tr, .magang-table td {
+      display: block;
+      width: 100%;
+    }
+    .magang-table tr {
+      margin-bottom: 1rem;
+      border: 1px solid #e9ecef;
+      border-radius: 1rem;
+      padding: 1rem;
+      background: white;
+    }
+    .magang-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed #e9ecef;
+      text-align: left;
+    }
+    .magang-table td:last-child {
+      border-bottom: none;
+    }
+    .magang-table td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--primary-start);
+      width: 40%;
+    }
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Monitoring Magang</h2>
-    <a href="/dosen/dashboard" class="btn btn-outline-primary">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+  <!-- Page Header dengan gradien -->
+  <div class="page-header">
+    <h2>
+      <i class="bi bi-journal-bookmark-fill"></i> Monitoring Magang
+    </h2>
+    <a href="/dosen/dashboard" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
   <% if (message) { %>
-    <div class="alert alert-info"><%= message %></div>
+    <div class="custom-alert">
+      <i class="bi bi-info-circle-fill me-2" style="color: var(--primary-start);"></i>
+      <%= message %>
+    </div>
   <% } %>
 
-  <div class="table-responsive">
-    <table class="table magang-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Mahasiswa</th>
-          <th>Total Logbook</th>
-          <th>Pending</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (mahasiswaList.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table magang-table">
+        <thead>
           <tr>
-            <td colspan="5" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Tidak ada mahasiswa yang terdaftar di PDK yang Anda ampu.</p>
-            </td>
+            <th style="text-align: center;">No</th>
+            <th>Mahasiswa</th>
+            <th style="text-align: center;">Total Logbook</th>
+            <th style="text-align: center;">Pending</th>
+            <th style="text-align: center;">Aksi</th>
           </tr>
-        <% } %>
-        <% mahasiswaList.forEach((m, index) => { %>
-          <tr>
-            <td class="text-center"><%= index + 1 %></td>
-            <td>
-              <div class="d-flex align-items-center">
-                <% if (m.foto) { %>
-                  <img src="<%= m.foto %>" alt="foto" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                <% } else { %>
-                  <div class="avatar-circle me-2"><%= (m.nama || '?').charAt(0).toUpperCase() %></div>
-                <% } %>
-                <div>
-                  <strong><%= m.nama %></strong><br>
-                  <small class="text-muted"><%= m.nim || '-' %></small>
+        </thead>
+        <tbody>
+          <% if (mahasiswaList.length === 0) { %>
+            <tr>
+              <td colspan="5" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <p>Tidak ada mahasiswa yang terdaftar di PDK yang Anda ampu.</p>
                 </div>
-              </div>
-            </td>
-            <td class="text-center"><%= m.totalLogbook %></td>
-            <td class="text-center">
-              <% if (m.pendingCount > 0) { %>
-                <span class="badge bg-warning text-dark"><%= m.pendingCount %></span>
-              <% } else { %>
-                <span class="badge bg-secondary">0</span>
-              <% } %>
-            </td>
-            <td>
-              <a href="/dosen/magang/<%= m.id %>" class="btn btn-sm btn-outline-info">
-                <i class="bi bi-eye"></i> Lihat Logbook
-              </a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+              </td>
+            </tr>
+          <% } else { %>
+            <% mahasiswaList.forEach((m, index) => { 
+              const fotoUrl = m.foto ? getImageUrl(m.foto) : null;
+            %>
+            <tr>
+              <td data-label="No" style="text-align: center; font-weight: 600;"><%= index + 1 %></td>
+              <td data-label="Mahasiswa">
+                <div class="mahasiswa-info">
+                  <% if (fotoUrl) { %>
+                    <img src="<%= fotoUrl %>" alt="foto <%= m.nama %>" class="foto-mahasiswa" 
+                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(m.nama) %>&background=2193b0&color=fff&size=45';">
+                  <% } else { %>
+                    <div class="avatar-circle"><%= (m.nama || '?').charAt(0).toUpperCase() %></div>
+                  <% } %>
+                  <div>
+                    <div class="nama"><%= m.nama %></div>
+                    <div class="nim"><%= m.nim || '-' %></div>
+                  </div>
+                </div>
+              </td>
+              <td data-label="Total Logbook" style="text-align: center;">
+                <span class="badge-stat badge-total"><%= m.totalLogbook %></span>
+              </td>
+              <td data-label="Pending" style="text-align: center;">
+                <% if (m.pendingCount > 0) { %>
+                  <span class="badge-stat badge-pending"><%= m.pendingCount %></span>
+                <% } else { %>
+                  <span class="badge-stat badge-zero">0</span>
+                <% } %>
+              </td>
+              <td data-label="Aksi" style="text-align: center;">
+                <a href="/dosen/magang/<%= m.id %>" class="btn-action btn-view">
+                  <i class="bi bi-eye"></i> Lihat Logbook
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

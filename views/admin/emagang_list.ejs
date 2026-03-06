@@ -1,206 +1,482 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+
+  // Menghilangkan duplikat mahasiswa untuk dropdown filter berdasarkan ID
+  const uniqueMahasiswa = [];
+  const seenIds = new Set();
+  if (mahasiswaList && mahasiswaList.length) {
+    mahasiswaList.forEach(m => {
+      if (!seenIds.has(m.id)) {
+        seenIds.add(m.id);
+        uniqueMahasiswa.push(m);
+      }
+    });
+  }
+%>
+
 <style>
-  .emagang-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+    --secondary-light: #f8fafc;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --shadow-sm: 0 5px 15px rgba(0,0,0,0.05);
+    --shadow-hover: 0 15px 30px rgba(33,147,176,0.15);
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
   }
-  .emagang-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== FILTER CARD ===== */
+  .filter-card {
+    border-radius: 1.2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    box-shadow: var(--shadow-sm);
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s;
+  }
+  .filter-card:hover {
+    box-shadow: var(--shadow-hover);
+  }
+  .filter-card .form-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .filter-card .form-select,
+  .filter-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .filter-card .form-select:focus,
+  .filter-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
     color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-reset:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== TOMBOL EXPORT/PRINT ===== */
+  .btn-export {
+    background: #28a745;
+    border: none;
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(40,167,69,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-export:hover {
+    background: #218838;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(40,167,69,0.3);
+  }
+  .btn-print {
+    background: #17a2b8;
+    border: none;
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(23,162,184,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-print:hover {
+    background: #138496;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(23,162,184,0.3);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s;
+  }
+  .table-container:hover {
+    box-shadow: var(--shadow-hover);
+  }
+  .emagang-table {
+    margin-bottom: 0;
+  }
+  .emagang-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    border: none;
-  }
-  .emagang-table td {
-    vertical-align: middle;
+    border-bottom: 2px solid var(--primary-start);
     padding: 1rem 0.75rem;
+    white-space: nowrap;
   }
-  .btn-action {
-    margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
+  .emagang-table tbody tr {
     transition: all 0.2s;
   }
-  .btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  .emagang-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
   }
-  .filter-card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+  .emagang-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  /* Kolom aksi agar tidak terpotong */
+  .emagang-table td:last-child {
+    white-space: nowrap;
+    width: 1%;
   }
+
+  /* ===== AVATAR ===== */
   .avatar-circle {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 1.2rem;
+    box-shadow: 0 5px 10px rgba(33,147,176,0.2);
+    transition: transform 0.2s;
+  }
+  .avatar-circle:hover {
+    transform: scale(1.05);
+  }
+
+  /* ===== BADGE MATA KULIAH ===== */
+  .mk-badge {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    display: inline-block;
+    transition: all 0.2s;
+  }
+  .mk-badge:hover {
+    background: var(--primary-start);
+    color: white;
+  }
+
+  /* ===== TOMBOL GAMBAR & DETAIL ===== */
+  .btn-gallery {
+    background: transparent;
+    border: 1px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-gallery:hover {
+    background: var(--primary-start);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="emagang-header">
-    <h2><i class="bi bi-journal-bookmark-fill me-2"></i>E-Magang - Logbook Mahasiswa</h2>
-    <p class="mb-0 opacity-75">Pantau aktivitas magang mahasiswa</p>
+  <!-- Header dengan gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-journal-bookmark-fill"></i> E-Magang - Logbook Mahasiswa</h2>
+      <p class="mb-0">Pantau aktivitas magang mahasiswa beserta dokumentasi</p>
+    </div>
   </div>
 
   <!-- Filter Card -->
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
       <div class="col-md-2">
-        <label for="mahasiswaId" class="form-label fw-semibold">Mahasiswa</label>
+        <label for="mahasiswaId" class="form-label"><i class="bi bi-person-fill"></i> Mahasiswa</label>
         <select class="form-select" id="mahasiswaId" name="mahasiswaId">
           <option value="">Semua</option>
-          <% mahasiswaList.forEach(m => { %>
-            <option value="<%= m.id %>" <%= m.id === filters.mahasiswaId ? 'selected' : '' %>>
+          <% uniqueMahasiswa.forEach(m => { %>
+            <option value="<%= m.id %>" <%= filters && filters.mahasiswaId == m.id ? 'selected' : '' %>>
               <%= m.nim %> - <%= m.nama %>
             </option>
           <% }) %>
         </select>
       </div>
       <div class="col-md-2">
-        <label for="courseId" class="form-label fw-semibold">Mata Kuliah</label>
+        <label for="courseId" class="form-label"><i class="bi bi-book-fill"></i> Mata Kuliah</label>
         <select class="form-select" id="courseId" name="courseId">
           <option value="">Semua PDK</option>
-          <% 
-            // Asumsikan Anda mengirim daftar semua MK PDK dari route
-            pdkCourses.forEach(c => { 
-          %>
-            <option value="<%= c.id %>" <%= c.id === filters.courseId ? 'selected' : '' %>><%= c.kode %></option>
+          <% pdkCourses.forEach(c => { %>
+            <option value="<%= c.id %>" <%= filters && filters.courseId == c.id ? 'selected' : '' %>><%= c.kode %></option>
           <% }) %>
         </select>
       </div>
       <div class="col-md-2">
-        <label for="semester" class="form-label fw-semibold">Semester</label>
-        <input type="text" class="form-control" id="semester" name="semester" placeholder="Ganjil 2025/2026" value="<%= filters.semester || '' %>">
+        <label for="semester" class="form-label"><i class="bi bi-calendar3"></i> Semester</label>
+        <input type="text" class="form-control" id="semester" name="semester" placeholder="Ganjil 2025/2026" value="<%= filters ? filters.semester || '' : '' %>">
       </div>
       <div class="col-md-2">
-        <label for="startDate" class="form-label fw-semibold">Tanggal Mulai</label>
-        <input type="date" class="form-control" id="startDate" name="startDate" value="<%= filters.startDate || '' %>">
+        <label for="startDate" class="form-label"><i class="bi bi-calendar-range"></i> Tanggal Mulai</label>
+        <input type="date" class="form-control" id="startDate" name="startDate" value="<%= filters ? filters.startDate || '' : '' %>">
       </div>
       <div class="col-md-2">
-        <label for="endDate" class="form-label fw-semibold">Tanggal Akhir</label>
-        <input type="date" class="form-control" id="endDate" name="endDate" value="<%= filters.endDate || '' %>">
+        <label for="endDate" class="form-label"><i class="bi bi-calendar-range"></i> Tanggal Akhir</label>
+        <input type="date" class="form-control" id="endDate" name="endDate" value="<%= filters ? filters.endDate || '' : '' %>">
       </div>
       <div class="col-md-2">
-        <label for="search" class="form-label fw-semibold">Cari Kegiatan</label>
-        <input type="text" class="form-control" id="search" name="search" placeholder="Kata kunci..." value="<%= filters.search || '' %>">
+        <label for="search" class="form-label"><i class="bi bi-search"></i> Cari Kegiatan</label>
+        <input type="text" class="form-control" id="search" name="search" placeholder="Kata kunci..." value="<%= filters ? filters.search || '' : '' %>">
       </div>
       <div class="col-12 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Filter</button>
-        <a href="/admin/emagang" class="btn btn-outline-secondary">Reset</a>
+        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Terapkan Filter</button>
+        <a href="/admin/emagang" class="btn-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
       </div>
     </form>
   </div>
 
-  <!-- Export Button -->
-  <div class="mb-3 text-end">
-    <a href="/admin/emagang/print?<%= new URLSearchParams(filters).toString() %>" class="btn btn-info me-2" target="_blank">
-      <i class="bi bi-printer me-2"></i>Print
+  <!-- Export & Print -->
+  <div class="d-flex justify-content-end gap-2 mb-3">
+    <a href="/admin/emagang/print?<%= new URLSearchParams(filters || {}).toString() %>" class="btn-print" target="_blank">
+      <i class="bi bi-printer"></i> Print
     </a>
-    <a href="/admin/emagang/export?<%= new URLSearchParams(filters).toString() %>" class="btn btn-success" target="_blank">
-      <i class="bi bi-file-earmark-pdf me-2"></i>Export
+    <a href="/admin/emagang/export?<%= new URLSearchParams(filters || {}).toString() %>" class="btn-export" target="_blank">
+      <i class="bi bi-file-earmark-pdf"></i> Export PDF
     </a>
   </div>
-  
+
+  <!-- Info jumlah -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <p class="mb-0 fw-semibold"><i class="bi bi-people-fill me-1" style="color: var(--primary-start);"></i> Menampilkan <strong><%= logbookList.length %></strong> mahasiswa dengan logbook terbaru</p>
+    </div>
+
   <!-- Tabel Logbook -->
-  <div class="table-responsive">
-    <table class="table emagang-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Mahasiswa</th>
-          <th>MK / Semester</th>
-          <th>Tanggal</th>
-          <th>Kegiatan</th>
-          <th>Gambar</th>
-          <th>Dibuat</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (logbookList.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table emagang-table">
+        <thead>
           <tr>
-            <td colspan="8" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada data logbook.</p>
-            </td>
+            <th>No</th>
+            <th>Mahasiswa</th>
+            <th>MK / Semester</th>
+            <th>Tanggal</th>
+            <th>Kegiatan</th>
+            <th>Gambar</th>
+            <th>Dibuat</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% logbookList.forEach((item, index) => { %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td>
-              <div class="d-flex align-items-center">
-                <% if (item.mahasiswa?.foto) { %>
-                  <img src="<%= item.mahasiswa.foto %>" alt="foto" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                <% } else { %>
-                  <div class="avatar-circle me-2"><%= (item.mahasiswa?.nama || '?').charAt(0).toUpperCase() %></div>
-                <% } %>
-                <div>
-                  <strong><%= item.mahasiswa?.nama || 'Unknown' %></strong><br>
-                  <small class="text-muted"><%= item.mahasiswa?.nim || '-' %></small>
+        </thead>
+        <tbody>
+          <% if (logbookList.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Data</h4>
+                  <p class="text-muted">Tidak ada entri logbook yang ditemukan.</p>
                 </div>
-              </div>
-            </td>
-            <td>
-              <%= item.semester || '-' %><br>
-              <small class="text-muted"><%= item.courseName || '-' %></small>
-            </td>
-            <td><%= item.tanggalFormatted %></td>
-            <td><%= item.kegiatan %></td>
-            <td>
-              <% if (item.imageUrls && item.imageUrls.length > 0) { %>
-                <button class="btn btn-sm btn-info" onclick="lihatGambar(<%= JSON.stringify(item.imageUrls) %>)">
-                  <i class="bi bi-images"></i> <%= item.imageUrls.length %>
-                </button>
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td><small class="text-muted"><%= item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID') : '-' %></small></td>
-            <td>
-              <a href="/admin/emagang/mahasiswa/<%= item.mahasiswa?.id %>" class="btn btn-sm btn-outline-info btn-action">
-                <i class="bi bi-eye"></i> Detail
-              </a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+              </td>
+            </tr>
+          <% } else { %>
+            <% logbookList.forEach((item, index) => { %>
+              <tr>
+                <td class="fw-bold"><%= index + 1 %></td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <% if (item.mahasiswa?.foto) { 
+                      const fileId = getFileIdFromUrl(item.mahasiswa.foto);
+                      if (fileId) { %>
+                        <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w100" 
+                             alt="foto" 
+                             class="rounded-circle me-2" 
+                             style="width: 40px; height: 40px; object-fit: cover; border: 2px solid var(--primary-start);"
+                             onerror="this.onerror=null; this.src='<%= item.mahasiswa.foto %>'; this.onerror=null;">
+                      <% } else { %>
+                        <img src="<%= item.mahasiswa.foto %>" 
+                             alt="foto" 
+                             class="rounded-circle me-2" 
+                             style="width: 40px; height: 40px; object-fit: cover; border: 2px solid var(--primary-start);"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/40?text=<%= (item.mahasiswa?.nama || '?').charAt(0).toUpperCase() %>';">
+                      <% } %>
+                    <% } else { %>
+                      <div class="avatar-circle me-2"><%= (item.mahasiswa?.nama || '?').charAt(0).toUpperCase() %></div>
+                    <% } %>
+                    <div>
+                      <strong><%= item.mahasiswa?.nama || 'Unknown' %></strong><br>
+                      <small class="text-muted"><%= item.mahasiswa?.nim || '-' %></small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="fw-semibold"><%= item.semester || '-' %></span><br>
+                  <span class="mk-badge"><%= item.courseName || '-' %></span>
+                </td>
+                <td><%= item.tanggalFormatted || '-' %></td>
+                <td><%= item.kegiatan && item.kegiatan.length > 50 ? item.kegiatan.substring(0,50)+'...' : item.kegiatan %></td>
+                <td>
+                  <% if (item.imageUrls && item.imageUrls.length > 0) { %>
+                    <button class="btn-gallery" onclick="lihatGambar(<%= JSON.stringify(item.imageUrls) %>)">
+                      <i class="bi bi-images"></i> <%= item.imageUrls.length %>
+                    </button>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td><small class="text-muted"><%= item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '-' %></small></td>
+                <td>
+                  <a href="/admin/emagang/mahasiswa/<%= item.mahasiswa?.id %>" class="btn-gallery">
+                    <i class="bi bi-eye"></i> Detail
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<!-- Lightbox Modal (sama seperti di mahasiswa) -->
+<!-- Lightbox Modal dengan penanganan error gambar -->
 <div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Dokumentasi</h5>
+        <h5 class="modal-title"><i class="bi bi-images"></i> Dokumentasi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body p-0">
         <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
           <div class="carousel-inner" id="galleryCarouselInner"></div>
           <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
@@ -221,16 +497,42 @@
   function lihatGambar(imageUrls) {
     const inner = document.getElementById('galleryCarouselInner');
     inner.innerHTML = '';
+    if (!imageUrls || imageUrls.length === 0) {
+      alert('Tidak ada gambar untuk ditampilkan.');
+      return;
+    }
     imageUrls.forEach((url, index) => {
+      // Coba gunakan thumbnail Google Drive jika URL-nya dari drive
+      let imgUrl = url;
+      // Jika URL mengandung 'drive.google.com', ubah ke thumbnail
+      if (url.includes('drive.google.com')) {
+        const fileId = getFileIdFromUrl(url);
+        if (fileId) {
+          imgUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+        }
+      }
       const activeClass = index === 0 ? 'active' : '';
       const item = `
         <div class="carousel-item ${activeClass}">
-          <img src="${url}" class="d-block w-100" alt="Dokumentasi">
+          <img src="${imgUrl}" 
+               class="d-block w-100" 
+               alt="Dokumentasi"
+               onerror="this.onerror=null; this.src='https://via.placeholder.com/800x600?text=Gambar+Tidak+Tersedia';">
         </div>
       `;
       inner.innerHTML += item;
     });
     new bootstrap.Modal(document.getElementById('galleryModal')).show();
+  }
+
+  // Fungsi untuk mengekstrak fileId dari URL Google Drive
+  function getFileIdFromUrl(url) {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
   }
 </script>
 

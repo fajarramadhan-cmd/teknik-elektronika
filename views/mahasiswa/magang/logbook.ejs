@@ -1,3 +1,4 @@
+```html
 <%- include('../../partials/header') %>
 
 <style>
@@ -56,6 +57,41 @@
   .magang-header .btn-light:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  /* ===== PANDUAN CARD ===== */
+  .panduan-card {
+    background: white;
+    border-left: 4px solid var(--primary-start);
+    border-radius: 1.2rem;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .panduan-icon {
+    font-size: 2rem;
+    color: var(--primary-start);
+    flex-shrink: 0;
+  }
+  .panduan-text strong {
+    color: var(--primary-dark);
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  .panduan-text ul {
+    margin-bottom: 0;
+    padding-left: 1.2rem;
+    color: #2c3e50;
+  }
+  .panduan-text li {
+    margin-bottom: 0.3rem;
+  }
+  .panduan-text li:last-child {
+    margin-bottom: 0;
   }
 
   /* ===== TABEL ===== */
@@ -293,6 +329,20 @@
     </button>
   </div>
 
+  <!-- PANDUAN PENGISIAN LOGBOOK -->
+  <div class="panduan-card">
+    <div class="panduan-icon">
+      <i class="bi bi-info-circle-fill"></i>
+    </div>
+    <div class="panduan-text">
+      <strong>Panduan Pengisian Logbook:</strong>
+      <ul>
+        <li>Jika kegiatan magang sama setiap hari, logbook cukup diisi 1x dalam seminggu dengan durasi total (misal: 48 jam).</li>
+        <li>Jika ada aktivitas magang yang berbeda, logbook boleh diisi berkali-kali dalam satu minggu sesuai aktivitas.</li>
+      </ul>
+    </div>
+  </div>
+
   <!-- TABEL LOGBOOK DENGAN CONTAINER -->
   <div class="table-container">
     <div class="table-responsive">
@@ -372,7 +422,7 @@
     </div>
   </div>
 
-<!-- MODAL TAMBAH LOGBOOK -->
+<!-- MODAL TAMBAH LOGBOOK (dengan semester tetap) -->
 <div class="modal fade" id="addLogbookModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -394,13 +444,7 @@
             </div>
             <div class="col-md-6">
               <label for="semester" class="form-label">Semester</label>
-              <select class="form-select" id="semester" name="semester" required>
-                <option value="">Pilih Semester</option>
-                <option value="Genap 2025/2026">Genap 2025/2026</option>
-                <option value="Ganjil 2025/2026">Ganjil 2025/2026</option>
-                <option value="Genap 2026/2027">Genap 2026/2027</option>
-                <option value="Ganjil 2026/2027">Ganjil 2026/2027</option>
-              </select>
+              <input type="text" class="form-control" id="semester" name="semester" value="Genap 2025/2026" readonly>
             </div>
             <div class="col-md-6">
               <label for="tanggal" class="form-label">Tanggal Kegiatan</label>
@@ -545,3 +589,4 @@
 </script>
 
 <%- include('../../partials/footer') %>
+```

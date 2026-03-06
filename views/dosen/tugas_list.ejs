@@ -1,97 +1,296 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk memformat tanggal (jika diperlukan)
+  const formatDate = (date) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('id-ID', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+%>
+
 <style>
-  .tugas-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Page Header */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-header .btn-create {
+    background: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 1.8rem;
+    font-weight: 600;
+    color: var(--primary-start);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+  .page-header .btn-create:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* Tabel Container */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+    padding: 0;
+  }
+  .table-responsive {
+    margin: 0;
+  }
+  .tugas-table {
+    margin-bottom: 0;
+  }
+  .tugas-table thead th {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     border: none;
+    padding: 1.2rem 1rem;
+    white-space: nowrap;
   }
-  .tugas-table td {
+  .tugas-table tbody td {
     vertical-align: middle;
-    padding: 1rem 0.75rem;
+    padding: 1.2rem 1rem;
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
   }
+  .tugas-table tbody tr:hover td {
+    background-color: #f8f9fa;
+  }
+
+  /* Badge Tipe Tugas */
+  .badge-tipe {
+    background: var(--primary-light);
+    color: var(--primary-start);
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid rgba(33,147,176,0.2);
+  }
+  .badge-tipe i {
+    font-size: 0.9rem;
+  }
+
+  /* Tombol Aksi */
   .btn-action {
     margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    padding: 0.4rem 1rem;
     font-size: 0.85rem;
     transition: all 0.2s;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1.5px solid transparent;
   }
-  .btn-action:hover {
+  .btn-action-outline {
+    background: transparent;
+    border-color: var(--primary-start);
+    color: var(--primary-start);
+  }
+  .btn-action-outline:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 15px rgba(33,147,176,0.3);
   }
-  .filter-card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+  .btn-action-info {
+    background: transparent;
+    border-color: #17a2b8;
+    color: #17a2b8;
   }
-  .table-responsive {
+  .btn-action-info:hover {
+    background: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(23,162,184,0.3);
+  }
+
+  /* Deadline styling */
+  .deadline {
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  .deadline i {
+    margin-right: 0.3rem;
+    color: var(--primary-start);
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 4rem;
+    text-align: center;
+    background: #f8f9fa;
     border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .page-header .btn-create {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Daftar Tugas</h2>
-    <a href="/dosen/tugas/create" class="btn btn-primary">
-      <i class="bi bi-plus-circle me-2"></i>Buat Tugas Baru
+  <!-- Page Header dengan gradien -->
+  <div class="page-header">
+    <h2>
+      <i class="bi bi-list-task"></i> Daftar Tugas
+    </h2>
+    <a href="/dosen/tugas/create" class="btn-create">
+      <i class="bi bi-plus-circle"></i> Buat Tugas Baru
     </a>
   </div>
 
   <!-- Tabel Tugas -->
-  <div class="table-responsive">
-    <table class="table tugas-table">
-      <thead>
-        <tr>
-          <th>Judul</th>
-          <th>Mata Kuliah</th>
-          <th>Deadline</th>
-          <th>Tipe</th>
-          <th>File</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (tugasList.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table tugas-table">
+        <thead>
           <tr>
-            <td colspan="6" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada tugas yang dibuat.</p>
-            </td>
+            <th>Judul</th>
+            <th>Mata Kuliah</th>
+            <th>Deadline</th>
+            <th>Tipe</th>
+            <th>File</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% tugasList.forEach(t => { %>
-          <tr>
-            <td><strong><%= t.judul %></strong></td>
-            <td><%= t.mkKode || '-' %></td>
-            <td><%= new Date(t.deadline).toLocaleString('id-ID') %></td>
-            <td><span class="badge bg-info"><%= t.tipe %></span></td>
-            <td>
-              <% if (t.fileUrl) { %>
-                <a href="<%= t.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-info btn-action">Lihat</a>
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td>
-              <a href="/dosen/tugas/<%= t.id %>" class="btn btn-sm btn-outline-primary btn-action">
-                <i class="bi bi-eye"></i> Detail
-              </a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (tugasList.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <p>Belum ada tugas yang dibuat.</p>
+                  <a href="/dosen/tugas/create" class="btn-create" style="display: inline-block; margin-top: 1rem;">
+                    <i class="bi bi-plus-circle"></i> Buat Tugas Sekarang
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% tugasList.forEach(t => { %>
+              <tr>
+                <td>
+                  <strong style="color: #1e293b;"><%= t.judul %></strong>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark px-3 py-2">
+                    <%= t.mkKode || '-' %>
+                  </span>
+                </td>
+                <td>
+                  <span class="deadline">
+                    <i class="bi bi-calendar3"></i> <%= formatDate(t.deadline) %>
+                  </span>
+                </td>
+                <td>
+                  <span class="badge-tipe">
+                    <i class="bi bi-tag"></i> <%= t.tipe || '-' %>
+                  </span>
+                </td>
+                <td>
+                  <% if (t.fileUrl) { %>
+                    <a href="<%= t.fileUrl %>" target="_blank" class="btn-action btn-action-info">
+                      <i class="bi bi-file-earmark-pdf"></i> Lihat
+                    </a>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <a href="/dosen/tugas/<%= t.id %>" class="btn-action btn-action-outline">
+                    <i class="bi bi-eye"></i> Detail
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

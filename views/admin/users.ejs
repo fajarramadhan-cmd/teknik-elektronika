@@ -1,109 +1,423 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive (untuk konsistensi)
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .user-card {
-    border: none;
-    border-radius: 1rem;
-    transition: transform 0.2s, box-shadow 0.2s;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
     overflow: hidden;
   }
-  .user-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(33,147,176,0.15) !important;
-  }
-  .avatar-circle {
-    width: 60px;
-    height: 60px;
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
     border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== TOMBOL GRADIEN ===== */
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+
+  /* ===== TAB NAVIGASI ===== */
+  .nav-tabs-custom {
+    border-bottom: 2px solid var(--primary-light);
+    margin-bottom: 2rem;
+  }
+  .nav-tabs-custom .nav-link {
+    border: none;
+    color: #64748b;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px 50px 0 0;
+    transition: all 0.2s;
+    margin-right: 0.3rem;
+  }
+  .nav-tabs-custom .nav-link:hover {
+    color: var(--primary-dark);
+    background: var(--primary-light);
+  }
+  .nav-tabs-custom .nav-link.active {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.3);
+  }
+
+  /* ===== USER CARD ===== */
+  .user-card {
+    border: none;
+    border-radius: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    height: 100%;
+    position: relative;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .user-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+    border-color: transparent;
+  }
+  .user-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .user-card:hover::after {
+    transform: scaleX(1);
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  /* ===== AVATAR ===== */
+  .avatar-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 600;
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    transition: all 0.3s;
   }
+  .user-card:hover .avatar-circle {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(33,147,176,0.4);
+  }
+
+  /* ===== BADGE ROLE ===== */
   .badge-role {
-    padding: 0.35rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1.2rem;
     border-radius: 50px;
-    font-weight: 500;
-    font-size: 0.75rem;
+    font-weight: 600;
+    font-size: 0.8rem;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
   }
-  .badge-admin { background: #dc3545; color: white; }
-  .badge-mahasiswa { background: #28a745; color: white; }
-  .badge-dosen { background: #ffc107; color: #212529; }
+  .badge-admin {
+    background: linear-gradient(135deg, #dc3545, #ff6b6b);
+    color: white;
+    box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+  }
+  .badge-mahasiswa {
+    background: linear-gradient(135deg, #28a745, #5cb85c);
+    color: white;
+    box-shadow: 0 4px 10px rgba(40,167,69,0.3);
+  }
+  .badge-dosen {
+    background: linear-gradient(135deg, #ffc107, #ffdb6e);
+    color: #212529;
+    box-shadow: 0 4px 10px rgba(255,193,7,0.3);
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    color: white;
+    margin: 0 2px;
+  }
+  .btn-icon-sm i {
+    font-size: 1rem;
+  }
+  .btn-edit {
+    background: #ffc107;
+  }
+  .btn-edit:hover {
+    background: #e0a800;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(255,193,7,0.3);
+  }
+  .btn-reset {
+    background: #6c757d;
+  }
+  .btn-reset:hover {
+    background: #5a6268;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(108,117,125,0.3);
+  }
+  .btn-delete {
+    background: #dc3545;
+  }
+  .btn-delete:hover {
+    background: #c82333;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(220,53,69,0.3);
+  }
+
+  /* ===== INFO TEXT ===== */
+  .info-text {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .info-text i {
+    color: var(--primary-start);
+    width: 20px;
+    font-size: 1rem;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+    padding: 1.5rem;
+  }
+  .modal-header .btn-close {
+    background: rgba(255,255,255,0.8);
+    opacity: 0.8;
+    transition: all 0.2s;
+  }
+  .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+  }
+  .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .modal-body {
+    padding: 2rem;
+  }
+  .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.5rem;
+  }
+  .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+  .form-control, .form-select {
+    border-radius: 1rem;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Kelola Pengguna</h2>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-      <i class="bi bi-plus-circle me-2"></i>Tambah Pengguna
+  <!-- Header Gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-people-fill me-2"></i>Kelola Pengguna</h2>
+      <p class="mb-0">Tambah, edit, reset password, dan hapus pengguna sistem</p>
+    </div>
+    <button class="btn-light btn" data-bs-toggle="modal" data-bs-target="#addUserModal" style="background:white; border-radius:50px; padding:0.6rem 1.5rem; font-weight:500;">
+      <i class="bi bi-plus-circle me-2" style="color:var(--primary-start);"></i>Tambah Pengguna
     </button>
   </div>
 
   <!-- Tab navigasi untuk filter peran -->
-  <ul class="nav nav-tabs mb-4">
+  <ul class="nav nav-tabs-custom">
     <li class="nav-item">
-      <a class="nav-link <%= !role || role === 'all' ? 'active' : '' %>" href="?role=all">Semua</a>
+      <a class="nav-link <%= !role || role === 'all' ? 'active' : '' %>" href="?role=all"><i class="bi bi-grid-3x3-gap-fill me-1"></i>Semua</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link <%= role === 'admin' ? 'active' : '' %>" href="?role=admin">Admin</a>
+      <a class="nav-link <%= role === 'admin' ? 'active' : '' %>" href="?role=admin"><i class="bi bi-shield-lock-fill me-1"></i>Admin</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link <%= role === 'mahasiswa' ? 'active' : '' %>" href="?role=mahasiswa">Mahasiswa</a>
+      <a class="nav-link <%= role === 'mahasiswa' ? 'active' : '' %>" href="?role=mahasiswa"><i class="bi bi-mortarboard-fill me-1"></i>Mahasiswa</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link <%= role === 'dosen' ? 'active' : '' %>" href="?role=dosen">Dosen</a>
+      <a class="nav-link <%= role === 'dosen' ? 'active' : '' %>" href="?role=dosen"><i class="bi bi-person-badge-fill me-1"></i>Dosen</a>
     </li>
   </ul>
+
+  <!-- Info jumlah ditampilkan -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0">Menampilkan <strong><%= users.length %></strong> pengguna</p>
+  </div>
 
   <!-- Daftar Pengguna (tampilan card) -->
   <div class="row g-4">
     <% if (users.length === 0) { %>
       <div class="col-12">
-        <div class="alert alert-info">Tidak ada pengguna untuk ditampilkan.</div>
+        <div class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <h4>Belum Ada Pengguna</h4>
+          <p class="text-muted">Silakan tambahkan pengguna pertama dengan klik tombol "Tambah Pengguna".</p>
+        </div>
       </div>
     <% } %>
     <% users.forEach(u => { %>
-      <div class="col-md-4">
-        <div class="card user-card h-100">
+      <div class="col-lg-4 col-md-6">
+        <div class="user-card">
           <div class="card-body">
             <div class="d-flex align-items-center mb-3">
-              <div class="avatar-circle me-3">
-                <%= u.nama ? u.nama.charAt(0).toUpperCase() : '?' %>
-              </div>
+              <% if (u.foto) { 
+                const fileId = getFileIdFromUrl(u.foto);
+                if (fileId) { %>
+                  <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
+                       alt="foto" 
+                       class="rounded-circle me-3" 
+                       style="width: 70px; height: 70px; object-fit: cover; border: 3px solid var(--primary-start);"
+                       onerror="this.onerror=null; this.src='<%= u.foto %>';">
+                <% } else { %>
+                  <img src="<%= u.foto %>" 
+                       alt="foto" 
+                       class="rounded-circle me-3" 
+                       style="width: 70px; height: 70px; object-fit: cover; border: 3px solid var(--primary-start);"
+                       onerror="this.onerror=null; this.src='https://via.placeholder.com/70?text=<%= (u.nama || '?').charAt(0).toUpperCase() %>';">
+                <% } %>
+              <% } else { %>
+                <div class="avatar-circle me-3">
+                  <%= u.nama ? u.nama.charAt(0).toUpperCase() : '?' %>
+                </div>
+              <% } %>
               <div>
-                <h5 class="card-title mb-1"><%= u.nama || 'Belum diisi' %></h5>
-                <p class="text-muted small mb-0">
-                  <i class="bi bi-envelope"></i> <%= u.email %>
-                </p>
-                <p class="text-muted small mb-0">
-                  <i class="bi bi-hash"></i> <%= u.nim || (u.nip || '-') %>
-                </p>
+                <h5 class="card-title mb-1 fw-bold"><%= u.nama || 'Belum diisi' %></h5>
+                <span class="badge-role 
+                  <% if (u.role === 'admin') { %>badge-admin<% } 
+                  else if (u.role === 'mahasiswa') { %>badge-mahasiswa<% } 
+                  else if (u.role === 'dosen') { %>badge-dosen<% } %>">
+                  <i class="bi 
+                    <% if (u.role === 'admin') { %>bi-shield-lock-fill<% } 
+                    else if (u.role === 'mahasiswa') { %>bi-mortarboard-fill<% } 
+                    else if (u.role === 'dosen') { %>bi-person-badge-fill<% } %>">
+                  </i> <%= u.role || 'unknown' %>
+                </span>
               </div>
             </div>
-            <div class="mb-2">
-              <span class="badge-role 
-                <% if (u.role === 'admin') { %>badge-admin<% } 
-                else if (u.role === 'mahasiswa') { %>badge-mahasiswa<% } 
-                else if (u.role === 'dosen') { %>badge-dosen<% } %>">
-                <%= u.role || 'unknown' %>
-              </span>
+
+            <div class="info-text">
+              <i class="bi bi-envelope-fill"></i> <%= u.email %>
             </div>
-            <p class="card-text small text-muted">
-              Terdaftar: <%= u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID') : '-' %>
-            </p>
-            <div class="d-flex justify-content-between mt-3">
-              <button class="btn btn-sm btn-outline-primary" onclick="editUser('<%= u.id %>')">
-                <i class="bi bi-pencil"></i> Edit
+            <div class="info-text">
+              <i class="bi bi-hash"></i> <%= u.nim || u.nip || '-' %>
+            </div>
+            <div class="info-text">
+              <i class="bi bi-calendar-plus-fill"></i> Terdaftar: <%= u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' %>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <button class="btn-icon-sm btn-edit" onclick="editUser('<%= u.id %>')" title="Edit">
+                <i class="bi bi-pencil"></i>
               </button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="resetPassword('<%= u.email %>')">
-                <i class="bi bi-key"></i> Reset
+              <button class="btn-icon-sm btn-reset" onclick="resetPassword('<%= u.email %>')" title="Reset Password">
+                <i class="bi bi-key"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('<%= u.id %>', '<%= u.role %>')">
-                <i class="bi bi-trash"></i> Hapus
+              <button class="btn-icon-sm btn-delete" onclick="deleteUser('<%= u.id %>', '<%= u.role %>')" title="Hapus">
+                <i class="bi bi-trash"></i>
               </button>
             </div>
           </div>
@@ -115,13 +429,13 @@
 
 <!-- Modal Tambah Pengguna -->
 <div class="modal fade" id="addUserModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Tambah Pengguna Baru</h5>
+        <h5 class="modal-title"><i class="bi bi-person-plus-fill"></i> Tambah Pengguna Baru</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="POST" action="/admin/users">
+      <form method="POST" action="/admin/users" enctype="multipart/form-data">
         <div class="modal-body">
           <div class="mb-3">
             <label for="role" class="form-label">Peran</label>
@@ -151,10 +465,15 @@
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" required>
           </div>
+          <div class="mb-3">
+            <label for="foto" class="form-label">Foto Profil (opsional)</label>
+            <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+            <small class="text-muted">Format JPG/PNG, maks 2MB</small>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary">Simpan</button>
+          <button type="submit" class="btn btn-gradient">Simpan</button>
         </div>
       </form>
     </div>
@@ -163,18 +482,18 @@
 
 <script>
   // Toggle field NIM/NIP berdasarkan role
-  document.getElementById('role').addEventListener('change', function() {
+  document.getElementById('role')?.addEventListener('change', function() {
     const role = this.value;
     document.getElementById('nimField').style.display = role === 'mahasiswa' ? 'block' : 'none';
     document.getElementById('nipField').style.display = role === 'dosen' ? 'block' : 'none';
   });
 
-  // Fungsi edit (dummy, akan redirect ke form edit terpisah)
+  // Fungsi edit
   function editUser(userId) {
     window.location.href = `/admin/users/edit/${userId}`;
   }
 
-  // Reset password (dummy, bisa pakai modal)
+  // Reset password
   function resetPassword(email) {
     if (confirm(`Kirim email reset password ke ${email}?`)) {
       fetch('/admin/users/reset-password', {
@@ -184,7 +503,7 @@
       }).then(res => {
         if (res.ok) alert('Email reset telah dikirim.');
         else alert('Gagal mengirim email.');
-      });
+      }).catch(() => alert('Terjadi kesalahan.'));
     }
   }
 

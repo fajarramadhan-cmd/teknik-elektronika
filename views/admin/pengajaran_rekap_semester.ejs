@@ -1,71 +1,208 @@
 <%- include('../partials/header') %>
 
 <style>
-  .rekap-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
     color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== TOMBOL KEMBALI ===== */
+  .btn-back {
+    background: white;
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: none;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .rekap-table {
+    margin-bottom: 0;
+  }
+  .rekap-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    border: none;
-  }
-  .rekap-table td {
-    vertical-align: middle;
+    border-bottom: 2px solid var(--primary-start);
     padding: 1rem 0.75rem;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .rekap-table tbody tr {
+    transition: all 0.2s;
+  }
+  .rekap-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
+  }
+  .rekap-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-custom {
+    height: 8px;
+    border-radius: 50px;
+    background: #e9ecef;
+  }
+  .progress-bar-custom {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 50px;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Rekap Pengajaran per Semester</h2>
-    <a href="/admin/pengajaran" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+  <!-- Header dengan gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-calendar2-range me-2"></i>Rekap Pengajaran per Semester</h2>
+      <p class="mb-0">Rekapitulasi progress perkuliahan berdasarkan semester</p>
+    </div>
+    <a href="/admin/pengajaran" class="btn-back mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
-  <div class="table-responsive">
-    <table class="table rekap-table">
-      <thead>
-        <tr>
-          <th>Semester</th>
-          <th>Jumlah MK</th>
-          <th>Total Pertemuan</th>
-          <th>Total Terlaksana</th>
-          <th>Persentase</th>
-          <th>Progress</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (rekapList.length === 0) { %>
+  <!-- Info jumlah ditampilkan -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0">Menampilkan <strong><%= rekapList.length %></strong> semester</p>
+  </div>
+
+  <!-- Tabel Rekap -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table rekap-table">
+        <thead>
           <tr>
-            <td colspan="6" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada data mata kuliah.</p>
-            </td>
+            <th>Semester</th>
+            <th>Jumlah MK</th>
+            <th>Total Pertemuan</th>
+            <th>Total Terlaksana</th>
+            <th>Persentase</th>
+            <th>Progress</th>
           </tr>
-        <% } %>
-        <% rekapList.forEach(r => { %>
-          <tr>
-            <td><%= r.semester %></td>
-            <td class="text-center"><%= r.totalMk %></td>
-            <td class="text-center"><%= r.totalPertemuan %></td>
-            <td class="text-center"><%= r.totalTerlaksana %></td>
-            <td class="text-center"><%= r.rataPersentase %>%</td>
-            <td style="min-width: 150px;">
-              <div class="progress" style="height: 8px;">
-                <div class="progress-bar bg-success" role="progressbar" style="width: <%= r.rataPersentase %>%"></div>
-              </div>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (rekapList.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Data</h4>
+                  <p class="text-muted">Tidak ada data mata kuliah yang ditemukan.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% rekapList.forEach(r => { %>
+              <tr>
+                <td><strong>Semester <%= r.semester %></strong></td>
+                <td class="text-center fw-semibold"><%= r.totalMk %></td>
+                <td class="text-center fw-semibold"><%= r.totalPertemuan %></td>
+                <td class="text-center fw-semibold"><%= r.totalTerlaksana %></td>
+                <td class="text-center">
+                  <span class="badge" style="background: linear-gradient(135deg, var(--primary-start), var(--primary-end)); color: white; padding: 0.4rem 0.8rem; border-radius: 50px;">
+                    <%= r.rataPersentase %>%
+                  </span>
+                </td>
+                <td style="min-width: 150px;">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-semibold"><%= r.rataPersentase %>%</span>
+                    <div class="progress progress-custom flex-grow-1">
+                      <div class="progress-bar progress-bar-custom" role="progressbar" style="width: <%= r.rataPersentase %>%"></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

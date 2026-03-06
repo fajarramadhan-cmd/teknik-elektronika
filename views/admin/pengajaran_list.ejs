@@ -1,52 +1,228 @@
 <%- include('../partials/header') %>
 
 <style>
-  .pengajaran-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
     color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border: none;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
   }
-  .pengajaran-table td {
-    vertical-align: middle;
-    padding: 1rem 0.75rem;
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
   }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== FILTER CARD ===== */
   .filter-card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 1.2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     background: white;
     padding: 1.5rem;
     margin-bottom: 2rem;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .filter-card .form-label {
+    font-weight: 600;
+    color: #1e293b;
   }
-  .btn-action {
-    margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
+  .filter-card .form-select,
+  .filter-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
     transition: all 0.2s;
   }
+  .filter-card .form-select:focus,
+  .filter-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    width: 100%;
+  }
+  .btn-reset:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .pengajaran-table {
+    margin-bottom: 0;
+  }
+  .pengajaran-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--primary-start);
+    padding: 1rem 0.75rem;
+  }
+  .pengajaran-table tbody tr {
+    transition: all 0.2s;
+  }
+  .pengajaran-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
+  }
+  .pengajaran-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+  /* Kolom aksi agar tidak terpotong */
+  .pengajaran-table td:last-child {
+    white-space: nowrap;
+    width: 1%;
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.3rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    background: transparent;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-action i {
+    margin-right: 0.3rem;
+    font-size: 0.9rem;
+  }
   .btn-action:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-custom {
+    height: 8px;
+    border-radius: 50px;
+    background: #e9ecef;
+  }
+  .progress-bar-custom {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 50px;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Monitoring Pengajaran</h2>
+  <!-- Header dengan gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
-      <a href="/admin/pengajaran/rekap/semester" class="btn btn-outline-primary me-2">Rekap Semester</a>
-      <a href="/admin/pengajaran/rekap/dosen" class="btn btn-outline-success me-2">Rekap Dosen</a>
-      <a href="/admin/pengajaran/export" class="btn btn-outline-info">Export</a>
+      <h2><i class="bi bi-bar-chart-steps me-2"></i>Monitoring Pengajaran</h2>
+      <p class="mb-0">Pantau progress perkuliahan dan pertemuan mata kuliah</p>
+    </div>
+    <div class="mt-2 mt-sm-0 d-flex gap-2">
+      <a href="/admin/pengajaran/rekap/semester" class="btn-light btn" style="background:white; border-radius:50px; padding:0.5rem 1.2rem; font-weight:500;">
+        <i class="bi bi-calendar2-range me-1" style="color:var(--primary-start);"></i>Rekap Semester
+      </a>
+      <a href="/admin/pengajaran/rekap/dosen" class="btn-light btn" style="background:white; border-radius:50px; padding:0.5rem 1.2rem; font-weight:500;">
+        <i class="bi bi-person-badge me-1" style="color:var(--primary-start);"></i>Rekap Dosen
+      </a>
+      <a href="/admin/pengajaran/export" class="btn-light btn" style="background:white; border-radius:50px; padding:0.5rem 1.2rem; font-weight:500;">
+        <i class="bi bi-download me-1" style="color:var(--primary-start);"></i>Export
+      </a>
     </div>
   </div>
 
@@ -54,7 +230,7 @@
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
       <div class="col-md-3">
-        <label for="semester" class="form-label fw-semibold">Semester</label>
+        <label for="semester" class="form-label fw-semibold"><i class="bi bi-funnel me-1"></i>Semester</label>
         <select class="form-select" id="semester" name="semester">
           <option value="">Semua Semester</option>
           <% semesterList.forEach(s => { %>
@@ -63,62 +239,73 @@
         </select>
       </div>
       <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <button type="submit" class="btn-filter">Terapkan</button>
       </div>
       <div class="col-md-2">
-        <a href="/admin/pengajaran" class="btn btn-outline-secondary w-100">Reset</a>
+        <a href="/admin/pengajaran" class="btn-reset">Reset</a>
       </div>
     </form>
   </div>
 
+  <!-- Info jumlah ditampilkan -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0">Menampilkan <strong><%= mkList.length %></strong> mata kuliah</p>
+  </div>
+
   <!-- Tabel Mata Kuliah -->
-  <div class="table-responsive">
-    <table class="table pengajaran-table">
-      <thead>
-        <tr>
-          <th>Kode</th>
-          <th>Nama MK</th>
-          <th>SKS</th>
-          <th>Semester</th>
-          <th>Dosen Pengampu</th>
-          <th>Progress</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (mkList.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table pengajaran-table">
+        <thead>
           <tr>
-            <td colspan="7" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada mata kuliah.</p>
-            </td>
+            <th>Kode</th>
+            <th>Nama MK</th>
+            <th>SKS</th>
+            <th>Semester</th>
+            <th>Dosen Pengampu</th>
+            <th>Progress</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% mkList.forEach(mk => { %>
-          <tr>
-            <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= mk.kode %></span></td>
-            <td><strong><%= mk.nama %></strong></td>
-            <td class="text-center"><%= mk.sks %></td>
-            <td class="text-center"><%= mk.semester || '-' %></td>
-            <td><small><%= mk.dosen || '-' %></small></td>
-            <td style="min-width: 150px;">
-              <div class="d-flex align-items-center gap-2">
-                <span class="small"><%= mk.terlaksana %>/<%= mk.totalPertemuan %></span>
-                <div class="progress flex-grow-1" style="height: 8px;">
-                  <div class="progress-bar bg-success" role="progressbar" style="width: <%= mk.persentase %>%"></div>
+        </thead>
+        <tbody>
+          <% if (mkList.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Data</h4>
+                  <p class="text-muted">Tidak ada mata kuliah yang ditemukan.</p>
                 </div>
-                <span class="small"><%= mk.persentase %>%</span>
-              </div>
-            </td>
-            <td>
-              <a href="/admin/pengajaran/<%= mk.id %>" class="btn btn-sm btn-outline-primary btn-action">
-                <i class="bi bi-eye"></i> Detail
-              </a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+              </td>
+            </tr>
+          <% } else { %>
+            <% mkList.forEach(mk => { %>
+              <tr>
+                <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= mk.kode %></span></td>
+                <td><strong><%= mk.nama %></strong></td>
+                <td class="text-center"><span class="fw-semibold"><%= mk.sks %></span></td>
+                <td class="text-center"><%= mk.semester || '-' %></td>
+                <td><small><%= mk.dosen || '-' %></small></td>
+                <td style="min-width: 200px;">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-semibold"><%= mk.terlaksana %>/<%= mk.totalPertemuan %></span>
+                    <div class="progress progress-custom flex-grow-1">
+                      <div class="progress-bar progress-bar-custom" role="progressbar" style="width: <%= mk.persentase %>%"></div>
+                    </div>
+                    <span class="small fw-semibold" style="min-width: 40px;"><%= mk.persentase %>%</span>
+                  </div>
+                </td>
+                <td>
+                  <a href="/admin/pengajaran/<%= mk.id %>" class="btn-action">
+                    <i class="bi bi-eye"></i> Detail
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

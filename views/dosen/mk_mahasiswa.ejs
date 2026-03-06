@@ -1,0 +1,262 @@
+<%- include('../partials/header') %>
+
+<%
+  // Fungsi untuk mendapatkan thumbnail dari Google Drive (jika diperlukan)
+  const getDriveThumbnail = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100-h100`;
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100-h100`;
+    return url;
+  };
+%>
+
+<style>
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Page Header */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header .btn-light {
+    background: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 1.8rem;
+    font-weight: 600;
+    color: var(--primary-start);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header .btn-light:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* Tabel Container */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .table-responsive {
+    margin: 0;
+  }
+  .mahasiswa-table {
+    margin-bottom: 0;
+  }
+  .mahasiswa-table thead th {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: none;
+    padding: 1.2rem 1rem;
+  }
+  .mahasiswa-table tbody td {
+    vertical-align: middle;
+    padding: 1rem 1rem;
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .mahasiswa-table tbody tr:hover td {
+    background-color: #f8f9fa;
+  }
+
+  /* Avatar dan Foto */
+  .avatar-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(33,147,176,0.3);
+  }
+  .foto-mahasiswa {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Tombol Detail */
+  .btn-detail {
+    background: transparent;
+    border: 1.5px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 600;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-detail:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(33,147,176,0.3);
+  }
+
+  /* NIM styling */
+  .nim-text {
+    font-weight: 500;
+    color: #2c3e50;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 4rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1rem;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .page-header .btn-light {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <!-- Page Header dengan gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><%= mk.kode %> - <%= mk.nama %></h2>
+      <p class="mb-0"><i class="bi bi-people-fill me-2"></i>Daftar mahasiswa yang mengambil mata kuliah ini</p>
+    </div>
+    <a href="/dosen/mk/<%= mk.id %>" class="btn-light">
+      <i class="bi bi-arrow-left"></i> Kembali ke Detail MK
+    </a>
+  </div>
+
+  <!-- Tabel Mahasiswa -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table mahasiswa-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Foto</th>
+            <th>NIM</th>
+            <th>Nama</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (mahasiswaList.length === 0) { %>
+            <tr>
+              <td colspan="5" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <p>Belum ada mahasiswa yang terdaftar.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% mahasiswaList.forEach((m, index) => { 
+              const fotoUrl = m.foto ? getDriveThumbnail(m.foto) : null;
+            %>
+            <tr>
+              <td class="fw-bold text-center"><%= index + 1 %></td>
+              <td>
+                <% if (fotoUrl) { %>
+                  <img src="<%= fotoUrl %>" alt="foto <%= m.nama %>" class="foto-mahasiswa" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(m.nama) %>&background=2193b0&color=fff&size=45';">
+                <% } else { %>
+                  <div class="avatar-circle"><%= (m.nama || '?').charAt(0).toUpperCase() %></div>
+                <% } %>
+              </td>
+              <td><span class="nim-text"><%= m.nim || '-' %></span></td>
+              <td><strong><%= m.nama %></strong></td>
+              <td>
+                <a href="/dosen/mahasiswa/<%= m.id %>" class="btn-detail">
+                  <i class="bi bi-eye"></i> Detail
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

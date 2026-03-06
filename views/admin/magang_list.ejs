@@ -1,174 +1,413 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .magang-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
     color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== FILTER CARD ===== */
+  .filter-card {
+    border-radius: 1.2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s;
+  }
+  .filter-card:hover {
+    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+  }
+  .filter-card .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .filter-card .form-select,
+  .filter-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .filter-card .form-select:focus,
+  .filter-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-reset:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s;
+  }
+  .table-container:hover {
+    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+  }
+  .magang-table {
+    margin-bottom: 0;
+  }
+  .magang-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    border: none;
-  }
-  .magang-table td {
-    vertical-align: middle;
+    border-bottom: 2px solid var(--primary-start);
     padding: 1rem 0.75rem;
+    white-space: nowrap;
   }
-  .badge-status {
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-weight: 500;
-    font-size: 0.8rem;
-  }
-  .badge-pending { background: #ffc107; color: #212529; }
-  .badge-approved { background: #28a745; color: white; }
-  .badge-rejected { background: #dc3545; color: white; }
-  .btn-action {
-    margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
+  .magang-table tbody tr {
     transition: all 0.2s;
   }
-  .btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  .magang-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
   }
+  .magang-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== AVATAR ===== */
   .avatar-circle {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 1.2rem;
+    box-shadow: 0 5px 10px rgba(33,147,176,0.2);
   }
-  .filter-card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    color: white;
+    margin: 0 2px;
+  }
+  .btn-icon-sm i {
+    font-size: 1rem;
+  }
+  .btn-approve {
+    background: #28a745;
+  }
+  .btn-approve:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(40,167,69,0.3);
+  }
+  .btn-reject {
+    background: #dc3545;
+  }
+  .btn-reject:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(220,53,69,0.3);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <h2 class="fw-bold mb-4">Daftar Permohonan Magang</h2>
+  <!-- Header dengan gradien -->
+  <div class="page-header">
+    <h2><i class="bi bi-briefcase-fill"></i> Daftar Permohonan Magang</h2>
+    <p class="mb-0">Kelola permohonan magang mahasiswa</p>
+  </div>
 
-  <!-- Filter Card (opsional) -->
+  <!-- Filter Card -->
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
       <div class="col-md-3">
-        <label for="status" class="form-label fw-semibold">Filter Status</label>
+        <label for="status" class="form-label"><i class="bi bi-tag"></i> Filter Status</label>
         <select class="form-select" id="status" name="status">
           <option value="">Semua Status</option>
           <option value="pending" <%= filters?.status === 'pending' ? 'selected' : '' %>>Pending</option>
-          <option value="approved" <%= filters?.status === 'approved' ? 'selected' : '' %>>Approved</option>
-          <option value="rejected" <%= filters?.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+          <option value="approved" <%= filters?.status === 'approved' ? 'selected' : '' %>>Disetujui</option>
+          <option value="rejected" <%= filters?.status === 'rejected' ? 'selected' : '' %>>Ditolak</option>
         </select>
       </div>
       <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Terapkan</button>
       </div>
       <div class="col-md-2">
-        <a href="/admin/magang" class="btn btn-outline-secondary w-100">Reset</a>
+        <a href="/admin/magang" class="btn-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
       </div>
     </form>
   </div>
 
-  <!-- Notifikasi Sukses (opsional) -->
+  <!-- Notifikasi Sukses -->
   <% if (typeof success !== 'undefined' && success === 'approved') { %>
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-left: 4px solid #28a745; border-radius: 1rem;">
       <i class="bi bi-check-circle-fill me-2"></i>Permohonan magang berhasil disetujui.
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   <% } %>
   <% if (typeof success !== 'undefined' && success === 'rejected') { %>
-    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert" style="border-left: 4px solid #ffc107; border-radius: 1rem;">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>Permohonan magang ditolak.
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   <% } %>
 
+  <!-- Info jumlah -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0 fw-semibold"><i class="bi bi-files me-1" style="color: var(--primary-start);"></i> Menampilkan <strong><%= requests.length %></strong> permohonan</p>
+  </div>
+
   <!-- Tabel Permohonan -->
-  <div class="table-responsive">
-    <table class="table magang-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Mahasiswa</th>
-          <th>Judul</th>
-          <th>Tempat</th>
-          <th>Tanggal</th>
-          <th>Status</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (requests.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table magang-table">
+        <thead>
           <tr>
-            <td colspan="7" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada permohonan magang.</p>
-            </td>
+            <th>No</th>
+            <th>Mahasiswa</th>
+            <th>Judul</th>
+            <th>Tempat</th>
+            <th>Tanggal</th>
+            <th>Status</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% requests.forEach((r, index) => { %>
-        <tr>
-          <td class="fw-bold"><%= index + 1 %></td>
-          <td>
-            <div class="d-flex align-items-center">
-              <% if (r.mahasiswa?.foto) { %>
-                <img src="<%= r.mahasiswa.foto %>" alt="foto" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-              <% } else { %>
-                <div class="avatar-circle me-2"><%= (r.mahasiswa?.nama || '?').charAt(0).toUpperCase() %></div>
-              <% } %>
-              <div>
-                <strong><%= r.mahasiswa?.nama || 'Unknown' %></strong><br>
-                <small class="text-muted"><%= r.mahasiswa?.nim || '-' %></small>
-              </div>
-            </div>
-          </td>
-          <td><%= r.judul %></td>
-          <td><%= r.tempat %></td>
-          <td><%= new Date(r.tanggalMulai).toLocaleDateString('id-ID') %> - <%= new Date(r.tanggalSelesai).toLocaleDateString('id-ID') %></td>
-          <td>
-            <span class="badge-status 
-              <%= r.status === 'pending' ? 'badge-pending' : '' %>
-              <%= r.status === 'approved' ? 'badge-approved' : '' %>
-              <%= r.status === 'rejected' ? 'badge-rejected' : '' %>">
-              <%= r.status %>
-            </span>
-          </td>
-          <td>
-            <% if (r.status === 'pending') { %>
-              <form method="POST" action="/admin/magang/<%= r.id %>/approve" style="display:inline;">
-                <button class="btn btn-sm btn-success btn-action" title="Setujui">
-                  <i class="bi bi-check-lg"></i> Setujui
-                </button>
-              </form>
-              <form method="POST" action="/admin/magang/<%= r.id %>/reject" style="display:inline;">
-                <button class="btn btn-sm btn-danger btn-action" title="Tolak">
-                  <i class="bi bi-x-lg"></i> Tolak
-                </button>
-              </form>
-            <% } else { %>
-              <span class="text-muted small">Selesai</span>
-            <% } %>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (requests.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Permohonan</h4>
+                  <p class="text-muted">Tidak ada permohonan magang yang ditemukan.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% requests.forEach((r, index) => { %>
+            <tr>
+              <td class="fw-bold"><%= index + 1 %></td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <% if (r.mahasiswa?.foto) { 
+                    const fileId = getFileIdFromUrl(r.mahasiswa.foto);
+                    if (fileId) { %>
+                      <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w100" 
+                           alt="foto" 
+                           class="rounded-circle me-2" 
+                           style="width: 40px; height: 40px; object-fit: cover; border: 2px solid var(--primary-start);"
+                           onerror="this.onerror=null; this.src='<%= r.mahasiswa.foto %>';">
+                    <% } else { %>
+                      <img src="<%= r.mahasiswa.foto %>" 
+                           alt="foto" 
+                           class="rounded-circle me-2" 
+                           style="width: 40px; height: 40px; object-fit: cover; border: 2px solid var(--primary-start);"
+                           onerror="this.onerror=null; this.src='https://via.placeholder.com/40?text=<%= (r.mahasiswa?.nama || '?').charAt(0).toUpperCase() %>';">
+                    <% } %>
+                  <% } else { %>
+                    <div class="avatar-circle me-2"><%= (r.mahasiswa?.nama || '?').charAt(0).toUpperCase() %></div>
+                  <% } %>
+                  <div>
+                    <strong><%= r.mahasiswa?.nama || 'Unknown' %></strong><br>
+                    <small class="text-muted"><%= r.mahasiswa?.nim || '-' %></small>
+                  </div>
+                </div>
+              </td>
+              <td><%= r.judul %></td>
+              <td><%= r.tempat %></td>
+              <td><%= new Date(r.tanggalMulai).toLocaleDateString('id-ID') %> - <%= new Date(r.tanggalSelesai).toLocaleDateString('id-ID') %></td>
+              <td>
+                <% if (r.status === 'pending') { %>
+                  <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
+                <% } else if (r.status === 'approved') { %>
+                  <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                <% } else if (r.status === 'rejected') { %>
+                  <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="d-flex gap-1">
+                  <% if (r.status === 'pending') { %>
+                    <form method="POST" action="/admin/magang/<%= r.id %>/approve" style="display:inline;">
+                      <button class="btn-icon-sm btn-approve" title="Setujui"><i class="bi bi-check-lg"></i></button>
+                    </form>
+                    <form method="POST" action="/admin/magang/<%= r.id %>/reject" style="display:inline;">
+                      <button class="btn-icon-sm btn-reject" title="Tolak"><i class="bi bi-x-lg"></i></button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-muted small">-</span>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

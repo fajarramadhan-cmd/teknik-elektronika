@@ -1,5 +1,19 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    // Format: https://drive.google.com/uc?export=view&id=XXX
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    // Format: https://drive.google.com/file/d/XXX/view
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
   .khs-table th {
     background: linear-gradient(135deg, #2193b0, #6dd5ed);
@@ -9,21 +23,32 @@
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     border: none;
+    padding: 1rem 0.75rem;
   }
   .khs-table td {
     vertical-align: middle;
     padding: 1rem 0.75rem;
   }
+  .khs-table tbody tr {
+    transition: all 0.2s;
+  }
+  .khs-table tbody tr:hover {
+    background-color: rgba(33,147,176,0.05);
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(33,147,176,0.1);
+  }
   .badge-ip {
-    background: #28a745;
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
     color: white;
     font-weight: 600;
     padding: 0.4rem 0.8rem;
     border-radius: 50px;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(33,147,176,0.2);
   }
   .avatar-circle {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: linear-gradient(135deg, #2193b0, #6dd5ed);
     color: white;
@@ -31,57 +56,122 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 1.2rem;
+    font-size: 2rem;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.3);
   }
   .table-responsive {
-    border-radius: 1rem;
+    border-radius: 1.2rem;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    background: white;
+    padding: 0.5rem;
   }
   .info-card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 1.2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     padding: 1.5rem;
     margin-bottom: 2rem;
+    border: 1px solid rgba(33,147,176,0.1);
   }
   .filter-card {
-    border-radius: 1rem;
+    border-radius: 1.2rem;
     border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     background: white;
     padding: 1.5rem;
     margin-bottom: 2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+  }
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-outline-gradient {
+    background: transparent;
+    border: 2px solid #2193b0;
+    color: #2193b0;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+  }
+  .btn-outline-gradient:hover {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+  .btn-sm-outline {
+    padding: 0.3rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 50px;
+    border: 1px solid #2193b0;
+    color: #2193b0;
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .btn-sm-outline:hover {
+    background: #2193b0;
+    color: white;
+  }
+  .filter-form .form-select {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .filter-form .form-select:focus {
+    border-color: #2193b0;
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Kartu Hasil Studi (KHS)</h2>
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-journal-text me-2" style="color: #2193b0;"></i>Kartu Hasil Studi (KHS)</h2>
     <div>
-      <span class="badge bg-primary p-2"><%= user.nim %></span>
+      <span class="badge bg-gradient p-3" style="background: linear-gradient(135deg, #2193b0, #6dd5ed); color: white; font-size: 1rem;"><i class="bi bi-qr-code me-1"></i><%= user.nim %></span>
     </div>
   </div>
 
   <div class="info-card">
     <div class="d-flex align-items-center">
-      <% if (user.foto) { %>
-        <img src="<%= user.foto %>" alt="foto" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+      <% if (user.foto) { 
+        const fileId = getFileIdFromUrl(user.foto);
+      %>
+        <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
+             alt="foto" 
+             class="rounded-circle me-3" 
+             style="width: 60px; height: 60px; object-fit: cover; border: 3px solid #2193b0;"
+             onerror="this.onerror=null; this.src='<%= user.foto %>'; this.onerror=null;">
       <% } else { %>
-        <div class="avatar-circle me-3" style="width: 60px; height: 60px; font-size: 2rem;"><%= (user.nama || '?').charAt(0).toUpperCase() %></div>
+        <div class="avatar-circle me-3"><%= (user.nama || '?').charAt(0).toUpperCase() %></div>
       <% } %>
       <div>
-        <h4><%= user.nama %></h4>
-        <p class="text-muted mb-0">Program Studi Teknik Elektronika</p>
+        <h4 class="fw-bold mb-1"><%= user.nama %></h4>
+        <p class="text-muted mb-0"><i class="bi bi-building me-2"></i>Program Studi Teknik Elektronika</p>
       </div>
     </div>
   </div>
 
   <!-- Filter Card -->
   <div class="filter-card">
-    <form method="GET" class="row g-3 align-items-end">
+    <form method="GET" class="row g-3 align-items-end filter-form">
       <div class="col-md-4">
-        <label for="semester" class="form-label fw-semibold">Filter Semester</label>
+        <label for="semester" class="form-label fw-semibold"><i class="bi bi-funnel me-1"></i>Filter Semester</label>
         <select class="form-select" id="semester" name="semester">
           <option value="">Semua Semester</option>
           <% if (semesterList && semesterList.length) { %>
@@ -92,17 +182,17 @@
         </select>
       </div>
       <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <button type="submit" class="btn btn-gradient w-100">Terapkan</button>
       </div>
       <div class="col-md-2">
-        <a href="/mahasiswa/akademik/khs" class="btn btn-outline-secondary w-100">Reset</a>
+        <a href="/mahasiswa/akademik/khs" class="btn btn-outline-gradient w-100">Reset</a>
       </div>
     </form>
   </div>
 
   <!-- Tabel KHS -->
   <div class="table-responsive">
-    <table class="table khs-table">
+    <table class="table khs-table mb-0">
       <thead>
         <tr>
           <th>No</th>
@@ -117,26 +207,28 @@
           <tr>
             <td colspan="5" class="text-center py-5">
               <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada KHS.</p>
+              <p class="text-muted">Belum ada data KHS.</p>
             </td>
           </tr>
         <% } else { %>
           <% khsList.forEach((khs, index) => { %>
           <tr>
             <td class="fw-bold"><%= index + 1 %></td>
-            <td><%= khs.semester || '-' %></td>
+            <td><span class="fw-semibold"><%= khs.semester || '-' %></span></td>
             <td><span class="badge-ip"><%= khs.ip ? khs.ip.toFixed(2) : '-' %></span></td>
             <td>
               <% if (khs.fileUrl) { %>
-                <a href="<%= khs.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-info">
-                  <i class="bi bi-file-earmark-pdf"></i> Lihat
+                <a href="<%= khs.fileUrl %>" target="_blank" class="btn btn-sm-outline">
+                  <i class="bi bi-file-earmark-pdf me-1"></i> Lihat
                 </a>
               <% } else { %>
-                <span class="badge bg-secondary">No file</span>
+                <span class="badge bg-secondary">Tidak ada file</span>
               <% } %>
             </td>
             <td>
-              <a href="/mahasiswa/akademik/khs/<%= khs.id %>" class="btn btn-sm btn-outline-primary">Detail</a>
+              <a href="/mahasiswa/akademik/khs/<%= khs.id %>" class="btn btn-sm-outline">
+                <i class="bi bi-info-circle me-1"></i> Detail
+              </a>
             </td>
           </tr>
           <% }) %>

@@ -1,165 +1,405 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mendapatkan URL gambar dari Google Drive
+  const getImageUrl = (url, size = 200) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w${size}`;
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w${size}`;
+    return url;
+  };
+
+  // Fungsi untuk mendapatkan fileId dari URL (untuk thumbnail dokumentasi)
+  const getFileId = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    // Format: https://drive.google.com/file/d/XXX/view
+    match = url.match(/\/file\/d\/([^\/]+)/);
+    if (match) return match[1];
+    // Format: https://drive.google.com/open?id=XXX
+    match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    return null; // jangan asal ambil
+  };
+%>
+
 <style>
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Profile Card */
   .profile-card {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
   }
-  .avatar-large {
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .profile-card .avatar-large {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid white;
+    border: 4px solid rgba(255,255,255,0.5);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   }
   .avatar-circle-large {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     background: white;
-    color: #2193b0;
+    color: var(--primary-start);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
     font-weight: 600;
+    border: 4px solid rgba(255,255,255,0.5);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   }
-  .logbook-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  .profile-card h2 {
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .profile-card p {
+    margin-bottom: 0.2rem;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  /* Page Header */
+  .page-header {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .page-header h4 {
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header .btn-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .btn-print {
+    background: #17a2b8;
+    border: none;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-print:hover {
+    background: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(23,162,184,0.3);
+    color: white;
+  }
+  .btn-back {
+    background: transparent;
+    border: 1.5px solid var(--primary-start);
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    color: var(--primary-start);
+    font-weight: 500;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-back:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+
+  /* Tabel */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .table-responsive {
+    margin: 0;
+  }
+  .logbook-table {
+    margin-bottom: 0;
+  }
+  .logbook-table thead th {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     border: none;
+    padding: 1.2rem 0.75rem;
+    white-space: nowrap;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .logbook-table tbody td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
   }
+  .logbook-table tbody tr:hover td {
+    background-color: #f8f9fa;
+  }
+
+  /* Thumbnail */
   .thumbnail {
     width: 50px;
     height: 50px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
-    border: 1px solid #ddd;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+  .thumbnail:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  }
+
+  /* Badge Status */
+  .badge-status {
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+
+  /* Lightbox Modal */
+  .lightbox-modal .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .lightbox-modal .modal-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+  }
+  .lightbox-modal .modal-body {
+    padding: 0;
+    background: #000;
+  }
+  .lightbox-modal .carousel-item img {
+    max-height: 80vh;
+    object-fit: contain;
+  }
+
+  /* Empty State */
+  .empty-state {
+    padding: 4rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1rem;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .page-header .btn-group {
+      width: 100%;
+      justify-content: space-between;
+    }
   }
 </style>
 
 <div class="container-fluid mt-4">
+  <!-- Profile Card Mahasiswa -->
   <div class="profile-card">
-    <div class="d-flex align-items-center">
-      <div class="flex-shrink-0 me-4">
-        <% if (mahasiswa.foto) { %>
-          <img src="<%= mahasiswa.foto %>" alt="foto" class="avatar-large">
+    <div class="d-flex align-items-center flex-wrap">
+      <div class="flex-shrink-0 me-4 mb-2 mb-sm-0">
+        <% 
+          const fotoUrl = mahasiswa.foto ? getImageUrl(mahasiswa.foto, 200) : null;
+          if (fotoUrl) { 
+        %>
+          <img src="<%= fotoUrl %>" alt="foto <%= mahasiswa.nama %>" class="avatar-large" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(mahasiswa.nama) %>&background=2193b0&color=fff&size=80';">
         <% } else { %>
-          <div class="avatar-circle-large"><%= (mahasiswa.nama || '?').charAt(0).toUpperCase() %></div>
+          <div class="avatar-circle-large">
+            <%= (mahasiswa.nama || '?').charAt(0).toUpperCase() %>
+          </div>
         <% } %>
       </div>
       <div>
         <h2 class="fw-bold"><%= mahasiswa.nama %></h2>
-        <p class="mb-1"><i class="bi bi-qr-code me-2"></i>NIM: <%= mahasiswa.nim %></p>
-        <p class="mb-1"><i class="bi bi-envelope me-2"></i><%= mahasiswa.email %></p>
-        <p class="mb-0"><i class="bi bi-telephone me-2"></i><%= mahasiswa.noHp || '-' %></p>
+        <p><i class="bi bi-qr-code"></i> NIM: <%= mahasiswa.nim %></p>
+        <p><i class="bi bi-envelope"></i> <%= mahasiswa.email %></p>
+        <p class="mb-0"><i class="bi bi-telephone"></i> <%= mahasiswa.noHp || '-' %></p>
       </div>
     </div>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold">Logbook Magang</h4>
-    <a href="/dosen/magang" class="btn btn-outline-primary">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
-    </a>
+  <!-- Header dengan judul dan tombol -->
+  <div class="page-header">
+    <h4>
+      <i class="bi bi-journal-bookmark-fill" style="color: var(--primary-start);"></i> Logbook Magang
+    </h4>
+    <div class="btn-group">
+      <a href="/dosen/magang/print/<%= mahasiswa.id %>" class="btn-print" target="_blank">
+        <i class="bi bi-printer"></i> Print
+      </a>
+      <a href="/dosen/magang" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Kembali
+      </a>
+    </div>
   </div>
 
-  <div class="table-responsive">
-    <table class="table logbook-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Tanggal</th>
-          <th>Kegiatan</th>
-          <th>Durasi</th>
-          <th>Lokasi</th>
-          <th>Semester</th>
-          <th>Gambar</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (logbookList.length === 0) { %>
+  <!-- Tabel Logbook -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table logbook-table">
+        <thead>
           <tr>
-            <td colspan="8" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Mahasiswa ini belum mengisi logbook.</p>
-            </td>
+            <th>No</th>
+            <th>Tanggal</th>
+            <th>Kegiatan</th>
+            <th>Durasi</th>
+            <th>Lokasi</th>
+            <th>Semester</th>
+            <th>Gambar</th>
+            <th>Status</th>
           </tr>
-        <% } %>
-        <% logbookList.forEach((item, index) => { %>
-          <tr>
-            <td class="text-center"><%= index + 1 %></td>
-            <td><%= item.tanggalFormatted %></td>
-            <td><%= item.kegiatan %></td>
-            <td class="text-center"><%= item.durasi || '-' %></td>
-            <td><%= item.lokasi || '-' %></td>
-            <td><%= item.semester || '-' %></td>
-            <td class="text-center">
-              <% if (item.imageUrls && item.imageUrls.length > 0) { 
-                let fileId = '';
-                let url = item.imageUrls[0];
-                if (url.includes('id=')) {
-                  fileId = url.split('id=')[1].split('&')[0];
-                } else if (url.includes('/d/')) {
-                  fileId = url.split('/d/')[1].split('/')[0];
-                } else {
-                  fileId = url.split('/').pop();
-                }
-              %>
-                <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
-                     class="thumbnail" alt="dokumentasi"
-                     onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
-                     onerror="this.onerror=null; this.src='https://drive.google.com/uc?export=view&id=<%= fileId %>';">
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td>
-              <% if (item.status === 'approved') { %>
-                <span class="badge bg-success">Disetujui</span>
-              <% } else if (item.status === 'rejected') { %>
-                <span class="badge bg-danger">Ditolak</span>
-              <% } else { %>
-                <span class="badge bg-warning text-dark">Pending</span>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (logbookList.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <p>Mahasiswa ini belum mengisi logbook.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% logbookList.forEach((item, index) => { %>
+              <tr>
+                <td class="text-center fw-bold"><%= index + 1 %></td>
+                <td><%= item.tanggalFormatted %></td>
+                <td><%= item.kegiatan %></td>
+                <td class="text-center"><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
+                <td><%= item.lokasi || '-' %></td>
+                <td><%= item.semester || '-' %></td>
+                <td class="text-center">
+                  <% if (item.imageUrls && item.imageUrls.length > 0) { 
+                    const firstUrl = item.imageUrls[0];
+                    const fileId = getFileId(firstUrl);
+                    const thumbUrl = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w100` : firstUrl;
+                    const directUrl = fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : firstUrl;
+                  %>
+                    <img src="<%= thumbUrl %>" 
+                         class="thumbnail" 
+                         alt="dokumentasi"
+                         onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
+                         onerror="this.onerror=null; this.src='<%= directUrl %>';">
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (item.status === 'approved') { %>
+                    <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                  <% } else if (item.status === 'rejected') { %>
+                    <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                  <% } else { %>
+                    <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h4 class="fw-bold">Logbook Magang</h4>
-  <div>
-    <a href="/dosen/magang/print/<%= mahasiswa.id %>" class="btn btn-info me-2" target="_blank">
-      <i class="bi bi-printer me-2"></i>Print
-    </a>
-    <a href="/dosen/magang" class="btn btn-outline-primary">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
-    </a>
-  </div>
-</div>
-<!-- Lightbox Modal (salin dari admin) -->
+
+<!-- Lightbox Modal -->
 <div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Dokumentasi</h5>
+        <h5 class="modal-title"><i class="bi bi-images me-2"></i>Dokumentasi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -174,25 +414,84 @@
             <span class="visually-hidden">Next</span>
           </button>
         </div>
+        <div class="text-center mt-2">
+          <small class="text-muted">Jika gambar tidak tampil, <a href="#" id="openInNewTab" target="_blank">klik di sini untuk membuka di tab baru</a>.</small>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+  // Fungsi untuk mengekstrak fileId dari URL Google Drive
+  function getFileId(url) {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    match = url.match(/\/file\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  }
+
+  // Fungsi untuk mendapatkan URL thumbnail
+  function getThumbUrl(url, size = 800) {
+    const fileId = getFileId(url);
+    if (fileId) {
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
+    }
+    return url;
+  }
+
+  // Fungsi untuk mendapatkan URL langsung ke file (fallback)
+  function getDirectUrl(url) {
+    const fileId = getFileId(url);
+    if (fileId) {
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    return url;
+  }
+
+  let currentImageUrls = [];
+
   function lihatGambar(imageUrls) {
     const inner = document.getElementById('galleryCarouselInner');
     inner.innerHTML = '';
+    if (!imageUrls || imageUrls.length === 0) {
+      alert('Tidak ada gambar untuk ditampilkan.');
+      return;
+    }
+    currentImageUrls = imageUrls; // simpan untuk tombol buka di tab baru
     imageUrls.forEach((url, index) => {
       const activeClass = index === 0 ? 'active' : '';
+      const thumbUrl = getThumbUrl(url, 800);
+      const directUrl = getDirectUrl(url);
       const item = `
         <div class="carousel-item ${activeClass}">
-          <img src="${url}" class="d-block w-100" alt="Dokumentasi">
+          <img src="${thumbUrl}" 
+               class="d-block w-100" 
+               alt="Dokumentasi"
+               data-direct-url="${directUrl}"
+               onerror="this.onerror=null; this.src=this.getAttribute('data-direct-url'); this.onerror=function(){ this.outerHTML='<div class=\'text-center p-5\'><i class=\'bi bi-exclamation-triangle\'></i> Gambar tidak dapat ditampilkan. <a href=\'${url}\' target=\'_blank\'>Buka di tab baru</a></div>'; };">
         </div>
       `;
       inner.innerHTML += item;
     });
-    new bootstrap.Modal(document.getElementById('galleryModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('galleryModal'));
+    modal.show();
+
+    // Atur link "buka di tab baru" sesuai gambar aktif
+    const carousel = document.getElementById('galleryCarousel');
+    const updateNewTabLink = () => {
+      const activeImg = carousel.querySelector('.carousel-item.active img');
+      if (activeImg) {
+        const directUrl = activeImg.getAttribute('data-direct-url');
+        document.getElementById('openInNewTab').href = directUrl;
+      }
+    };
+    carousel.addEventListener('slid.bs.carousel', updateNewTabLink);
+    setTimeout(updateNewTabLink, 100); // untuk slide pertama
   }
 </script>
 

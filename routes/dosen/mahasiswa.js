@@ -1,6 +1,7 @@
 /**
  * routes/dosen/mahasiswa.js
  * Daftar mahasiswa bimbingan (mahasiswa yang mengambil mata kuliah yang diampu)
+ * Dapat difilter berdasarkan mata kuliah tertentu (mkId)
  */
 
 const express = require('express');
@@ -25,61 +26,69 @@ async function getMataKuliahDosen(dosenId) {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-/**
- * Mendapatkan daftar mahasiswa yang terdaftar pada suatu MK
- */
-async function getMahasiswaByMkId(mkId) {
-  const enrollmentSnapshot = await db.collection('enrollment')
-    .where('mkId', '==', mkId)
-    .get();
-  const mahasiswaIds = enrollmentSnapshot.docs.map(d => d.data().mahasiswaId);
-  const mahasiswaList = [];
-  for (const uid of mahasiswaIds) {
-    const userDoc = await db.collection('users').doc(uid).get();
-    if (userDoc.exists) {
-      mahasiswaList.push({ id: uid, ...userDoc.data() });
-    }
-  }
-  return mahasiswaList;
-}
-
 // ============================================================================
 // DAFTAR MAHASISWA
 // ============================================================================
 
-/**
- * GET /dosen/mahasiswa
- * Menampilkan semua mahasiswa dari semua MK yang diampu
- * Query params:
- *   - angkatan: filter berdasarkan angkatan (2 digit pertama NIM)
- *   - mkId: filter berdasarkan mata kuliah tertentu
- *   - search: pencarian nama/NIM
- */
 router.get('/', async (req, res) => {
   try {
     const { angkatan, mkId, search } = req.query;
-    const dosenId = req.user.id;
+    const dosenId = req.dosen.id;
 
-    // Ambil semua MK yang diampu
-    const mkList = await getMataKuliahDosen(dosenId);
-    const mkIds = mkList.map(mk => mk.id);
+    let mkList = [];
+    let mkIds = [];
+
+    // Jika ada filter mkId, pastikan dosen mengampu MK tersebut
+    if (mkId) {
+      const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
+      if (!mkDoc.exists) {
+        return res.status(404).render('error', {
+          title: 'Error',
+          message: 'Mata kuliah tidak ditemukan'
+        });
+      }
+      if (!mkDoc.data().dosenIds || !mkDoc.data().dosenIds.includes(dosenId)) {
+        return res.status(403).render('error', {
+          title: 'Akses Ditolak',
+          message: 'Anda tidak mengampu mata kuliah ini'
+        });
+      }
+      mkList = [{ id: mkDoc.id, ...mkDoc.data() }];
+      mkIds = [mkId];
+    } else {
+      // Ambil semua MK yang diampu
+      mkList = await getMataKuliahDosen(dosenId);
+      mkIds = mkList.map(mk => mk.id);
+    }
 
     if (mkIds.length === 0) {
       return res.render('dosen/mahasiswa_list', {
         title: 'Mahasiswa Bimbingan',
         mahasiswaList: [],
         mkList: [],
-        filterMk: '',
-        filterAngkatan: '',
-        search: ''
+        filterMk: mkId || '',
+        filterAngkatan: angkatan || '',
+        search: search || '',
+        angkatanList: []
       });
     }
 
-    // Ambil semua enrollment untuk MK tersebut
-    let enrollmentQuery = db.collection('enrollment')
-      .where('mkId', 'in', mkIds);
-    const enrollmentSnapshot = await enrollmentQuery.get();
-    const mahasiswaIds = [...new Set(enrollmentSnapshot.docs.map(d => d.data().mahasiswaId))];
+    // Ambil semua enrollment untuk MK tersebut (hanya active) dengan chunking karena batas 'in' 10
+    let allEnrollments = [];
+    const chunkSize = 10;
+    for (let i = 0; i < mkIds.length; i += chunkSize) {
+      const chunk = mkIds.slice(i, i + chunkSize);
+      const snapshot = await db.collection('enrollment')
+        .where('mkId', 'in', chunk)
+        .where('status', '==', 'active')
+        .get();
+      allEnrollments = allEnrollments.concat(snapshot.docs);
+    }
+
+    // Kumpulkan userId unik
+    const mahasiswaIdsSet = new Set();
+    allEnrollments.forEach(doc => mahasiswaIdsSet.add(doc.data().userId));
+    const mahasiswaIds = Array.from(mahasiswaIdsSet);
 
     // Ambil data mahasiswa
     const mahasiswaList = [];
@@ -106,11 +115,11 @@ router.get('/', async (req, res) => {
         }
 
         // Ambil MK yang diambil mahasiswa ini (hanya dari MK yang diampu dosen)
-        const mkDiambil = enrollmentSnapshot.docs
-          .filter(d => d.data().mahasiswaId === uid)
-          .map(d => {
-            const mk = mkList.find(m => m.id === d.data().mkId);
-            return mk ? mk.kode : d.data().mkId;
+        const mkDiambil = allEnrollments
+          .filter(doc => doc.data().userId === uid)
+          .map(doc => {
+            const mk = mkList.find(mk => mk.id === doc.data().mkId);
+            return mk ? mk.kode : doc.data().mkId;
           });
 
         mahasiswaList.push({
@@ -143,27 +152,29 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Error mengambil mahasiswa bimbingan:', error);
-    res.status(500).render('error', { message: 'Gagal mengambil data mahasiswa' });
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal mengambil data mahasiswa' 
+    });
   }
 });
 
 // ============================================================================
-// DETAIL MAHASISWA (opsional)
+// DETAIL MAHASISWA
 // ============================================================================
 
-/**
- * GET /dosen/mahasiswa/:id
- * Menampilkan detail mahasiswa: profil, MK yang diambil, nilai, dll
- */
 router.get('/:id', async (req, res) => {
   try {
     const mahasiswaId = req.params.id;
-    const dosenId = req.user.id;
+    const dosenId = req.dosen.id;
 
     // Ambil data mahasiswa
     const userDoc = await db.collection('users').doc(mahasiswaId).get();
     if (!userDoc.exists) {
-      return res.status(404).send('Mahasiswa tidak ditemukan');
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        message: 'Mahasiswa tidak ditemukan'
+      });
     }
     const mahasiswa = { id: mahasiswaId, ...userDoc.data() };
 
@@ -171,10 +182,11 @@ router.get('/:id', async (req, res) => {
     const mkDosen = await getMataKuliahDosen(dosenId);
     const mkDosenIds = mkDosen.map(m => m.id);
 
-    // Ambil MK yang diambil mahasiswa (hanya dari MK yang diampu dosen)
+    // Ambil MK yang diambil mahasiswa (hanya dari MK yang diampu dosen, status active)
     const enrollmentSnapshot = await db.collection('enrollment')
-      .where('mahasiswaId', '==', mahasiswaId)
+      .where('userId', '==', mahasiswaId)
       .where('mkId', 'in', mkDosenIds)
+      .where('status', '==', 'active')
       .get();
     const mkDiambil = [];
     for (const doc of enrollmentSnapshot.docs) {
@@ -212,7 +224,10 @@ router.get('/:id', async (req, res) => {
 
   } catch (error) {
     console.error('Error detail mahasiswa:', error);
-    res.status(500).render('error', { message: 'Gagal memuat detail mahasiswa' });
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal memuat detail mahasiswa' 
+    });
   }
 });
 

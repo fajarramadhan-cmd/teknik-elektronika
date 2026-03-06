@@ -1,60 +1,224 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive (jika diperlukan nanti)
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    // Format: https://drive.google.com/uc?export=view&id=XXX
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    // Format: https://drive.google.com/file/d/XXX/view
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .matkul-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border: none;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
   }
-  .matkul-table td {
-    vertical-align: middle;
-    padding: 1rem 0.75rem;
-  }
-  .btn-action {
-    margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
-    transition: all 0.2s;
-  }
-  .btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-  }
+
+  /* ===== FILTER CARD ===== */
   .filter-card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 1.2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     background: white;
     padding: 1.5rem;
     margin-bottom: 2rem;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .filter-card .form-label {
+    font-weight: 600;
+    color: #1e293b;
   }
+  .filter-card .form-select,
+  .filter-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .filter-card .form-select:focus,
+  .filter-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    width: 100%;
+  }
+  .btn-reset:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .matkul-table {
+    margin-bottom: 0;
+  }
+  .matkul-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--primary-start);
+    padding: 1rem 0.75rem;
+  }
+  .matkul-table tbody tr {
+    transition: all 0.2s;
+  }
+  .matkul-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
+  }
+  .matkul-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== TOMBOL GRADIEN ===== */
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    color: white;
+    margin: 0 2px;
+  }
+  .btn-icon-sm i {
+    font-size: 1rem;
+  }
+  .btn-edit {
+    background: #ffc107;
+  }
+  .btn-edit:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(255,193,7,0.3);
+  }
+  .btn-delete {
+    background: #dc3545;
+  }
+  .btn-delete:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(220,53,69,0.3);
+  }
+
+  /* ===== BADGE DOSEN ===== */
   .badge-dosen {
-    background: #e9ecef;
-    color: #495057;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
     font-size: 0.8rem;
-    padding: 0.3rem 0.6rem;
-    border-radius: 20px;
+    display: inline-block;
     margin-right: 0.3rem;
     margin-bottom: 0.3rem;
-    display: inline-block;
+  }
+
+  /* ===== ALERT ===== */
+  .alert-custom {
+    border-radius: 1rem;
+    border-left: 4px solid;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Kelola Mata Kuliah</h2>
-    <a href="/admin/matakuliah/create" class="btn btn-primary">
-      <i class="bi bi-plus-circle me-2"></i>Tambah Mata Kuliah
+  <!-- Header dengan tombol tambah -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-book-fill me-2" style="color: var(--primary-start);"></i>Kelola Mata Kuliah</h2>
+    <a href="/admin/matakuliah/create" class="btn-gradient">
+      <i class="bi bi-plus-circle"></i> Tambah Mata Kuliah
     </a>
   </div>
 
@@ -62,7 +226,7 @@
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
       <div class="col-md-3">
-        <label for="semester" class="form-label fw-semibold">Semester</label>
+        <label for="semester" class="form-label fw-semibold"><i class="bi bi-funnel me-1"></i>Semester</label>
         <select class="form-select" id="semester" name="semester">
           <option value="">Semua Semester</option>
           <option value="1" <%= filterSemester === '1' ? 'selected' : '' %>>Semester 1</option>
@@ -74,83 +238,96 @@
         </select>
       </div>
       <div class="col-md-3">
-        <label for="search" class="form-label fw-semibold">Cari Kode/Nama</label>
-        <input type="text" class="form-control" id="search" name="search" placeholder="Ketik kode atau nama" value="<%= search || '' %>">
+        <label for="search" class="form-label fw-semibold"><i class="bi bi-search me-1"></i>Cari</label>
+        <input type="text" class="form-control" id="search" name="search" placeholder="Kode atau nama MK" value="<%= search || '' %>">
       </div>
       <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <button type="submit" class="btn-filter">Terapkan</button>
       </div>
       <div class="col-md-2">
-        <a href="/admin/matakuliah" class="btn btn-outline-secondary w-100">Reset</a>
+        <a href="/admin/matakuliah" class="btn-reset">Reset</a>
       </div>
     </form>
   </div>
 
   <!-- Notifikasi Sukses -->
   <% if (typeof success !== 'undefined' && success) { %>
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    <div class="alert alert-success alert-dismissible fade show mb-4 alert-custom" role="alert" style="border-left-color: #28a745;">
       <i class="bi bi-check-circle-fill me-2"></i>Data mata kuliah berhasil <%= success %>.
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   <% } %>
 
+  <!-- Info jumlah ditampilkan -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0">Menampilkan <strong><%= matakuliah.length %></strong> mata kuliah</p>
+  </div>
+
   <!-- Tabel Mata Kuliah -->
-  <div class="table-responsive">
-    <table class="table matkul-table">
-      <thead>
-        <tr>
-          <th>Kode</th>
-          <th>Nama MK</th>
-          <th>SKS</th>
-          <th>Semester</th>
-          <th>Dosen Pengampu</th>
-          <th>Jadwal</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (matakuliah.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table matkul-table">
+        <thead>
           <tr>
-            <td colspan="7" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada data mata kuliah.</p>
-            </td>
+            <th>Kode</th>
+            <th>Nama MK</th>
+            <th>SKS</th>
+            <th>Semester</th>
+            <th>Dosen Pengampu</th>
+            <th>Jadwal</th>
+            <th>Aksi</th>
           </tr>
-        <% } %>
-        <% matakuliah.forEach(mk => { %>
-        <tr>
-          <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= mk.kode %></span></td>
-          <td><strong><%= mk.nama %></strong></td>
-          <td class="text-center"><%= mk.sks %></td>
-          <td class="text-center"><%= mk.semester || '-' %></td>
-          <td>
-            <% if (mk.dosenNames && mk.dosenNames.length > 0) { %>
-              <div>
-                <% mk.dosenNames.forEach(nama => { %>
-                  <span class="badge-dosen"><%= nama %></span>
-                <% }) %>
-              </div>
-            <% } else if (mk.dosenIds && mk.dosenIds.length > 0) { %>
-              <span class="badge bg-secondary"><%= mk.dosenIds.length %> dosen</span>
-            <% } else { %>
-              <span class="text-muted">-</span>
-            <% } %>
-          </td>
-          <td><small><%= mk.jadwal || '-' %></small></td>
-          <td>
-            <a href="/admin/matakuliah/<%= mk.id %>/edit" class="btn btn-sm btn-warning btn-action" title="Edit">
-              <i class="bi bi-pencil"></i> Edit
-            </a>
-            <form method="POST" action="/admin/matakuliah/<%= mk.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus mata kuliah ini?')">
-              <button type="submit" class="btn btn-sm btn-danger btn-action" title="Hapus">
-                <i class="bi bi-trash"></i> Hapus
-              </button>
-            </form>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (matakuliah.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Data Mata Kuliah</h4>
+                  <p class="text-muted">Silakan tambahkan mata kuliah pertama dengan klik tombol "Tambah Mata Kuliah".</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% matakuliah.forEach(mk => { %>
+            <tr>
+              <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= mk.kode %></span></td>
+              <td><strong><%= mk.nama %></strong></td>
+              <td class="text-center"><span class="fw-semibold"><%= mk.sks %></span></td>
+              <td class="text-center"><%= mk.semester || '-' %></td>
+              <td>
+                <% if (mk.dosenNames && mk.dosenNames.length > 0) { %>
+                  <div>
+                    <% mk.dosenNames.forEach(nama => { %>
+                      <span class="badge-dosen"><%= nama %></span>
+                    <% }) %>
+                  </div>
+                <% } else if (mk.dosenIds && mk.dosenIds.length > 0) { %>
+                  <span class="badge-dosen"><%= mk.dosenIds.length %> dosen</span>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td><small><%= mk.jadwal || '-' %></small></td>
+              <td>
+                <div class="d-flex gap-1">
+                  <a href="/admin/matakuliah/<%= mk.id %>/edit" class="btn-icon-sm btn-edit" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <form method="POST" action="/admin/matakuliah/<%= mk.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus mata kuliah ini?')">
+                    <button type="submit" class="btn-icon-sm btn-delete" title="Hapus">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

@@ -14,8 +14,10 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
+const auth = admin.auth(); // <-- tambahkan ini
 
 module.exports = {
   admin,
-  db
+  db,
+  auth, // <-- ekspor auth
 };

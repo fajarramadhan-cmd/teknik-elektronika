@@ -1,86 +1,300 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mendapatkan thumbnail dari Google Drive (jika diperlukan)
+  const getDriveThumbnail = (url, size = 100) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w${size}-h${size}`;
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w${size}-h${size}`;
+    return url;
+  };
+  const fotoThumb = user.foto ? getDriveThumbnail(user.foto, 100) : null;
+%>
+
 <style>
-  .krs-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== TEMA KONSISTEN ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* Page Header */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-header .nim-badge {
+    background: white;
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Info Card */
+  .info-card {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .info-card .d-flex {
+    align-items: center;
+  }
+  .avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 2rem;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(33,147,176,0.3);
+  }
+  .foto-mahasiswa {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .info-card h4 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+  }
+  .info-card .text-muted {
+    color: #64748b;
+  }
+
+  /* Tombol Buat KRS */
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.7rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+
+  /* Tabel Container */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .table-responsive {
+    margin: 0;
+  }
+  .krs-table {
+    margin-bottom: 0;
+  }
+  .krs-table thead th {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     border: none;
+    padding: 1.2rem 1rem;
+    white-space: nowrap;
   }
-  .krs-table td {
+  .krs-table tbody td {
     vertical-align: middle;
-    padding: 1rem 0.75rem;
+    padding: 1rem 1rem;
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
   }
+  .krs-table tbody tr:hover td {
+    background-color: #f8f9fa;
+  }
+
+  /* Badge Status */
   .badge-status {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid transparent;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+
+  /* Mata Kuliah Badge */
+  .mk-badge {
+    background: var(--primary-light);
+    color: var(--primary-start);
+    padding: 0.3rem 0.8rem;
     border-radius: 50px;
     font-weight: 500;
     font-size: 0.8rem;
+    display: inline-block;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
   }
-  .badge-pending { background: #ffc107; color: #212529; }
-  .badge-approved { background: #28a745; color: white; }
-  .badge-rejected { background: #dc3545; color: white; }
-  .avatar-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+  /* Tombol Detail */
+  .btn-detail {
+    background: transparent;
+    border: 1.5px solid var(--primary-start);
+    color: var(--primary-start);
     font-weight: 600;
-    font-size: 1.2rem;
-  }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-  }
-  .info-card {
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 0.6rem 2rem;
+    padding: 0.4rem 1.2rem;
     border-radius: 50px;
+    font-size: 0.85rem;
     transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
   }
-  .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  .btn-detail:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(33,147,176,0.3);
+  }
+
+  /* Empty State */
+  .empty-state {
+    padding: 4rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1rem;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+
+  /* Responsif */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .info-card .d-flex {
+      flex-direction: column;
+      text-align: center;
+    }
+    .info-card .ms-3 {
+      margin-left: 0 !important;
+      margin-top: 0.5rem;
+    }
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Kartu Rencana Studi (KRS)</h2>
-    <div>
-      <span class="badge bg-primary p-2"><%= user.nim %></span>
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2>
+      <i class="bi bi-card-list"></i> Kartu Rencana Studi (KRS)
+    </h2>
+    <div class="nim-badge">
+      <i class="bi bi-qr-code"></i> <%= user.nim %>
     </div>
   </div>
 
+  <!-- Info Mahasiswa -->
   <div class="info-card">
-    <div class="d-flex align-items-center">
-      <% if (user.foto) { %>
-        <img src="<%= user.foto %>" alt="foto" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
-      <% } else { %>
-        <div class="avatar-circle me-3" style="width: 60px; height: 60px; font-size: 2rem;"><%= (user.nama || '?').charAt(0).toUpperCase() %></div>
-      <% } %>
-      <div>
+    <div class="d-flex">
+      <div class="flex-shrink-0">
+        <% if (fotoThumb) { %>
+          <img src="<%= fotoThumb %>" alt="foto <%= user.nama %>" class="foto-mahasiswa" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(user.nama) %>&background=2193b0&color=fff&size=60';">
+        <% } else if (user.foto) { %>
+          <img src="<%= user.foto %>" alt="foto" class="foto-mahasiswa">
+        <% } else { %>
+          <div class="avatar-circle"><%= (user.nama || '?').charAt(0).toUpperCase() %></div>
+        <% } %>
+      </div>
+      <div class="flex-grow-1 ms-3">
         <h4><%= user.nama %></h4>
-        <p class="text-muted mb-0">Program Studi Teknik Elektronika</p>
+        <p class="text-muted mb-0"><i class="bi bi-mortarboard me-2"></i>Program Studi Teknik Elektronika</p>
       </div>
     </div>
   </div>
@@ -88,67 +302,74 @@
   <!-- Tombol Buat KRS Baru -->
   <div class="mb-4">
     <a href="/mahasiswa/akademik/krs/baru" class="btn-gradient">
-      <i class="bi bi-plus-circle me-2"></i>Buat KRS Baru
+      <i class="bi bi-plus-circle"></i> Buat KRS Baru
     </a>
   </div>
 
   <!-- Tabel KRS -->
-  <div class="table-responsive">
-    <table class="table krs-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Semester</th>
-          <th>Mata Kuliah</th>
-          <th>Status</th>
-          <th>Tanggal Diajukan</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (krsList.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table krs-table">
+        <thead>
           <tr>
-            <td colspan="6" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada KRS yang diajukan.</p>
-            </td>
+            <th>No</th>
+            <th>Semester</th>
+            <th>Mata Kuliah</th>
+            <th>Status</th>
+            <th>Tanggal Diajukan</th>
+            <th>Aksi</th>
           </tr>
-        <% } else { %>
-          <% krsList.forEach((krs, index) => { %>
-          <tr>
-            <td class="fw-bold"><%= index + 1 %></td>
-            <td><%= krs.semester || '-' %></td>
-            <td>
-              <% if (krs.courses && krs.courses.length > 0) { %>
-                <ul class="list-unstyled mb-0 small">
-                  <% krs.courses.slice(0, 2).forEach(c => { %>
-                    <li><span class="badge bg-primary bg-opacity-10 text-primary"><%= c.kode %></span> <%= c.nama %></li>
-                  <% }) %>
-                  <% if (krs.courseCount > 2) { %>
-                    <li class="text-muted">+ <%= krs.courseCount - 2 %> lainnya</li>
-                  <% } %>
-                </ul>
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td>
-              <span class="badge-status 
-                <%= krs.status === 'pending' ? 'badge-pending' : '' %>
-                <%= krs.status === 'approved' ? 'badge-approved' : '' %>
-                <%= krs.status === 'rejected' ? 'badge-rejected' : '' %>">
-                <%= krs.status %>
-              </span>
-            </td>
-            <td><%= krs.createdAt ? new Date(krs.createdAt).toLocaleDateString('id-ID') : '-' %></td>
-            <td>
-              <a href="/mahasiswa/akademik/krs/<%= krs.id %>" class="btn btn-sm btn-outline-primary">Detail</a>
-            </td>
-          </tr>
-          <% }) %>
-        <% } %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (krsList.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <p>Belum ada KRS yang diajukan.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% krsList.forEach((krs, index) => { %>
+            <tr>
+              <td class="fw-bold text-center"><%= index + 1 %></td>
+              <td><span class="badge bg-light text-dark px-3 py-2"><%= krs.semester || '-' %></span></td>
+              <td>
+                <% if (krs.courses && krs.courses.length > 0) { %>
+                  <div class="d-flex flex-wrap">
+                    <% krs.courses.slice(0, 2).forEach(c => { %>
+                      <span class="mk-badge"><%= c.kode %></span>
+                    <% }) %>
+                    <% if (krs.courseCount > 2) { %>
+                      <span class="mk-badge">+<%= krs.courseCount - 2 %> lagi</span>
+                    <% } %>
+                  </div>
+                <% } else { %>
+                  <span class="text-muted">-</span>
+                <% } %>
+              </td>
+              <td>
+                <span class="badge-status 
+                  <%= krs.status === 'pending' ? 'badge-pending' : '' %>
+                  <%= krs.status === 'approved' ? 'badge-approved' : '' %>
+                  <%= krs.status === 'rejected' ? 'badge-rejected' : '' %>">
+                  <i class="bi <%= krs.status === 'pending' ? 'bi-hourglass-split' : (krs.status === 'approved' ? 'bi-check-circle' : 'bi-x-circle') %>"></i>
+                  <%= krs.status === 'pending' ? 'Pending' : (krs.status === 'approved' ? 'Disetujui' : 'Ditolak') %>
+                </span>
+              </td>
+              <td><%= krs.createdAt ? new Date(krs.createdAt).toLocaleDateString('id-ID') : '-' %></td>
+              <td>
+                <a href="/mahasiswa/akademik/krs/<%= krs.id %>" class="btn-detail">
+                  <i class="bi bi-eye"></i> Detail
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

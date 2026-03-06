@@ -1,108 +1,355 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== PROFILE CARD ===== */
   .profile-card {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
   }
   .avatar-large {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid white;
+    border: 4px solid rgba(255,255,255,0.5);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   }
   .avatar-circle-large {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     background: white;
-    color: #2193b0;
+    color: var(--primary-start);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
     font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   }
+
+  /* ===== FILTER CARD ===== */
   .filter-card {
     background: white;
-    border-radius: 1rem;
+    border-radius: 1.2rem;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid rgba(33,147,176,0.1);
   }
-  .logbook-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  .filter-card .form-label {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .filter-card .form-select,
+  .filter-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .filter-card .form-select:focus,
+  .filter-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
     color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    width: 100%;
+  }
+  .btn-reset:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== TOMBOL KEMBALI ===== */
+  .btn-back {
+    background: white;
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: none;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* ===== TOMBOL PRINT ===== */
+  .btn-print {
+    background: #17a2b8;
+    border: none;
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(23,162,184,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-print:hover {
+    background: #138496;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(23,162,184,0.3);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .logbook-table {
+    margin-bottom: 0;
+  }
+  .logbook-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    border: none;
+    border-bottom: 2px solid var(--primary-start);
+    padding: 1rem 0.75rem;
+    white-space: nowrap;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .logbook-table tbody tr {
+    transition: all 0.2s;
   }
+  .logbook-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
+  }
+  .logbook-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== THUMBNAIL ===== */
   .thumbnail {
     width: 50px;
     height: 50px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    border: 1px solid #ddd;
+    border: 2px solid transparent;
+    transition: all 0.2s;
   }
   .thumbnail:hover {
-    opacity: 0.8;
+    border-color: var(--primary-start);
+    transform: scale(1.05);
   }
-  .btn-aksi {
-    margin: 2px;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.8rem;
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    color: white;
+    margin: 0 2px;
+  }
+  .btn-icon-sm i {
+    font-size: 1rem;
+  }
+  .btn-approve {
+    background: #28a745;
+  }
+  .btn-approve:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(40,167,69,0.3);
+  }
+  .btn-reject {
+    background: #dc3545;
+  }
+  .btn-reject:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(220,53,69,0.3);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
   <!-- Profil Mahasiswa -->
   <div class="profile-card">
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center flex-wrap">
       <div class="flex-shrink-0 me-4">
-        <% if (mahasiswa.foto) { %>
-          <img src="<%= mahasiswa.foto %>" alt="foto" class="avatar-large">
+        <% if (mahasiswa.foto) { 
+          const fileId = getFileIdFromUrl(mahasiswa.foto);
+          if (fileId) { %>
+            <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
+                 alt="foto" 
+                 class="avatar-large"
+                 onerror="this.onerror=null; this.src='<%= mahasiswa.foto %>';">
+          <% } else { %>
+            <img src="<%= mahasiswa.foto %>" 
+                 alt="foto" 
+                 class="avatar-large"
+                 onerror="this.onerror=null; this.src='https://via.placeholder.com/80?text=<%= (mahasiswa.nama || '?').charAt(0).toUpperCase() %>';">
+          <% } %>
         <% } else { %>
           <div class="avatar-circle-large"><%= (mahasiswa.nama || '?').charAt(0).toUpperCase() %></div>
         <% } %>
       </div>
       <div>
         <h2 class="fw-bold"><%= mahasiswa.nama %></h2>
-        <p class="mb-1"><i class="bi bi-qr-code me-2"></i>NIM: <%= mahasiswa.nim %></p>
+        <p class="mb-1"><i class="bi bi-qr-code me-2"></i>NIM: <%= mahasiswa.nim || '-' %></p>
         <p class="mb-1"><i class="bi bi-envelope me-2"></i><%= mahasiswa.email %></p>
         <p class="mb-0"><i class="bi bi-telephone me-2"></i><%= mahasiswa.noHp || '-' %></p>
       </div>
     </div>
   </div>
-  
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold">Logbook Magang</h4>
-    <div>
-      <a href="/admin/emagang/print?userId=<%= mahasiswa.id %>&semester=<%= selectedSemester %>" class="btn btn-info me-2" target="_blank">
-        <i class="bi bi-printer me-2"></i>Print
+
+  <!-- Header dengan judul dan tombol aksi -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold"><i class="bi bi-journal-bookmark-fill me-2" style="color: var(--primary-start);"></i>Logbook Magang</h4>
+    <div class="d-flex gap-2">
+      <a href="/admin/emagang/print?userId=<%= mahasiswa.id %>&semester=<%= selectedSemester %>" class="btn-print" target="_blank">
+        <i class="bi bi-printer"></i> Print
       </a>
-      <a href="/admin/emagang" class="btn btn-outline-primary">
-        <i class="bi bi-arrow-left me-2"></i>Kembali
+      <a href="/admin/emagang" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Kembali
       </a>
     </div>
   </div>
-  
+
   <!-- Filter Semester -->
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
       <div class="col-md-4">
-        <label for="semester" class="form-label fw-semibold">Filter Semester</label>
+        <label for="semester" class="form-label fw-semibold"><i class="bi bi-calendar3 me-1"></i>Filter Semester</label>
         <select class="form-select" id="semester" name="semester">
           <option value="">Semua Semester</option>
           <% if (semesterList && semesterList.length > 0) { %>
@@ -113,118 +360,117 @@
         </select>
       </div>
       <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Terapkan</button>
       </div>
       <div class="col-md-2">
-        <a href="/admin/emagang/mahasiswa/<%= mahasiswa.id %>" class="btn btn-outline-secondary w-100">Reset</a>
+        <a href="/admin/emagang/mahasiswa/<%= mahasiswa.id %>" class="btn-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
       </div>
     </form>
   </div>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold">Logbook Magang</h4>
-    <a href="/admin/emagang" class="btn btn-outline-primary">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
-    </a>
+  <!-- Info jumlah -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0 fw-semibold"><i class="bi bi-files me-1" style="color: var(--primary-start);"></i> Menampilkan <strong><%= logbookList.length %></strong> entri logbook</p>
   </div>
 
   <!-- Tabel Logbook -->
-  <div class="table-responsive">
-    <table class="table logbook-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Tanggal</th>
-          <th>Kegiatan</th>
-          <th>Durasi</th>
-          <th>Lokasi</th>
-          <th>Semester</th>
-          <th>Gambar</th>
-          <th>Status</th>
-          <th>Aksi</th> <!-- Kolom baru -->
-          <th>Waktu Input</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (logbookList.length === 0) { %>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table logbook-table">
+        <thead>
           <tr>
-            <td colspan="10" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Tidak ada logbook untuk semester ini.</p>
-            </td>
+            <th>No</th>
+            <th>Tanggal</th>
+            <th>Kegiatan</th>
+            <th>Durasi</th>
+            <th>Lokasi</th>
+            <th>Semester</th>
+            <th>Gambar</th>
+            <th>Status</th>
+            <th>Aksi</th>
+            <th>Waktu Input</th>
           </tr>
-        <% } %>
-        <% logbookList.forEach((item, index) => { %>
-          <tr>
-            <td class="text-center"><%= index + 1 %></td>
-            <td><%= item.tanggalFormatted %></td>
-            <td><%= item.kegiatan %></td>
-            <td class="text-center"><%= item.durasi || '-' %></td>
-            <td><%= item.lokasi || '-' %></td>
-            <td><%= item.semester || '-' %></td>
-            <td class="text-center">
-              <% if (item.imageUrls && item.imageUrls.length > 0) { 
-                // Ekstrak file ID dari URL pertama
-                let fileId = '';
-                let url = item.imageUrls[0];
-                if (url.includes('id=')) {
-                  fileId = url.split('id=')[1].split('&')[0];
-                } else if (url.includes('/d/')) {
-                  fileId = url.split('/d/')[1].split('/')[0];
-                } else {
-                  fileId = url.split('/').pop();
-                }
-              %>
-                <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
-                     class="thumbnail" alt="dokumentasi"
-                     onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
-                     onerror="this.onerror=null; this.src='https://drive.google.com/uc?export=view&id=<%= fileId %>';">
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td>
-              <% if (item.status === 'approved') { %>
-                <span class="badge bg-success">Disetujui</span>
-              <% } else if (item.status === 'rejected') { %>
-                <span class="badge bg-danger">Ditolak</span>
-              <% } else { %>
-                <span class="badge bg-warning text-dark">Pending</span>
-              <% } %>
-            </td>
-            <td>
-              <% if (item.status === 'pending') { %>
-                <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/approve" style="display:inline;">
-                  <button type="submit" class="btn btn-sm btn-success btn-aksi" onclick="return confirm('Setujui logbook ini?')">
-                    <i class="bi bi-check-lg"></i> Setujui
-                  </button>
-                </form>
-                <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/reject" style="display:inline;">
-                  <button type="submit" class="btn btn-sm btn-danger btn-aksi" onclick="return confirm('Tolak logbook ini?')">
-                    <i class="bi bi-x-lg"></i> Tolak
-                  </button>
-                </form>
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td><small class="text-muted"><%= item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '-' %></small></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (logbookList.length === 0) { %>
+            <tr>
+              <td colspan="10" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Belum Ada Data</h4>
+                  <p class="text-muted">Tidak ada logbook untuk ditampilkan.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% logbookList.forEach((item, index) => { %>
+              <tr>
+                <td class="fw-bold"><%= index + 1 %></td>
+                <td><%= item.tanggalFormatted %></td>
+                <td><%= item.kegiatan.length > 50 ? item.kegiatan.substring(0,50)+'...' : item.kegiatan %></td>
+                <td class="text-center"><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
+                <td><%= item.lokasi || '-' %></td>
+                <td><%= item.semester || '-' %></td>
+                <td class="text-center">
+                  <% if (item.imageUrls && item.imageUrls.length > 0) { 
+                    const firstUrl = item.imageUrls[0];
+                    const fileId = getFileIdFromUrl(firstUrl);
+                  %>
+                    <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
+                         class="thumbnail" 
+                         alt="dokumentasi"
+                         onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
+                         onerror="this.onerror=null; this.src='<%= firstUrl %>';">
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (item.status === 'approved') { %>
+                    <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                  <% } else if (item.status === 'rejected') { %>
+                    <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                  <% } else { %>
+                    <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
+                  <% } %>
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <% if (item.status === 'pending') { %>
+                      <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/approve" style="display:inline;">
+                        <button class="btn-icon-sm btn-approve" title="Setujui" onclick="return confirm('Setujui logbook ini?')">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                      </form>
+                      <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/reject" style="display:inline;">
+                        <button class="btn-icon-sm btn-reject" title="Tolak" onclick="return confirm('Tolak logbook ini?')">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted">-</span>
+                    <% } %>
+                  </div>
+                </td>
+                <td><small class="text-muted"><%= item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '-' %></small></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <!-- Lightbox Modal untuk melihat semua gambar -->
 <div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Dokumentasi</h5>
+        <h5 class="modal-title"><i class="bi bi-images"></i> Dokumentasi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body p-0">
         <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
           <div class="carousel-inner" id="galleryCarouselInner"></div>
           <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
@@ -245,16 +491,39 @@
   function lihatGambar(imageUrls) {
     const inner = document.getElementById('galleryCarouselInner');
     inner.innerHTML = '';
+    if (!imageUrls || imageUrls.length === 0) {
+      alert('Tidak ada gambar untuk ditampilkan.');
+      return;
+    }
     imageUrls.forEach((url, index) => {
+      // Gunakan thumbnail jika URL dari Google Drive
+      let imgUrl = url;
+      const fileId = getFileIdFromUrl(url);
+      if (fileId) {
+        imgUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+      }
       const activeClass = index === 0 ? 'active' : '';
       const item = `
         <div class="carousel-item ${activeClass}">
-          <img src="${url}" class="d-block w-100" alt="Dokumentasi">
+          <img src="${imgUrl}" 
+               class="d-block w-100" 
+               alt="Dokumentasi"
+               onerror="this.onerror=null; this.src='${url}';">
         </div>
       `;
       inner.innerHTML += item;
     });
     new bootstrap.Modal(document.getElementById('galleryModal')).show();
+  }
+
+  // Fungsi untuk mengekstrak fileId dari URL Google Drive
+  function getFileIdFromUrl(url) {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
   }
 </script>
 

@@ -57,7 +57,8 @@ router.get('/', async (req, res) => {
 
     const snapshot = await query.get();
 
-    const logbookList = [];
+    // Tampung semua logbook yang memenuhi filter
+    const allLogbook = [];
     for (const doc of snapshot.docs) {
       const data = doc.data();
       const mahasiswa = await getMahasiswa(data.userId);
@@ -66,14 +67,13 @@ router.get('/', async (req, res) => {
         continue;
       }
 
-      // Ambil nama mata kuliah jika ada
       let courseName = '';
       if (data.courseId) {
         const mkDoc = await db.collection('mataKuliah').doc(data.courseId).get();
         if (mkDoc.exists) courseName = mkDoc.data().nama;
       }
 
-      logbookList.push({
+      allLogbook.push({
         id: doc.id,
         ...data,
         mahasiswa,
@@ -82,7 +82,18 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Ambil daftar mahasiswa untuk dropdown
+    // Grouping per mahasiswa: ambil logbook terbaru (karena sudah diurutkan descending)
+    const latestMap = new Map();
+    allLogbook.forEach(item => {
+      const mId = item.mahasiswa?.id;
+      if (!mId) return;
+      if (!latestMap.has(mId)) {
+        latestMap.set(mId, item); // item pertama adalah yang terbaru
+      }
+    });
+    const logbookList = Array.from(latestMap.values());
+
+    // Ambil daftar mahasiswa untuk dropdown (tanpa duplikasi)
     const mahasiswaSnapshot = await db.collection('users')
       .where('role', '==', 'mahasiswa')
       .orderBy('nama')
@@ -99,7 +110,7 @@ router.get('/', async (req, res) => {
 
     res.render('admin/emagang_list', {
       title: 'E‑Magang - Logbook Mahasiswa',
-      logbookList,
+      logbookList,        // sudah berisi satu baris per mahasiswa (logbook terbaru)
       mahasiswaList,
       pdkCourses,
       filters: { mahasiswaId, courseId, semester, startDate, endDate, search }

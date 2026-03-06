@@ -1,63 +1,302 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== GROUP CARD ===== */
   .group-card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 1.2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    transition: all 0.3s;
   }
-  .laporan-badge {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    text-align: center;
+  .group-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+    border-color: transparent;
+  }
+
+  /* ===== AVATAR ===== */
+  .avatar-circle {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.5rem;
+    box-shadow: 0 5px 10px rgba(33,147,176,0.2);
+  }
+
+  /* ===== LAPORAN CARD ===== */
+  .laporan-mini-card {
+    border: 1px solid #e9ecef;
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    min-width: 120px;
+    transition: all 0.2s;
+    background: #f8fafc;
+  }
+  .laporan-mini-card:hover {
+    border-color: var(--primary-start);
+    background: white;
+    box-shadow: 0 5px 10px rgba(33,147,176,0.1);
+  }
+  .laporan-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .laporan-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
+    width: fit-content;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+  .badge-empty {
     background: #e9ecef;
-    margin-right: 0.5rem;
+    color: #6c757d;
+    border-color: #dee2e6;
+  }
+
+  /* ===== TOMBOL ===== */
+  .btn-outline-primary-custom {
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    background: transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-outline-primary-custom:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <h2 class="fw-bold mb-4">Laporan Magang Mahasiswa</h2>
+  <!-- Header dengan gradien -->
+  <div class="page-header">
+    <h2><i class="bi bi-file-earmark-pdf-fill me-2"></i>Laporan Magang Mahasiswa</h2>
+    <p class="mb-0">Rekap laporan magang per mahasiswa (laporan 1, 2, dan 3)</p>
+  </div>
 
   <% if (groupedList.length === 0) { %>
-    <div class="alert alert-info">Belum ada laporan yang diupload.</div>
-  <% } %>
-
-  <% groupedList.forEach(group => { %>
-    <div class="group-card">
-      <div class="d-flex align-items-center mb-3">
-        <div>
-          <h5 class="fw-bold mb-1"><%= group.mahasiswa.nama %></h5>
-          <p class="text-muted mb-0"><%= group.mahasiswa.nim || '-' %></p>
-        </div>
-        <div class="ms-auto">
-          <a href="/admin/laporan-magang/mahasiswa/<%= group.mahasiswa.id %>" class="btn btn-outline-primary btn-sm">
-            Lihat Semua Laporan
-          </a>
-        </div>
-      </div>
-      <div class="d-flex gap-3 flex-wrap">
-        <% for (let i = 1; i <= 3; i++) { 
-          const laporan = group.laporan.find(l => l.laporanKe === i);
-        %>
-          <div class="border rounded p-2" style="min-width: 120px;">
-            <div class="fw-bold">Lap <%= i %></div>
-            <% if (laporan) { %>
-              <span class="badge bg-<%= laporan.status === 'submitted' ? 'warning' : (laporan.status === 'approved' ? 'success' : 'danger') %>">
-                <%= laporan.status === 'submitted' ? 'Menunggu' : (laporan.status === 'approved' ? 'Disetujui' : 'Ditolak') %>
-              </span>
-            <% } else { %>
-              <span class="text-muted">-</span>
-            <% } %>
-          </div>
-        <% } %>
-      </div>
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <h4>Belum Ada Laporan</h4>
+      <p class="text-muted">Belum ada laporan magang yang diupload mahasiswa.</p>
     </div>
-  <% }) %>
+  <% } else { %>
+    <div class="row">
+      <% groupedList.forEach(group => { %>
+        <div class="col-lg-6">
+          <div class="group-card">
+            <!-- Header mahasiswa -->
+            <div class="d-flex align-items-center mb-3">
+              <div class="flex-shrink-0 me-3">
+                <% if (group.mahasiswa.foto) { 
+                  const fileId = getFileIdFromUrl(group.mahasiswa.foto);
+                  if (fileId) { %>
+                    <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w100" 
+                         alt="foto" 
+                         class="rounded-circle" 
+                         style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--primary-start);"
+                         onerror="this.onerror=null; this.src='<%= group.mahasiswa.foto %>';">
+                  <% } else { %>
+                    <img src="<%= group.mahasiswa.foto %>" 
+                         alt="foto" 
+                         class="rounded-circle" 
+                         style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--primary-start);"
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/50?text=<%= (group.mahasiswa.nama || '?').charAt(0).toUpperCase() %>';">
+                  <% } %>
+                <% } else { %>
+                  <div class="avatar-circle"><%= (group.mahasiswa.nama || '?').charAt(0).toUpperCase() %></div>
+                <% } %>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-1"><%= group.mahasiswa.nama %></h5>
+                <p class="text-muted mb-0"><%= group.mahasiswa.nim || '-' %></p>
+              </div>
+              <div class="ms-auto">
+                <a href="/admin/laporan-magang/mahasiswa/<%= group.mahasiswa.id %>" class="btn-outline-primary-custom">
+                  <i class="bi bi-eye"></i> Lihat Semua
+                </a>
+              </div>
+            </div>
+
+            <!-- Ringkasan 3 laporan -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <% for (let i = 1; i <= 3; i++) { 
+                const laporan = group.laporan.find(l => l.laporanKe === i);
+              %>
+                <div class="laporan-mini-card flex-grow-1">
+                  <div class="laporan-header">
+                    <div class="laporan-icon"><%= i %></div>
+                    <span class="fw-semibold small">Laporan <%= i %></span>
+                  </div>
+                  <div>
+                    <% if (laporan) { 
+                      let statusClass = '';
+                      let statusIcon = '';
+                      let statusText = '';
+                      if (laporan.status === 'submitted') {
+                        statusClass = 'badge-pending';
+                        statusIcon = 'bi-hourglass-split';
+                        statusText = 'Menunggu';
+                      } else if (laporan.status === 'approved') {
+                        statusClass = 'badge-approved';
+                        statusIcon = 'bi-check-circle';
+                        statusText = 'Disetujui';
+                      } else if (laporan.status === 'rejected') {
+                        statusClass = 'badge-rejected';
+                        statusIcon = 'bi-x-circle';
+                        statusText = 'Ditolak';
+                      }
+                    %>
+                      <span class="badge-status <%= statusClass %>">
+                        <i class="bi <%= statusIcon %>"></i> <%= statusText %>
+                      </span>
+                    <% } else { %>
+                      <span class="badge-status badge-empty">
+                        <i class="bi bi-dash-circle"></i> Belum upload
+                      </span>
+                    <% } %>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
 </div>
 
 <%- include('../partials/footer') %>
