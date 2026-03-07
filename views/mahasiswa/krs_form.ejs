@@ -25,6 +25,7 @@
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
     transition: all 0.2s;
+    position: relative;
   }
   .course-item:hover {
     background-color: #f8f9fa;
@@ -33,6 +34,14 @@
   .course-item.selected {
     background-color: #e3f2fd;
     border-color: #2193b0;
+  }
+  .recommended-badge {
+    background: #28a745;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    margin-left: 0.5rem;
   }
   .btn-gradient {
     background: linear-gradient(135deg, #2193b0, #6dd5ed);
@@ -48,28 +57,15 @@
     box-shadow: 0 10px 20px rgba(33,147,176,0.3);
     color: white;
   }
-  .semester-options {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .semester-option {
-    border: 1px solid #dee2e6;
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .semester-option:hover {
-    background-color: #e9ecef;
-  }
-  .semester-option.active {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    color: white;
-    border-color: transparent;
-  }
   .search-box {
     margin-bottom: 1.5rem;
+  }
+  .info-semester {
+    background: #f8f9fa;
+    border-left: 4px solid #2193b0;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
   }
 </style>
 
@@ -77,20 +73,19 @@
   <div class="form-card">
     <div class="form-header">
       <h2>Buat KRS Baru</h2>
-      <p class="mb-0">Pilih mata kuliah untuk semester yang akan diambil</p>
+      <p class="mb-0">Semester aktif: <strong><%= academicLabel %></strong> (Semester <%= currentSemester %>)</p>
     </div>
     <div class="form-body">
+      <!-- Informasi tambahan -->
+      <div class="info-semester">
+        <i class="bi bi-info-circle me-2"></i>
+        Berdasarkan angkatan Anda, saat ini Anda berada di semester <strong><%= currentSemester %></strong>. 
+        Mata kuliah yang diberi label <span class="recommended-badge">Rekomendasi</span> adalah paket semester ini.
+      </div>
+
       <form id="krsForm" method="POST" action="/mahasiswa/akademik/krs">
-        <div class="mb-4">
-          <label class="form-label fw-bold">Pilih Semester</label>
-          <div class="semester-options" id="semesterOptions">
-            <div class="semester-option" data-value="Ganjil 2024/2025">Ganjil 2024/2025</div>
-            <div class="semester-option" data-value="Genap 2024/2025">Genap 2024/2025</div>
-            <div class="semester-option" data-value="Ganjil 2025/2026">Ganjil 2025/2026</div>
-            <div class="semester-option" data-value="Genap 2025/2026">Genap 2025/2026</div>
-          </div>
-          <input type="hidden" name="semester" id="selectedSemester" required>
-        </div>
+        <!-- Semester sudah ditentukan, dikirim sebagai hidden -->
+        <input type="hidden" name="semester" value="<%= academicLabel %>">
 
         <div class="mb-4">
           <label class="form-label fw-bold">Cari Mata Kuliah</label>
@@ -107,6 +102,9 @@
                     <div>
                       <strong><%= course.kode %></strong> - <%= course.nama %>
                       <span class="badge bg-secondary ms-2"><%= course.sks %> SKS</span>
+                      <% if (course.isRecommended) { %>
+                        <span class="recommended-badge">Rekomendasi</span>
+                      <% } %>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input course-checkbox" type="checkbox" value="<%= course.id %>">
@@ -141,17 +139,6 @@
 </div>
 
 <script>
-  // Pilih semester
-  const semesterOptions = document.querySelectorAll('.semester-option');
-  const selectedSemester = document.getElementById('selectedSemester');
-  semesterOptions.forEach(opt => {
-    opt.addEventListener('click', function() {
-      semesterOptions.forEach(o => o.classList.remove('active'));
-      this.classList.add('active');
-      selectedSemester.value = this.dataset.value;
-    });
-  });
-
   // Pencarian mata kuliah
   const searchInput = document.getElementById('searchCourse');
   const courseItems = document.querySelectorAll('.course-item');
@@ -187,22 +174,11 @@
     totalSpan.textContent = total;
     selectedCoursesInput.value = JSON.stringify(selected);
 
-    // Aktifkan tombol jika semester terpilih dan ada mata kuliah dipilih
-    if (selectedSemester.value && selected.length > 0) {
-      submitBtn.disabled = false;
-    } else {
-      submitBtn.disabled = true;
-    }
+    // Aktifkan tombol jika ada mata kuliah dipilih (semester sudah otomatis terisi)
+    submitBtn.disabled = selected.length === 0;
   }
 
   checkboxes.forEach(cb => cb.addEventListener('change', updateTotal));
-
-  // Update jika semester berubah
-  semesterOptions.forEach(opt => {
-    opt.addEventListener('click', function() {
-      updateTotal();
-    });
-  });
 
   // Styling item yang dipilih
   checkboxes.forEach(cb => {

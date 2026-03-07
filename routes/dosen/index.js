@@ -10,19 +10,79 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken, isDosen } = require('../../middleware/auth');
 const { db } = require('../../config/firebaseAdmin');
+const drive = require('../../config/googleDrive');
+const { Readable } = require('stream');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Import sub‑modul
 const laporanMagangRouter = require('./laporanMagang');
 const seminarRouter = require('./seminar');
+const dashboardRouter = require('./dashboard');
+const magangRouter = require('./magang');
+const biodataRouter = require('./biodata');
+const tugasRouter = require('./tugas');
+const elearningRouter = require('./elearning');
+const mkRouter = require('./mk');
+const kurikulumRouter = require('./kurikulum');
+const nilaiRouter = require('./nilai');
+const mahasiswaRouter = require('./mahasiswa');
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0'; // Ganti dengan ID folder Anda
+
+// ============================================================================
+// FUNGSI BANTU
+// ============================================================================
+
+/**
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
+ */
+async function getOrCreateSubFolder(parentId, name) {
+  const query = await drive.files.list({
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (query.data.files.length > 0) {
+    return query.data.files[0].id;
+  } else {
+    const folder = await drive.files.create({
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id',
+    });
+    return folder.data.id;
+  }
+}
+
+/**
+ * Mendapatkan folder untuk menyimpan file soal tugas.
+ * Struktur: Data WEB / Dosen / Tugas / [KodeMK] / Soal /
+ * @param {string} kodeMK - Kode mata kuliah (contoh: "PDK001")
+ * @returns {Promise<string>} ID folder
+ */
+async function getSoalTugasFolder(kodeMK) {
+  const parentDosen = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Dosen');
+  const parentTugas = await getOrCreateSubFolder(parentDosen, 'Tugas');
+  const mkFolder = await getOrCreateSubFolder(parentTugas, kodeMK);
+  const soalFolder = await getOrCreateSubFolder(mkFolder, 'Soal');
+  return soalFolder;
+}
+
 // ============================================================================
 // MIDDLEWARE UMUM UNTUK SEMUA RUTE DOSEN
 // ============================================================================
 
-// Pastikan semua rute di sini hanya bisa diakses oleh dosen yang sudah login
 router.use(verifyToken);
 router.use(isDosen);
 
-// Middleware untuk menyediakan data user ke semua view dosen (opsional)
+// Middleware untuk menyediakan data user ke semua view dosen
 router.use((req, res, next) => {
-  res.locals.user = req.user;   // agar bisa diakses di semua template tanpa passing ulang
+  res.locals.user = req.user;
   next();
 });
 
@@ -30,43 +90,26 @@ router.use((req, res, next) => {
 // IMPORT SUB‑MODUL ROUTE DOSEN
 // ============================================================================
 
-// Dashboard – ringkasan mata kuliah, tugas, mahasiswa
-router.use('/dashboard', require('./dashboard'));
+router.use('/dashboard', dashboardRouter);
 router.use('/laporan-magang', laporanMagangRouter);
 router.use('/seminar', seminarRouter);
-
-// Monitoring Magang
-router.use('/magang', require('./magang'));
-// Biodata – lihat dan edit profil, foto, kontak, ubah password
-router.use('/biodata', require('./biodata'));
-// Kelola Tugas
-router.use('/tugas', require('./tugas'));
-// E‑Learning – kelola pertemuan, tugas, nilai per mata kuliah
-router.use('/elearning', require('./elearning'));
-router.use('/mk', require('./mk'));
-// Kurikulum – lihat daftar mata kuliah prodi (read‑only)
-router.use('/kurikulum', require('./kurikulum'));
-router.use('/nilai', require('./nilai'));
-// Mahasiswa Bimbingan – daftar mahasiswa dari MK yang diampu
-router.use('/mahasiswa', require('./mahasiswa'));
-
-// Rekap dan Input Nilai – kelola nilai tugas, UTS, UAS
-router.use('/nilai', require('./nilai'));
+router.use('/magang', magangRouter);
+router.use('/biodata', biodataRouter);
+router.use('/tugas', tugasRouter);
+router.use('/elearning', elearningRouter);
+router.use('/mk', mkRouter);
+router.use('/kurikulum', kurikulumRouter);
+router.use('/nilai', nilaiRouter);
+router.use('/mahasiswa', mahasiswaRouter);
 
 // ============================================================================
 // RUTE UTAMA DOSEN
 // ============================================================================
 
-/**
- * GET /dosen
- * Halaman utama dashboard dosen – diarahkan ke /dosen/dashboard
- */
 router.get('/', (req, res) => {
   res.redirect('/dosen/dashboard');
 });
 
-// Untuk kompatibilitas dengan tautan lama, arahkan /dosen/dashboard ke sub‑modul (sudah ditangani di atas)
-// Tidak perlu tambahan karena sudah di‑mount
 // ============================================================================
 // KELOLA TUGAS (tanpa melalui elearning)
 // ============================================================================
@@ -84,7 +127,7 @@ router.get('/tugas', async (req, res) => {
       return {
         id: doc.id,
         ...data,
-        mkKode: data.mkKode || '?', // bisa diisi dari data MK jika perlu
+        mkKode: data.mkKode || '?',
         mkNama: data.mkNama || '?'
       };
     });
@@ -95,7 +138,6 @@ router.get('/tugas', async (req, res) => {
     });
   } catch (error) {
     console.error('Error ambil tugas:', error);
-    // Tangani error indeks
     if (error.code === 9) {
       return res.status(500).render('error', {
         title: 'Error',
@@ -112,7 +154,6 @@ router.get('/tugas', async (req, res) => {
 // Form buat tugas baru
 router.get('/tugas/create', async (req, res) => {
   try {
-    // Ambil mata kuliah yang diampu dosen ini untuk dropdown
     const mkSnapshot = await db.collection('mataKuliah')
       .where('dosenIds', 'array-contains', req.dosen.id)
       .orderBy('kode')
@@ -138,12 +179,7 @@ router.get('/tugas/create', async (req, res) => {
   }
 });
 
-// Proses simpan tugas baru (POST)
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
-const { Readable } = require('stream');
-const drive = require('../../config/googleDrive');
-
+// Proses simpan tugas baru (POST) – dengan folder terstruktur
 router.post('/tugas', upload.single('file'), async (req, res) => {
   try {
     const { mkId, judul, deskripsi, deadline, tipe } = req.body;
@@ -153,21 +189,21 @@ router.post('/tugas', upload.single('file'), async (req, res) => {
       return res.status(400).send('MK, judul, dan deadline wajib diisi');
     }
 
-    // Ambil data MK untuk mendapatkan kode dan nama
     const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
     if (!mkDoc.exists) return res.status(404).send('MK tidak ditemukan');
     const mkData = mkDoc.data();
 
     let fileUrl = null, fileId = null;
     if (file) {
-      // Upload ke Drive (sederhana, bisa dikembangkan)
+      // Dapatkan folder Soal berdasarkan kode MK
+      const folderId = await getSoalTugasFolder(mkData.kode);
       const fileName = `${judul.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-      const fileMetadata = { name: fileName };
+      const fileMetadata = { name: fileName, parents: [folderId] };
       const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
       const response = await drive.files.create({
         resource: fileMetadata,
         media,
-        fields: 'id, webViewLink'
+        fields: 'id'
       });
       await drive.permissions.create({
         fileId: response.data.id,
@@ -198,15 +234,13 @@ router.post('/tugas', upload.single('file'), async (req, res) => {
   }
 });
 
-// Detail tugas (jika belum ada)
-// GET /dosen/tugas/:id
+// Detail tugas
 router.get('/tugas/:id', async (req, res) => {
   try {
     const tugasDoc = await db.collection('tugas').doc(req.params.id).get();
     if (!tugasDoc.exists) return res.status(404).send('Tugas tidak ditemukan');
     const tugas = { id: tugasDoc.id, ...tugasDoc.data() };
 
-    // Ambil daftar mahasiswa yang terdaftar di MK ini (dari enrollment aktif)
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('mkId', '==', tugas.mkId)
       .where('status', '==', 'active')
@@ -218,7 +252,6 @@ router.get('/tugas/:id', async (req, res) => {
       const userDoc = await db.collection('users').doc(uid).get();
       if (userDoc.exists) {
         const m = userDoc.data();
-        // Cek pengumpulan untuk tugas ini
         const pengumpulanSnapshot = await db.collection('pengumpulan')
           .where('tugasId', '==', tugas.id)
           .where('mahasiswaId', '==', uid)
@@ -245,8 +278,7 @@ router.get('/tugas/:id', async (req, res) => {
   }
 });
 
-// Beri nilai (POST)
-// POST /dosen/pengumpulan/nilai
+// Beri nilai
 router.post('/pengumpulan/nilai', async (req, res) => {
   try {
     const { pengumpulanId, nilai, komentar } = req.body;
@@ -254,14 +286,12 @@ router.post('/pengumpulan/nilai', async (req, res) => {
       return res.status(400).send('ID pengumpulan tidak ditemukan');
     }
 
-    // Ambil data pengumpulan untuk mendapatkan tugasId
     const pengumpulanDoc = await db.collection('pengumpulan').doc(pengumpulanId).get();
     if (!pengumpulanDoc.exists) {
       return res.status(404).send('Pengumpulan tidak ditemukan');
     }
     const tugasId = pengumpulanDoc.data().tugasId;
 
-    // Update nilai
     await db.collection('pengumpulan').doc(pengumpulanId).update({
       nilai: parseFloat(nilai),
       komentar,
@@ -269,7 +299,6 @@ router.post('/pengumpulan/nilai', async (req, res) => {
       dinilaiPada: new Date().toISOString()
     });
 
-    // Redirect ke halaman detail tugas
     res.redirect(`/dosen/tugas/${tugasId}`);
   } catch (error) {
     console.error('Error memberi nilai:', error);
@@ -280,34 +309,70 @@ router.post('/pengumpulan/nilai', async (req, res) => {
   }
 });
 // ============================================================================
+// HAPUS TUGAS
+// ============================================================================
+
+/**
+ * POST /dosen/tugas/:id/delete
+ * Menghapus tugas beserta file di Google Drive (jika ada)
+ */
+router.post('/tugas/:id/delete', async (req, res) => {
+  try {
+    const tugasId = req.params.id;
+    const tugasDoc = await db.collection('tugas').doc(tugasId).get();
+
+    if (!tugasDoc.exists) {
+      return res.status(404).send('Tugas tidak ditemukan');
+    }
+
+    const tugas = tugasDoc.data();
+
+    // Pastikan dosen yang membuat tugas yang menghapus (atau admin)
+    if (tugas.dosenId !== req.dosen.id) {
+      return res.status(403).send('Anda tidak berhak menghapus tugas ini');
+    }
+
+    // Hapus file di Google Drive jika ada
+    if (tugas.fileId) {
+      try {
+        await drive.files.delete({ fileId: tugas.fileId });
+        console.log('File di Drive berhasil dihapus:', tugas.fileId);
+      } catch (err) {
+        console.error('Gagal menghapus file di Drive:', err.message);
+        // Tetap lanjutkan penghapusan dokumen meskipun file gagal dihapus
+      }
+    }
+
+    // Hapus dokumen tugas dari Firestore
+    await db.collection('tugas').doc(tugasId).delete();
+
+    // Redirect ke halaman daftar tugas
+    res.redirect('/dosen/tugas');
+  } catch (error) {
+    console.error('Error hapus tugas:', error);
+    res.status(500).send('Gagal menghapus tugas');
+  }
+});
+// ============================================================================
 // PENANGANAN ERROR KHUSUS DOSEN
 // ============================================================================
 
-// 404 – Rute tidak ditemukan di bawah /dosen
 router.use((req, res, next) => {
   res.status(404).render('admin/404', { title: 'Halaman Tidak Ditemukan' });
 });
 
-// Error handler untuk rute dosen (menangkap error dari semua sub‑modul)
 router.use((err, req, res, next) => {
   console.error('❌ Dosen error:', err.stack);
-
-  // Jika response sudah dikirim, serahkan ke error handler default Express
   if (res.headersSent) {
     return next(err);
   }
-
-  // Tampilkan halaman error yang sesuai
   res.status(err.status || 500);
   res.render('admin/error', {
     title: 'Terjadi Kesalahan',
     message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : {}   // tampilkan stack hanya di dev
+    error: process.env.NODE_ENV === 'development' ? err : {}
   });
 });
 
-// ============================================================================
-// EKSPOR ROUTER
-// ============================================================================
-console.log('Dosen index.js loaded, submodules: dashboard, biodata, elearning, kurikulum, mahasiswa, nilai, mk');
+console.log('Dosen index.js loaded, submodules: dashboard, biodata, elearning, kurikulum, mahasiswa, nilai, mk, laporan-magang, seminar, magang');
 module.exports = router;

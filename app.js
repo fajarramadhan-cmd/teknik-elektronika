@@ -40,7 +40,8 @@ app.set('views', path.join(__dirname, 'views'));
 // ============================================================================
 const landingRoutes = require('./routes/landing');
 app.use('/', landingRoutes); // Landing page dan halaman publik lainnya
-
+const dosenKalenderRouter = require('./routes/dosen/kalender');
+app.use('/dosen/kalender', dosenKalenderRouter);
 // Auth routes
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);

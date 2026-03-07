@@ -7,6 +7,30 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../../middleware/auth');
 const { db } = require('../../config/firebaseAdmin');
+const { getCurrentAcademicSemester } = require('../../helpers/academicHelper');
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB) – untuk digunakan admin nanti
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
+
+// Fungsi ini akan digunakan oleh admin untuk menyimpan file surat
+async function getOrCreateSubFolder(parentId, name) {
+  const drive = require('../../config/googleDrive'); // di-include di sini karena hanya untuk admin
+  const query = await drive.files.list({
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (query.data.files.length > 0) {
+    return query.data.files[0].id;
+  } else {
+    const folder = await drive.files.create({
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id',
+    });
+    return folder.data.id;
+  }
+}
 
 router.use(verifyToken);
 
@@ -40,6 +64,7 @@ router.get('/', async (req, res) => {
       suratList
     });
   } catch (error) {
+    console.error('Error memuat daftar surat:', error);
     res.status(500).render('error', { 
       title: 'Error', 
       message: 'Gagal memuat daftar surat' 
@@ -52,31 +77,39 @@ router.get('/', async (req, res) => {
 // ============================================================================
 
 router.get('/aktif-kuliah', (req, res) => {
-  const semesterSekarang = 'Genap 2025/2026'; // nanti bisa diambil dari config
+  const currentSemester = getCurrentAcademicSemester(); // helper
+  const semesterSekarang = currentSemester.label;
+  const tahunAkademik = currentSemester.tahunAkademik;
   res.render('mahasiswa/persuratan/aktif_form', {
     title: 'Ajukan Surat Aktif Kuliah',
     user: req.user,
-    semesterSekarang
+    semesterSekarang,
+    tahunAkademik   // <- pastikan ini ada
   });
 });
 
 router.post('/aktif-kuliah', async (req, res) => {
   try {
-    const { keperluan, semester, tahunAkademik } = req.body;
+    const { keperluan } = req.body;
     if (!keperluan) {
       return res.status(400).send('Keperluan harus diisi');
     }
 
-    // Generate kode validasi (akan digunakan jika surat jadi diterbitkan)
+    const current = getCurrentAcademicSemester(); // panggil helper
+    const semester = current.label;
+    const tahunAkademik = current.tahunAkademik; // sekarang sudah ada
+
     const kodeValidasi = generateKodeValidasi();
 
     const suratData = {
       userId: req.user.id,
+      nim: req.user.nim,
+      nama: req.user.nama,
       jenis: 'Aktif Kuliah',
       kodeValidasi,
       keperluan,
-      semester: semester || 'Genap 2025/2026',
-      tahunAkademik: tahunAkademik || '2025/2026',
+      semester,
+      tahunAkademik,
       status: 'pending',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -90,12 +123,12 @@ router.post('/aktif-kuliah', async (req, res) => {
     await db.collection('surat').add(suratData);
     res.redirect('/mahasiswa/persuratan');
   } catch (error) {
-  console.error('Error mengajukan surat:', error);
-  res.status(500).render('error', { 
-    title: 'Error', 
-    message: 'Gagal mengajukan surat' 
-  });
-}
+    console.error('Error mengajukan surat:', error);
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal mengajukan surat' 
+    });
+  }
 });
 
 // ============================================================================
@@ -120,6 +153,8 @@ router.post('/lainnya', async (req, res) => {
 
     const suratData = {
       userId: req.user.id,
+      nim: req.user.nim,
+      nama: req.user.nama,
       jenis: jenisSurat,
       kodeValidasi,
       keperluan,
@@ -137,12 +172,12 @@ router.post('/lainnya', async (req, res) => {
     await db.collection('surat').add(suratData);
     res.redirect('/mahasiswa/persuratan');
   } catch (error) {
-  console.error('Error mengajukan surat:', error);
-  res.status(500).render('error', { 
-    title: 'Error', 
-    message: 'Gagal mengajukan surat' 
-  });
-}
+    console.error('Error mengajukan surat:', error);
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal mengajukan surat' 
+    });
+  }
 });
 
 // ============================================================================
@@ -165,12 +200,12 @@ router.get('/:id', async (req, res) => {
       surat
     });
   } catch (error) {
-  console.error('Error detail surat:', error);
-  res.status(500).render('error', { 
-    title: 'Error', 
-    message: 'Gagal memuat detail surat' 
-  });
-}
+    console.error('Error detail surat:', error);
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal memuat detail surat' 
+    });
+  }
 });
 
 // ============================================================================
@@ -229,12 +264,12 @@ router.post('/:id/batal', async (req, res) => {
     });
     res.redirect('/mahasiswa/persuratan');
   } catch (error) {
-  console.error('Error membatalkan surat:', error);
-  res.status(500).render('error', { 
-    title: 'Error', 
-    message: 'Gagal membatalkan surat' 
-  });
-}
+    console.error('Error membatalkan surat:', error);
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal membatalkan surat' 
+    });
+  }
 });
 
 module.exports = router;

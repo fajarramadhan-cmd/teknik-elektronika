@@ -25,10 +25,29 @@ async function getDosenList() {
 // ============================================================================
 router.get('/', async (req, res) => {
   try {
-    const mkSnapshot = await db.collection('mataKuliah').orderBy('kode').get();
-    const matakuliah = mkSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const { semester, search } = req.query;
 
-    // Ambil data dosen untuk ditampilkan (opsional, bisa di-loop di view)
+    // Bangun query dasar
+    let query = db.collection('mataKuliah').orderBy('kode');
+
+    // Filter berdasarkan semester jika ada
+    if (semester) {
+      query = query.where('semester', '==', parseInt(semester));
+    }
+
+    const mkSnapshot = await query.get();
+    let matakuliah = mkSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Filter berdasarkan search (manual karena Firestore tidak mendukung partial text search)
+    if (search) {
+      const lowerSearch = search.toLowerCase();
+      matakuliah = matakuliah.filter(mk => 
+        mk.kode.toLowerCase().includes(lowerSearch) || 
+        mk.nama.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    // Ambil data dosen untuk ditampilkan
     const dosenMap = {};
     const dosenSnapshot = await db.collection('dosen').get();
     dosenSnapshot.docs.forEach(doc => {
@@ -44,8 +63,8 @@ router.get('/', async (req, res) => {
     res.render('admin/matakuliah_list', {
       title: 'Daftar Mata Kuliah',
       matakuliah: matakuliahWithDosen,
-      filterSemester: req.query.semester || '',
-      search: req.query.search || ''
+      filterSemester: semester || '',
+      search: search || ''
     });
   } catch (error) {
     console.error('Error mengambil MK:', error);
@@ -107,7 +126,7 @@ router.post('/', async (req, res) => {
       semester: parseInt(semester),
       dosenIds: dosenArray,
       jadwal: jadwal || '',
-      isPDK: isPDKFlag,  // tambahkan flag
+      isPDK: isPDKFlag,
       materi,
       createdAt: new Date().toISOString()
     });

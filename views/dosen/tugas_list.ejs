@@ -145,6 +145,8 @@
     align-items: center;
     gap: 0.4rem;
     border: 1.5px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
   }
   .btn-action-outline {
     background: transparent;
@@ -169,6 +171,18 @@
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 8px 15px rgba(23,162,184,0.3);
+  }
+  .btn-action-danger {
+    background: transparent;
+    border-color: #dc3545;
+    color: #dc3545;
+  }
+  .btn-action-danger:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(220,53,69,0.3);
   }
 
   /* Deadline styling */
@@ -284,6 +298,11 @@
                   <a href="/dosen/tugas/<%= t.id %>" class="btn-action btn-action-outline">
                     <i class="bi bi-eye"></i> Detail
                   </a>
+                  <form method="POST" action="/dosen/tugas/<%= t.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus tugas ini?')">
+                    <button type="submit" class="btn-action btn-action-danger" style="margin-left: 5px;">
+                      <i class="bi bi-trash"></i> Hapus
+                    </button>
+                  </form>
                 </td>
               </tr>
             <% }) %>

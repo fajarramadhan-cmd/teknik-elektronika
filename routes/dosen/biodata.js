@@ -1,6 +1,7 @@
 /**
  * routes/dosen/biodata.js
  * Biodata Dosen - Lihat dan edit profil, foto, kontak, email, ubah password
+ * Terintegrasi dengan Data WEB, kompresi gambar, dan fileId
  */
 
 const express = require('express');
@@ -10,7 +11,13 @@ const { db, auth } = require('../../config/firebaseAdmin');
 const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
+const sharp = require('sharp');
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0'; // Ganti dengan ID folder Anda
 
 router.use(verifyToken);
 router.use(isDosen);
@@ -20,32 +27,38 @@ router.use(isDosen);
 // ============================================================================
 
 /**
- * Mendapatkan ID folder foto dosen di Google Drive.
- * Membuat folder jika belum ada.
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
  */
-async function getDosenFotoFolderId() {
-  const folderName = 'Foto_Dosen';
-  try {
-    const query = await drive.files.list({
-      q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id)',
+async function getOrCreateSubFolder(parentId, name) {
+  const query = await drive.files.list({
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (query.data.files.length > 0) {
+    return query.data.files[0].id;
+  } else {
+    const folder = await drive.files.create({
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id',
     });
-    if (query.data.files.length > 0) {
-      console.log('✅ Folder ditemukan:', query.data.files[0].id);
-      return query.data.files[0].id;
-    } else {
-      console.log('📁 Folder tidak ditemukan, membuat baru...');
-      const folder = await drive.files.create({
-        resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
-        fields: 'id',
-      });
-      console.log('✅ Folder dibuat:', folder.data.id);
-      return folder.data.id;
-    }
-  } catch (error) {
-    console.error('❌ Error saat mengakses folder Drive:', error);
-    throw error;
+    return folder.data.id;
   }
+}
+
+/**
+ * Mendapatkan folder foto dosen di Google Drive.
+ * Struktur: Data WEB / Dosen / Foto / [NIP] /
+ * @param {string} nip - NIP dosen
+ * @returns {Promise<string>} ID folder
+ */
+async function getDosenFotoFolder(nip) {
+  const parentDosen = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Dosen');
+  const parentFoto = await getOrCreateSubFolder(parentDosen, 'Foto');
+  const nipFolder = await getOrCreateSubFolder(parentFoto, nip);
+  return nipFolder;
 }
 
 // ============================================================================
@@ -90,7 +103,6 @@ router.post('/update', upload.single('foto'), async (req, res) => {
     const dosenRef = db.collection('dosen').doc(req.dosen.id);
     const oldData = req.dosen;
 
-    // Validasi input
     if (!nama || !email) {
       return res.status(400).send('Nama dan email wajib diisi');
     }
@@ -102,11 +114,10 @@ router.post('/update', upload.single('foto'), async (req, res) => {
       updatedAt: new Date().toISOString()
     };
 
-    // ========== PROSES UPLOAD FOTO ==========
+    // ========== PROSES UPLOAD FOTO (dengan kompresi) ==========
     if (file) {
       console.log('📸 File diterima:', file.originalname, file.mimetype, file.size);
 
-      // Validasi tipe file
       if (!file.mimetype.startsWith('image/')) {
         return res.status(400).send('File harus berupa gambar');
       }
@@ -121,56 +132,33 @@ router.post('/update', upload.single('foto'), async (req, res) => {
         }
       }
 
-      // Dapatkan folder tujuan
-      let folderId;
-      try {
-        folderId = await getDosenFotoFolderId();
-      } catch (err) {
-        console.error('❌ Gagal mendapatkan folder Drive:', err);
-        return res.status(500).send('Gagal mengakses folder penyimpanan');
-      }
+      // Kompresi gambar menggunakan sharp
+      const compressedBuffer = await sharp(file.buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
 
-      const ext = file.originalname.split('.').pop();
-      const fileName = `${oldData.nip || 'dosen'}_${Date.now()}.${ext}`;
-      const fileMetadata = {
-        name: fileName,
-        parents: [folderId]
-      };
-      const media = {
-        mimeType: file.mimetype,
-        body: Readable.from(file.buffer)
-      };
+      // Dapatkan folder tujuan (berdasarkan NIP)
+      const nip = oldData.nip || 'dosen';
+      const folderId = await getDosenFotoFolder(nip);
 
-      // Upload file ke Drive
-      let driveResponse;
-      try {
-        driveResponse = await drive.files.create({
-          resource: fileMetadata,
-          media,
-          fields: 'id, webViewLink'
-        });
-        console.log('✅ File uploaded ke Drive:', driveResponse.data);
-      } catch (uploadError) {
-        console.error('❌ Gagal upload ke Drive:', uploadError);
-        return res.status(500).send('Gagal upload foto: ' + uploadError.message);
-      }
+      const fileName = `${nip}_${Date.now()}.jpg`;
+      const fileMetadata = { name: fileName, parents: [folderId] };
+      const media = { mimeType: 'image/jpeg', body: Readable.from(compressedBuffer) };
 
-      // Set permission agar bisa diakses publik
-      try {
-        await drive.permissions.create({
-          fileId: driveResponse.data.id,
-          requestBody: {
-            role: 'reader',
-            type: 'anyone'
-          }
-        });
-        console.log('🔓 Permission publik diberikan');
-      } catch (permError) {
-        console.error('⚠️ Gagal set permission (file mungkin tetap private):', permError.message);
-        // Tetap lanjut, mungkin tetap bisa diakses dengan link
-      }
+      const driveResponse = await drive.files.create({
+        resource: fileMetadata,
+        media,
+        fields: 'id'
+      });
+      console.log('✅ File uploaded ke Drive, ID:', driveResponse.data.id);
 
-      // Simpan link dan fileId ke Firestore
+      // Set akses publik
+      await drive.permissions.create({
+        fileId: driveResponse.data.id,
+        requestBody: { role: 'reader', type: 'anyone' }
+      });
+
       const directLink = `https://drive.google.com/uc?export=view&id=${driveResponse.data.id}`;
       updateData.foto = directLink;
       updateData.fotoFileId = driveResponse.data.id;

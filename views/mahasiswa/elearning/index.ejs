@@ -1,93 +1,201 @@
 <%- include('../../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive (jika diperlukan nanti)
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .elearning-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
-  }
-  .elearning-header h2 {
-    font-weight: 700;
-  }
-  .course-card {
-    border: none;
-    border-radius: 1rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
     overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-back {
     background: white;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: var(--primary-start);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: none;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* ===== COURSE CARD ===== */
+  .course-card {
+    background: white;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(33,147,176,0.1);
     height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   .course-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+    border-color: transparent;
   }
   .course-image {
     height: 140px;
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 3rem;
+    font-size: 3.5rem;
+    transition: all 0.3s;
+  }
+  .course-card:hover .course-image {
+    transform: scale(1.02);
   }
   .course-body {
     padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   .course-code {
-    color: #2193b0;
+    color: var(--primary-start);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    background: var(--primary-light);
+    display: inline-block;
+    padding: 0.2rem 0.8rem;
+    border-radius: 50px;
+    align-self: flex-start;
   }
   .course-name {
     font-weight: 700;
     font-size: 1.2rem;
     color: #1e293b;
-    margin: 0.5rem 0;
+    margin: 0.75rem 0 0.5rem;
+    line-height: 1.4;
   }
   .course-detail {
     color: #64748b;
     font-size: 0.9rem;
     margin-bottom: 1rem;
+    flex-grow: 1;
+  }
+  .course-detail i {
+    color: var(--primary-start);
+    width: 1.2rem;
   }
   .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
-    padding: 0.5rem 1.5rem;
+    padding: 0.6rem 1.5rem;
     border-radius: 50px;
     transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
     text-decoration: none;
     display: inline-block;
+    text-align: center;
   }
   .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
     color: white;
   }
+
+  /* ===== EMPTY STATE ===== */
   .empty-state {
     background: white;
-    border-radius: 1rem;
-    padding: 3rem;
+    border-radius: 1.5rem;
+    padding: 4rem 2rem;
     text-align: center;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <!-- Header -->
-  <div class="elearning-header d-flex justify-content-between align-items-center">
+  <!-- Header dengan gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
-      <h2><i class="bi bi-laptop me-2"></i>ELK‑Learning</h2>
-      <p class="mb-0 opacity-75">Mata kuliah yang Anda ambil dan materi perkuliahan</p>
+      <h2><i class="bi bi-laptop"></i> ELK‑Learning</h2>
+      <p class="mb-0">Mata kuliah yang Anda ambil dan materi perkuliahan</p>
     </div>
-    <a href="/mahasiswa/dashboard" class="btn btn-light">
-      <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
+    <a href="/mahasiswa/dashboard" class="btn-back mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
     </a>
   </div>
 
@@ -96,10 +204,10 @@
     <% if (mkList.length === 0) { %>
       <div class="col-12">
         <div class="empty-state">
-          <i class="bi bi-book fs-1 text-muted d-block mb-3"></i>
-          <h5 class="fw-bold">Belum Ada Mata Kuliah</h5>
+          <i class="bi bi-book"></i>
+          <h4>Belum Ada Mata Kuliah</h4>
           <p class="text-muted">Anda belum terdaftar di mata kuliah manapun.</p>
-          <a href="/mahasiswa/akademik/krs" class="btn-gradient mt-3">
+          <a href="/mahasiswa/akademik/krs" class="btn-gradient">
             <i class="bi bi-pencil-square me-2"></i>Buat KRS
           </a>
         </div>
@@ -112,13 +220,13 @@
               <i class="bi bi-journal-bookmark-fill"></i>
             </div>
             <div class="course-body">
-              <div class="course-code"><%= mk.kode %></div>
-              <div class="course-name"><%= mk.nama %></div>
+              <span class="course-code"><%= mk.kode %></span>
+              <h5 class="course-name"><%= mk.nama %></h5>
               <div class="course-detail">
-                <i class="bi bi-calendar me-1"></i> <%= mk.semester %><br>
-                <i class="bi bi-people me-1"></i> <%= mk.jumlahMahasiswa || 0 %> mahasiswa terdaftar
+                <p class="mb-1"><i class="bi bi-calendar me-1"></i> <%= mk.semester %></p>
+                <p class="mb-0"><i class="bi bi-people me-1"></i> <%= mk.jumlahMahasiswa || 0 %> mahasiswa terdaftar</p>
               </div>
-              <a href="/mahasiswa/elearning/mk/<%= mk.id %>" class="btn-gradient w-100 text-center">
+              <a href="/mahasiswa/elearning/mk/<%= mk.id %>" class="btn-gradient w-100">
                 <i class="bi bi-eye me-2"></i>Lihat Detail
               </a>
             </div>

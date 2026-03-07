@@ -1,19 +1,5 @@
 <%- include('../partials/header') %>
 
-<%
-  // Fungsi untuk mengekstrak ID file dari URL Google Drive (jika diperlukan nanti)
-  const getFileIdFromUrl = (url) => {
-    if (!url) return null;
-    // Format: https://drive.google.com/uc?export=view&id=XXX
-    let match = url.match(/[?&]id=([^&]+)/);
-    if (match) return match[1];
-    // Format: https://drive.google.com/file/d/XXX/view
-    match = url.match(/\/d\/([^\/]+)/);
-    if (match) return match[1];
-    return null;
-  };
-%>
-
 <style>
   /* ===== VARIABEL WARNA ===== */
   :root {
@@ -82,41 +68,6 @@
     box-shadow: 0 10px 20px rgba(33,147,176,0.3);
   }
 
-  /* ===== TABEL ===== */
-  .table-container {
-    background: white;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  .matkul-table {
-    margin-bottom: 0;
-  }
-  .matkul-table thead th {
-    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
-    color: var(--primary-dark);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--primary-start);
-    padding: 1rem 0.75rem;
-  }
-  .matkul-table tbody tr {
-    transition: all 0.2s;
-  }
-  .matkul-table tbody tr:hover {
-    background-color: var(--primary-light);
-    transform: scale(1.01);
-    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
-  }
-  .matkul-table td {
-    padding: 1rem 0.75rem;
-    vertical-align: middle;
-    border-bottom: 1px solid #e9ecef;
-  }
-
   /* ===== TOMBOL GRADIEN ===== */
   .btn-gradient {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
@@ -183,12 +134,6 @@
     margin-bottom: 0.3rem;
   }
 
-  /* ===== ALERT ===== */
-  .alert-custom {
-    border-radius: 1rem;
-    border-left: 4px solid;
-  }
-
   /* ===== EMPTY STATE ===== */
   .empty-state {
     padding: 4rem 2rem;
@@ -210,6 +155,47 @@
   .empty-state p {
     color: #6c757d;
     margin-bottom: 1.5rem;
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .matkul-table {
+    margin-bottom: 0;
+  }
+  .matkul-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--primary-start);
+    padding: 1rem 0.75rem;
+  }
+  .matkul-table tbody tr {
+    transition: all 0.2s;
+  }
+  .matkul-table tbody tr:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(33,147,176,0.1);
+  }
+  .matkul-table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  /* ===== ALERT ===== */
+  .alert-custom {
+    border-radius: 1rem;
+    border-left: 4px solid;
   }
 </style>
 

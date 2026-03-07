@@ -1,4 +1,3 @@
-```html
 <%- include('../../partials/header') %>
 
 <style>
@@ -196,6 +195,21 @@
     gap: 0.5rem;
   }
 
+  /* ===== GALLERY THUMBNAIL ===== */
+  .gallery-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .gallery-thumb:hover {
+    border-color: var(--primary-start);
+    transform: scale(1.1);
+  }
+
   /* ===== MODAL ===== */
   .modal-content {
     border: none;
@@ -249,27 +263,28 @@
     min-height: 100px;
   }
 
-  /* ===== GALLERY ===== */
-  .gallery-thumb {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  .gallery-thumb:hover {
-    border-color: var(--primary-start);
-    transform: scale(1.1);
-  }
+  /* ===== LIGHTBOX MODAL ===== */
   .lightbox-modal .modal-body {
     padding: 0;
     background: #000;
   }
-  .carousel-item img {
+  .lightbox-modal .carousel-item img {
     max-height: 80vh;
     object-fit: contain;
+    width: 100%;
+  }
+  .lightbox-modal .carousel-control-prev,
+  .lightbox-modal .carousel-control-next {
+    background: rgba(0,0,0,0.3);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .lightbox-modal .carousel-control-prev-icon,
+  .lightbox-modal .carousel-control-next-icon {
+    filter: invert(1);
   }
 
   /* ===== EMPTY STATE ===== */
@@ -324,9 +339,10 @@
       <h2><i class="bi bi-journal-bookmark-fill me-2"></i>Logbook Magang</h2>
       <p class="mb-0">Catat kegiatan harian magang Anda dan pantau status verifikasi</p>
     </div>
-    <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addLogbookModal">
-      <i class="bi bi-plus-circle me-2"></i>Tambah Logbook
-    </button>
+      <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addLogbookModal"
+        <% if (pdkCourses.length === 0) { %>disabled<% } %>>
+        <i class="bi bi-plus-circle me-2"></i>Tambah Logbook
+      </button>
   </div>
 
   <!-- PANDUAN PENGISIAN LOGBOOK -->
@@ -379,10 +395,17 @@
               <td><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
               <td><small><%= item.semester || '-' %></small></td>
               <td>
-                <% if (item.imageUrls && item.imageUrls.length > 0) { %>
-                  <button class="btn btn-sm btn-outline-gradient btn-icon" onclick="lihatGambar(<%= JSON.stringify(item.imageUrls) %>)">
-                    <i class="bi bi-images"></i> <%= item.imageUrls.length %>
-                  </button>
+                <% if (item.imageUrls && item.imageUrls.length > 0) { 
+                  const firstUrl = item.imageUrls[0];
+                  // Ekstrak fileId dari URL
+                  const fileId = firstUrl.match(/[?&]id=([^&]+)/)?.[1] || firstUrl.match(/\/d\/([^\/]+)/)?.[1];
+                  const thumbUrl = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w100` : firstUrl;
+                %>
+                  <img src="<%= thumbUrl %>" 
+                       class="gallery-thumb" 
+                       onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
+                       alt="dokumentasi"
+                       onerror="this.onerror=null; this.src='<%= firstUrl %>'; this.onerror=function(){ this.outerHTML='<span class=\'text-muted\'>Gambar error</span>'; };">
                 <% } else { %>
                   <span class="text-muted">-</span>
                 <% } %>
@@ -422,7 +445,7 @@
     </div>
   </div>
 
-<!-- MODAL TAMBAH LOGBOOK (dengan semester tetap) -->
+<!-- MODAL TAMBAH LOGBOOK -->
 <div class="modal fade" id="addLogbookModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -430,50 +453,62 @@
         <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Tambah Logbook</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="POST" action="/mahasiswa/magang/logbook" enctype="multipart/form-data">
+      <% if (pdkCourses.length === 0) { %>
         <div class="modal-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="courseId" class="form-label">Mata Kuliah</label>
-              <select class="form-select" id="courseId" name="courseId" required>
-                <option value="">Pilih Mata Kuliah PDK</option>
-                <% pdkCourses.forEach(course => { %>
-                  <option value="<%= course.id %>"><%= course.kode %> - <%= course.nama %></option>
-                <% }) %>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label for="semester" class="form-label">Semester</label>
-              <input type="text" class="form-control" id="semester" name="semester" value="Genap 2025/2026" readonly>
-            </div>
-            <div class="col-md-6">
-              <label for="tanggal" class="form-label">Tanggal Kegiatan</label>
-              <input type="date" class="form-control" id="tanggal" name="tanggal" required>
-            </div>
-            <div class="col-md-6">
-              <label for="lokasi" class="form-label">Lokasi</label>
-              <input type="text" class="form-control" id="lokasi" name="lokasi">
-            </div>
-            <div class="col-md-12">
-              <label for="kegiatan" class="form-label">Deskripsi Kegiatan</label>
-              <textarea class="form-control" id="kegiatan" name="kegiatan" rows="4" required></textarea>
-            </div>
-            <div class="col-md-6">
-              <label for="durasi" class="form-label">Durasi (jam)</label>
-              <input type="number" class="form-control" id="durasi" name="durasi" step="0.5" min="0">
-            </div>
-            <div class="col-md-12">
-              <label for="images" class="form-label">Dokumentasi (maks 5 gambar)</label>
-              <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
-              <small class="text-muted">Format JPG/PNG, maks 5 file, masing-masing maks 2MB</small>
-            </div>
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Anda belum terdaftar di mata kuliah Praktik Dunia Kerja (PDK) untuk semester ini. Silakan isi KRS terlebih dahulu.
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-gradient">Simpan Logbook</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
         </div>
-      </form>
+      <% } else { %>
+        <form method="POST" action="/mahasiswa/magang/logbook" enctype="multipart/form-data">
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="courseId" class="form-label">Mata Kuliah</label>
+                <select class="form-select" id="courseId" name="courseId" required>
+                  <option value="">Pilih Mata Kuliah PDK</option>
+                  <% pdkCourses.forEach(course => { %>
+                    <option value="<%= course.id %>"><%= course.kode %> - <%= course.nama %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="semester" class="form-label">Semester</label>
+                <input type="text" class="form-control" id="semester" name="semester" value="<%= currentSemester %>" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="tanggal" class="form-label">Tanggal Kegiatan</label>
+                <input type="date" class="form-control" id="tanggal" name="tanggal" required>
+              </div>
+              <div class="col-md-6">
+                <label for="lokasi" class="form-label">Lokasi</label>
+                <input type="text" class="form-control" id="lokasi" name="lokasi">
+              </div>
+              <div class="col-md-12">
+                <label for="kegiatan" class="form-label">Deskripsi Kegiatan</label>
+                <textarea class="form-control" id="kegiatan" name="kegiatan" rows="4" required></textarea>
+              </div>
+              <div class="col-md-6">
+                <label for="durasi" class="form-label">Durasi (jam)</label>
+                <input type="number" class="form-control" id="durasi" name="durasi" step="0.5" min="0">
+              </div>
+              <div class="col-md-12">
+                <label for="images" class="form-label">Dokumentasi (maks 5 gambar)</label>
+                <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
+                <small class="text-muted">Format JPG/PNG, maks 5 file, masing-masing maks 2MB</small>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-gradient">Simpan Logbook</button>
+          </div>
+        </form>
+      <% } %>
     </div>
   </div>
 </div>
@@ -531,7 +566,7 @@
 
 <!-- MODAL LIGHTBOX GAMBAR -->
 <div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title"><i class="bi bi-images"></i> Dokumentasi Kegiatan</h5>
@@ -572,14 +607,36 @@
       .catch(err => alert('Gagal memuat data: ' + err.message));
   }
 
+  // Fungsi untuk mengekstrak fileId dari berbagai format URL Google Drive
+  function getFileId(url) {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    match = url.match(/\/file\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  }
+
   function lihatGambar(imageUrls) {
     const inner = document.getElementById('galleryCarouselInner');
     inner.innerHTML = '';
+    if (!imageUrls || imageUrls.length === 0) {
+      alert('Tidak ada gambar untuk ditampilkan.');
+      return;
+    }
     imageUrls.forEach((url, index) => {
+      const fileId = getFileId(url);
+      const thumbUrl = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800` : url;
+      const directUrl = fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
       const activeClass = index === 0 ? ' active' : '';
       const item = `
         <div class="carousel-item${activeClass}">
-          <img src="${url}" class="d-block w-100" alt="Dokumentasi">
+          <img src="${thumbUrl}" 
+               class="d-block w-100" 
+               alt="Dokumentasi"
+               onerror="this.onerror=null; this.src='${directUrl}'; this.onerror=function(){ this.outerHTML='<div class=\\'text-center p-5\\'><i class=\\'bi bi-exclamation-triangle\\'></i> Gambar tidak dapat ditampilkan. <a href=\\'${url}\\' target=\\'_blank\\'>Buka di tab baru</a></div>'; };">
         </div>
       `;
       inner.innerHTML += item;
@@ -589,4 +646,3 @@
 </script>
 
 <%- include('../../partials/footer') %>
-```

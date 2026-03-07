@@ -8,7 +8,6 @@ const router = express.Router();
 const { verifyToken } = require('../../middleware/auth');
 const { db } = require('../../config/firebaseAdmin');
 
-// Semua route memerlukan autentikasi
 router.use(verifyToken);
 
 /**
@@ -25,8 +24,9 @@ router.get('/', async (req, res) => {
       tagihan = tagihanDoc.data().semester || [];
     }
 
-    // Hitung total tagihan dan total lunas (asumsi field jumlah dan status)
-    let totalTagihan = 0, totalLunas = 0;
+    // Hitung total tagihan (yang belum lunas) dan total lunas
+    let totalTagihan = 0;
+    let totalLunas = 0;
     tagihan.forEach(t => {
       if (t.status === 'lunas') {
         totalLunas += t.jumlah;
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
       }
     });
 
-    const sisaTagihan = totalTagihan; // jika belum ada pembayaran, totalTagihan sudah sisa
+    const sisaTagihan = totalTagihan; // karena totalTagihan adalah jumlah yang belum lunas
 
     res.render('mahasiswa/tagihan', {
       title: 'Tagihan SPP',
@@ -47,7 +47,10 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error mengambil tagihan:', error);
-    res.status(500).send('Gagal memuat tagihan');
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Gagal memuat tagihan'
+    });
   }
 });
 

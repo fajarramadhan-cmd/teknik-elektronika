@@ -1,87 +1,169 @@
 <%- include('../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive (jika diperlukan nanti)
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .akademik-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
-  }
-  .akademik-header h2 {
-    font-weight: 700;
-  }
-  .menu-card {
-    border: none;
-    border-radius: 1rem;
-    transition: all 0.3s;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
     overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header .btn-back {
     background: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: var(--primary-start);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: none;
+  }
+  .page-header .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* ===== MENU CARDS ===== */
+  .menu-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(33,147,176,0.1);
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
   .menu-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+    border-color: transparent;
   }
   .menu-icon {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
-    margin: 0 auto 1rem;
+    font-size: 2.8rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s;
+  }
+  .menu-card:hover .menu-icon {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end)) !important;
+    color: white !important;
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
   }
   .menu-title {
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: #1e293b;
+    margin-bottom: 0.5rem;
   }
   .menu-desc {
     color: #64748b;
     font-size: 0.9rem;
+    line-height: 1.5;
     margin-bottom: 1.5rem;
+    flex-grow: 1;
   }
   .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
-    padding: 0.5rem 1.5rem;
+    padding: 0.6rem 1.5rem;
     border-radius: 50px;
     transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
     text-decoration: none;
     display: inline-block;
   }
   .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
     color: white;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <!-- Header -->
-  <div class="akademik-header">
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <h2><i class="bi bi-journal-bookmark-fill me-2"></i>Akademik</h2>
-        <p class="mb-0 opacity-75">Kelola KRS, lihat KHS, transkrip, dan kalender akademik</p>
-      </div>
-      <a href="/mahasiswa/dashboard" class="btn btn-light">
-        <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
-      </a>
+  <!-- Header dengan gradien dan tombol kembali -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-journal-bookmark-fill"></i> Akademik</h2>
+      <p class="mb-0">Kelola KRS, lihat KHS, transkrip, dan kalender akademik</p>
     </div>
+    <a href="/mahasiswa/dashboard" class="btn-back mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+    </a>
   </div>
 
   <!-- Grid Menu -->
   <div class="row g-4">
     <!-- KRS -->
     <div class="col-md-6 col-lg-3">
-      <div class="menu-card p-4 text-center">
-        <div class="menu-icon bg-primary bg-opacity-10 text-primary mx-auto">
+      <div class="menu-card">
+        <div class="menu-icon" style="background: rgba(13,110,253,0.1); color: #0d6efd;">
           <i class="bi bi-pencil-square"></i>
         </div>
         <h5 class="menu-title">Kartu Rencana Studi</h5>
@@ -92,8 +174,8 @@
 
     <!-- KHS -->
     <div class="col-md-6 col-lg-3">
-      <div class="menu-card p-4 text-center">
-        <div class="menu-icon bg-success bg-opacity-10 text-success mx-auto">
+      <div class="menu-card">
+        <div class="menu-icon" style="background: rgba(25,135,84,0.1); color: #198754;">
           <i class="bi bi-file-earmark-text"></i>
         </div>
         <h5 class="menu-title">Kartu Hasil Studi</h5>
@@ -104,8 +186,8 @@
 
     <!-- Transkrip -->
     <div class="col-md-6 col-lg-3">
-      <div class="menu-card p-4 text-center">
-        <div class="menu-icon bg-warning bg-opacity-10 text-warning mx-auto">
+      <div class="menu-card">
+        <div class="menu-icon" style="background: rgba(255,193,7,0.1); color: #ffc107;">
           <i class="bi bi-bar-chart-line"></i>
         </div>
         <h5 class="menu-title">Transkrip Nilai</h5>
@@ -114,18 +196,5 @@
       </div>
     </div>
 
-    <!-- Kalender Akademik -->
-    <div class="col-md-6 col-lg-3">
-      <div class="menu-card p-4 text-center">
-        <div class="menu-icon bg-info bg-opacity-10 text-info mx-auto">
-          <i class="bi bi-calendar-event"></i>
-        </div>
-        <h5 class="menu-title">Kalender Akademik</h5>
-        <p class="menu-desc">Jadwal penting, libur, dan kegiatan akademik</p>
-        <a href="/mahasiswa/akademik/kalender" class="btn-gradient">Lihat Kalender</a>
-      </div>
-    </div>
-  </div>
-</div>
 
 <%- include('../partials/footer') %>

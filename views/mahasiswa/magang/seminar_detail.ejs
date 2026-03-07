@@ -1,71 +1,295 @@
 <%- include('../../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive (jika diperlukan)
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  .detail-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1rem;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
   }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-back {
+    background: white;
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: none;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* ===== INFO CARD ===== */
   .info-card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    transition: box-shadow 0.3s;
   }
-  .badge-pending { background: #ffc107; color: #212529; }
-  .badge-approved { background: #28a745; color: white; }
-  .badge-rejected { background: #dc3545; color: white; }
-  .badge-dibatalkan { background: #6c757d; color: white; }
+  .info-card:hover {
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+  }
+  .info-card h5 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .info-card h5 i {
+    color: var(--primary-start);
+    font-size: 1.3rem;
+  }
+
+  /* ===== TABEL INFORMASI ===== */
+  .info-table {
+    margin-bottom: 0;
+  }
+  .info-table th {
+    font-weight: 600;
+    color: #1e293b;
+    width: 150px;
+    border: none;
+    padding: 0.75rem 0.5rem 0.75rem 0;
+  }
+  .info-table td {
+    border: none;
+    padding: 0.75rem 0;
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+  .badge-approved {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+  .badge-cancelled {
+    background: #e2e3e5;
+    color: #383d41;
+    border-color: #d6d8db;
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-danger-gradient {
+    background: linear-gradient(135deg, #dc3545, #ff6b6b);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(220,53,69,0.2);
+  }
+  .btn-danger-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(220,53,69,0.4);
+    color: white;
+  }
+
+  /* ===== LIST GROUP UNTUK RIWAYAT ===== */
+  .history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .history-item {
+    background: #f8f9fa;
+    border-left: 4px solid var(--primary-start);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .history-item:last-child {
+    margin-bottom: 0;
+  }
+  .history-note {
+    font-weight: 500;
+    color: #1e293b;
+  }
+  .history-time {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="detail-header d-flex justify-content-between align-items-center">
+  <!-- Header dengan gradien -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
-      <h2><i class="bi bi-calendar-event me-2"></i>Detail Seminar</h2>
+      <h2><i class="bi bi-calendar-event-fill me-2"></i>Detail Seminar</h2>
+      <p class="mb-0">Informasi lengkap pengajuan seminar magang</p>
     </div>
-    <a href="/mahasiswa/magang/seminar" class="btn btn-light">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+    <a href="/mahasiswa/magang/seminar" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
   <!-- Informasi Seminar -->
   <div class="info-card">
-    <h5 class="fw-bold mb-3">Informasi Seminar</h5>
-    <table class="table table-borderless">
-      <tr><th style="width: 150px;">Judul</th><td><%= seminar.judul %></td></tr>
-      <tr><th>Tanggal</th><td><%= new Date(seminar.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %></td></tr>
-      <tr><th>Waktu</th><td><%= seminar.waktu || '-' %></td></tr>
-      <tr><th>Tempat</th><td><%= seminar.tempat %></td></tr>
-      <tr><th>Pembimbing 1</th><td><%= seminar.pembimbing1 || '-' %></td></tr>
-      <tr><th>Pembimbing 2</th><td><%= seminar.pembimbing2 || '-' %></td></tr>
-      <tr><th>Penguji</th><td><%= seminar.penguji || '-' %></td></tr>
-      <tr><th>Status</th><td>
-        <% if (seminar.status === 'pending') { %>
-          <span class="badge bg-warning text-dark">Pending</span>
-        <% } else if (seminar.status === 'approved') { %>
-          <span class="badge bg-success">Disetujui</span>
-        <% } else if (seminar.status === 'rejected') { %>
-          <span class="badge bg-danger">Ditolak</span>
-        <% } else if (seminar.status === 'dibatalkan') { %>
-          <span class="badge bg-secondary">Dibatalkan</span>
-        <% } %>
-      </td></tr>
-      <tr><th>Diajukan pada</th><td><%= new Date(seminar.createdAt).toLocaleString('id-ID') %></td></tr>
+    <h5><i class="bi bi-info-circle-fill"></i> Informasi Seminar</h5>
+    <table class="table info-table">
+      <tr>
+        <th>Judul</th>
+        <td><strong><%= seminar.judul %></strong></td>
+      </tr>
+      <tr>
+        <th>Tanggal</th>
+        <td><%= new Date(seminar.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %></td>
+      </tr>
+      <tr>
+        <th>Waktu</th>
+        <td><%= seminar.waktu || '-' %></td>
+      </tr>
+      <tr>
+        <th>Tempat</th>
+        <td><%= seminar.tempat %></td>
+      </tr>
+      <tr>
+        <th>Pembimbing 1</th>
+        <td><%= seminar.pembimbing1 || '-' %></td>
+      </tr>
+      <tr>
+        <th>Pembimbing 2</th>
+        <td><%= seminar.pembimbing2 || '-' %></td>
+      </tr>
+      <tr>
+        <th>Penguji</th>
+        <td><%= seminar.penguji || '-' %></td>
+      </tr>
+      <tr>
+        <th>Status</th>
+        <td>
+          <% if (seminar.status === 'pending') { %>
+            <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
+          <% } else if (seminar.status === 'approved') { %>
+            <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+          <% } else if (seminar.status === 'rejected') { %>
+            <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+          <% } else if (seminar.status === 'dibatalkan') { %>
+            <span class="badge-status badge-cancelled"><i class="bi bi-x-octagon"></i> Dibatalkan</span>
+          <% } %>
+        </td>
+      </tr>
+      <tr>
+        <th>Diajukan pada</th>
+        <td><%= new Date(seminar.createdAt).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></td>
+      </tr>
     </table>
   </div>
 
   <!-- Riwayat -->
   <% if (seminar.history && seminar.history.length > 0) { %>
     <div class="info-card">
-      <h5 class="fw-bold mb-3">Riwayat</h5>
-      <ul class="list-group">
+      <h5><i class="bi bi-clock-history"></i> Riwayat</h5>
+      <ul class="history-list">
         <% seminar.history.forEach(item => { %>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <%= item.catatan %>
-            <small class="text-muted"><%= new Date(item.timestamp).toLocaleString('id-ID') %></small>
+          <li class="history-item">
+            <span class="history-note"><%= item.catatan %></span>
+            <span class="history-time"><%= new Date(item.timestamp).toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></span>
           </li>
         <% }) %>
       </ul>
@@ -73,11 +297,15 @@
   <% } %>
 
   <!-- Tombol Aksi -->
-  <% if (seminar.status === 'pending') { %>
-    <form method="POST" action="/mahasiswa/magang/seminar/<%= seminar.id %>/batal" onsubmit="return confirm('Batalkan pengajuan ini?')">
-      <button class="btn btn-danger">Batalkan Pengajuan</button>
-    </form>
-  <% } %>
+  <div class="mt-3">
+    <% if (seminar.status === 'pending') { %>
+      <form method="POST" action="/mahasiswa/magang/seminar/<%= seminar.id %>/batal" onsubmit="return confirm('Batalkan pengajuan ini?')">
+        <button class="btn-danger-gradient">
+          <i class="bi bi-x-lg"></i> Batalkan Pengajuan
+        </button>
+      </form>
+    <% } %>
+  </div>
 </div>
 
 <%- include('../../partials/footer') %>

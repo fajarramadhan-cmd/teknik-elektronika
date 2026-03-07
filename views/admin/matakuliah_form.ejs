@@ -88,8 +88,13 @@
       <form method="POST" action="<%= mk ? '/admin/matakuliah/' + mk.id + '/update' : '/admin/matakuliah' %>">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="kode" class="form-label">Kode Mata Kuliah <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="kode" name="kode" value="<%= mk ? mk.kode : '' %>" required>
+            <label for="semester" class="form-label">Semester <span class="text-danger">*</span></label>
+            <select class="form-select" id="semester" name="semester" required>
+              <option value="">-- Pilih Semester --</option>
+              <% for (let i = 1; i <= 8; i++) { %>
+                <option value="<%= i %>" <%= mk && mk.semester == i ? 'selected' : '' %>>Semester <%= i %></option>
+              <% } %>
+            </select>
           </div>
           <div class="col-md-6 mb-3">
             <label for="nama" class="form-label">Nama Mata Kuliah <span class="text-danger">*</span></label>

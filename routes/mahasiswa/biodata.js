@@ -10,50 +10,65 @@ const { db, auth } = require('../../config/firebaseAdmin');
 const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
+const sharp = require('sharp'); // <-- tambahkan sharp untuk kompresi
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } // Batas 5MB
+  limits: { fileSize: 10 * 1024 * 1024 } // Batas 10MB sebelum kompresi
 });
 
 // Semua route memerlukan autentikasi
 router.use(verifyToken);
 
 // ============================================================================
-// FUNGSI BANTU
+// FUNGSI BANTU UNTUK STRUKTUR FOLDER DI DRIVE
 // ============================================================================
 
+// ID folder root "Data WEB" (ganti dengan ID folder Anda)
+const ROOT_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
+
 /**
- * Mendapatkan ID folder foto mahasiswa di Google Drive.
- * Membuat folder jika belum ada.
+ * Mendapatkan atau membuat subfolder di Drive.
+ * @param {string} parentId - ID folder induk.
+ * @param {string} folderName - Nama folder yang dicari/dibuat.
+ * @returns {Promise<string>} ID folder.
  */
-async function getMahasiswaFotoFolderId() {
-  const folderName = 'Foto_Mahasiswa';
+async function getOrCreateFolder(parentId, folderName) {
   const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`,
     fields: 'files(id)',
   });
   if (query.data.files.length > 0) {
     return query.data.files[0].id;
   } else {
     const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
+      resource: {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+        parents: [parentId]
+      },
       fields: 'id',
     });
     return folder.data.id;
   }
 }
 
+/**
+ * Mendapatkan angkatan dari NIM (2 digit pertama + 20).
+ * Contoh: nim "24100200" -> "2024"
+ */
+function getAngkatanFromNim(nim) {
+  if (!nim || nim.length < 2) return null;
+  const duaDigit = nim.substring(0, 2);
+  return `20${duaDigit}`;
+}
+
 // ============================================================================
 // RUTE UTAMA – TAMPIL BIODATA
 // ============================================================================
 
-/**
- * GET /mahasiswa/biodata
- * Menampilkan halaman biodata mahasiswa (data dari req.user)
- */
 router.get('/', (req, res) => {
   try {
-    const user = req.user; // data dari middleware verifyToken (sudah include data dari Firestore)
+    const user = req.user;
     res.render('mahasiswa/biodata/index', {
       title: 'Biodata Saya',
       user,
@@ -73,10 +88,6 @@ router.get('/', (req, res) => {
 // FORM EDIT BIODATA
 // ============================================================================
 
-/**
- * GET /mahasiswa/biodata/edit
- * Form edit biodata
- */
 router.get('/edit', (req, res) => {
   try {
     res.render('mahasiswa/biodata/edit', {
@@ -115,7 +126,6 @@ router.post('/edit', upload.single('foto'), async (req, res) => {
       return res.status(400).send('Nama dan email wajib diisi');
     }
 
-    // Data yang akan diupdate
     const updateData = {
       nama,
       email,
@@ -130,10 +140,32 @@ router.post('/edit', upload.single('foto'), async (req, res) => {
         return res.status(400).send('File harus berupa gambar');
       }
 
-      // Validasi ukuran file (maks 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        return res.status(400).send('Ukuran file maksimal 5MB');
+      // Validasi ukuran file awal
+      if (file.size > 10 * 1024 * 1024) {
+        return res.status(400).send('Ukuran file terlalu besar, maksimal 10MB sebelum kompresi');
       }
+
+      // Pastikan NIM tersedia
+      const nim = oldData.nim;
+      if (!nim) {
+        return res.status(400).send('NIM tidak ditemukan, hubungi admin');
+      }
+
+      // Dapatkan angkatan dari NIM
+      const angkatan = getAngkatanFromNim(nim);
+      if (!angkatan) {
+        return res.status(400).send('NIM tidak valid');
+      }
+
+      // Sanitasi nama untuk folder
+      const sanitizedNama = nama.replace(/[^a-zA-Z0-9]/g, '_');
+      const mahasiswaFolderName = `${nim}_${sanitizedNama}`;
+
+      // Buat struktur folder:
+      // ROOT_FOLDER_ID (Data WEB) -> "Foto Mahasiswa" -> angkatan -> mahasiswaFolderName
+      const fotoMahasiswaFolderId = await getOrCreateFolder(ROOT_FOLDER_ID, 'Foto Mahasiswa');
+      const angkatanFolderId = await getOrCreateFolder(fotoMahasiswaFolderId, angkatan);
+      const mahasiswaFolderId = await getOrCreateFolder(angkatanFolderId, mahasiswaFolderName);
 
       // Hapus foto lama jika ada
       if (oldData.fotoFileId) {
@@ -142,33 +174,46 @@ router.post('/edit', upload.single('foto'), async (req, res) => {
           console.log('Foto lama dihapus:', oldData.fotoFileId);
         } catch (err) {
           console.error('Gagal hapus foto lama:', err.message);
-          // Tetap lanjut, foto lama mungkin sudah tidak ada
         }
       }
 
-      // Upload foto baru ke Google Drive
-      const folderId = await getMahasiswaFotoFolderId();
-      const ext = file.originalname.split('.').pop();
-      const fileName = `${req.user.nim || 'mahasiswa'}_${Date.now()}.${ext}`;
-      const fileMetadata = { name: fileName, parents: [folderId] };
-      const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+      // ==================== KOMPRESI GAMBAR ====================
+      let compressedBuffer;
+      try {
+        compressedBuffer = await sharp(file.buffer)
+          .resize({ width: 800, withoutEnlargement: true })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+      } catch (sharpError) {
+        console.error('Error kompresi gambar:', sharpError);
+        return res.status(500).send('Gagal memproses gambar');
+      }
+
+      // Nama file: NIM_timestamp.jpg
+      const fileName = `${nim}_${Date.now()}.jpg`;
+      const fileMetadata = { name: fileName, parents: [mahasiswaFolderId] };
+      const media = {
+        mimeType: 'image/jpeg',
+        body: Readable.from(compressedBuffer)
+      };
+
+      // Upload ke Google Drive
       const response = await drive.files.create({
         resource: fileMetadata,
         media,
-        fields: 'id, webViewLink',
+        fields: 'id',
       });
 
-      // Beri akses publik (wajib!)
+      // Beri akses publik
       await drive.permissions.create({
         fileId: response.data.id,
-        requestBody: {
-          role: 'reader',
-          type: 'anyone'
-        }
+        requestBody: { role: 'reader', type: 'anyone' }
       });
       console.log('File diupload ke Drive, ID:', response.data.id);
+      console.log('Ukuran asli:', file.size, 'bytes');
+      console.log('Ukuran setelah kompresi:', compressedBuffer.length, 'bytes');
 
-      // Simpan URL publik (format langsung) dan fileId
+      // Simpan URL dan fileId
       updateData.foto = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
       updateData.fotoFileId = response.data.id;
     }
@@ -188,11 +233,9 @@ router.post('/edit', upload.single('foto'), async (req, res) => {
     await userRef.update(updateData);
     console.log('Data Firestore berhasil diperbarui');
 
-    // Redirect dengan pesan sukses
     res.redirect('/mahasiswa/biodata?success=updated');
   } catch (error) {
     console.error('Error update biodata:', error);
-    // Jika error dari Google Drive atau lainnya, beri pesan yang jelas
     let message = 'Gagal update biodata';
     if (error.code === 403) {
       message = 'Izin akses Google Drive tidak mencukupi';
@@ -209,10 +252,6 @@ router.post('/edit', upload.single('foto'), async (req, res) => {
 // HAPUS FOTO PROFIL
 // ============================================================================
 
-/**
- * POST /mahasiswa/biodata/foto/hapus
- * Menghapus foto profil (tanpa mengganti)
- */
 router.post('/foto/hapus', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -253,10 +292,6 @@ router.post('/foto/hapus', async (req, res) => {
 // UBAH PASSWORD (mengirim email reset)
 // ============================================================================
 
-/**
- * POST /mahasiswa/biodata/ubah-password
- * Mengirim email reset password ke email mahasiswa
- */
 router.post('/ubah-password', async (req, res) => {
   try {
     const email = req.user.email;
@@ -268,7 +303,6 @@ router.post('/ubah-password', async (req, res) => {
     const link = await auth.generatePasswordResetLink(email);
     console.log('Password reset link:', link);
 
-    // Redirect dengan pesan sukses
     res.redirect('/mahasiswa/biodata?reset=email_sent');
   } catch (error) {
     console.error('Error reset password:', error);

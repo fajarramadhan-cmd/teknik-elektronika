@@ -1,305 +1,266 @@
 <%- include('../partials/header') %>
 
 <style>
-  .profile-card {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-radius: 1.5rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(33,147,176,0.3);
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
   }
-  .stat-card {
-    background: white;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
-    height: 100%;
-  }
-  .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
-  }
-  .stat-icon {
-    width: 60px;
-    height: 60px;
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
     border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== SUMMARY CARD ===== */
+  .summary-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+  }
+  .summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
+    background: var(--primary-light);
+    color: var(--primary-start);
     margin-bottom: 1rem;
   }
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.2;
-  }
-  .stat-label {
+  .summary-label {
     color: #64748b;
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: 600;
   }
-  .menu-card {
-    border: none;
-    border-radius: 1rem;
-    transition: all 0.3s;
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    height: 100%;
-  }
-  .menu-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
-  }
-  .menu-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 1rem;
-  }
-  .menu-title {
+  .summary-value {
     font-weight: 700;
+    font-size: 1.8rem;
     color: #1e293b;
+    line-height: 1.2;
   }
-  .menu-desc {
-    color: #64748b;
-    font-size: 0.9rem;
+  .summary-value.text-success {
+    color: #10b981 !important;
   }
-  .tagihan-card {
+  .summary-value.text-danger {
+    color: #ef4444 !important;
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+    transition: box-shadow 0.3s;
   }
-  .tagihan-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  .table-container:hover {
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+  }
+  .table-tagihan {
+    margin-bottom: 0;
+  }
+  .table-tagihan thead th {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
-    padding: 1rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: none;
+    padding: 1.2rem 1rem;
   }
-  .tagihan-item {
-    padding: 1rem 1.5rem;
+  .table-tagihan tbody td {
+    vertical-align: middle;
+    padding: 1rem;
+    background-color: white;
     border-bottom: 1px solid #e9ecef;
   }
-  .tagihan-item:last-child {
+  .table-tagihan tbody tr {
+    transition: background 0.2s;
+  }
+  .table-tagihan tbody tr:hover {
+    background-color: var(--primary-light);
+  }
+  .table-tagihan tbody tr:last-child td {
     border-bottom: none;
   }
-  .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.6rem 1.5rem;
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
     border-radius: 50px;
-    transition: all 0.3s;
-    display: inline-block;
-    text-decoration: none;
-  }
-  .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
-    color: white;
-  }
-  .btn-outline-gradient {
-    background: transparent;
-    border: 2px solid #2193b0;
-    color: #2193b0;
     font-weight: 500;
-    padding: 0.6rem 1.5rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    text-decoration: none;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
   }
-  .btn-outline-gradient:hover {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-color: transparent;
-    color: white;
+  .badge-lunas {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+  }
+  .badge-belum {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 0;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <!-- Notifikasi Upload Sukses -->
-  <% if (uploadSuccess) { %>
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i>File KRS berhasil diupload ke Google Drive!
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  <% } %>
+  <!-- Header -->
+  <div class="page-header">
+    <h2><i class="bi bi-cash-coin me-2"></i>Tagihan SPP</h2>
+    <p class="mb-0 opacity-75">Riwayat tagihan SPP per semester</p>
+  </div>
 
-  <!-- Profile Card -->
-  <div class="profile-card">
-    <div class="d-flex align-items-center">
-      <div class="flex-shrink-0">
-        <i class="bi bi-person-circle fs-1"></i>
+  <!-- Ringkasan Tagihan -->
+  <div class="summary-card">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="summary-icon">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="summary-label">Total Tagihan (Belum Lunas)</div>
+        <div class="summary-value">
+          Rp <%= new Intl.NumberFormat('id-ID').format(totalTagihan) %>
+        </div>
       </div>
-      <div class="flex-grow-1 ms-3">
-        <h2 class="fw-bold mb-1">Selamat Datang, <%= user.nama || user.email %>!</h2>
-        <p class="mb-0 opacity-75">
-          <i class="bi bi-qr-code me-2"></i>NIM: <%= user.nim || '-' %> 
-          <span class="mx-3">|</span>
-          <i class="bi bi-envelope me-2"></i><%= user.email %>
-        </p>
+      <div class="col-md-4">
+        <div class="summary-icon">
+          <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+        </div>
+        <div class="summary-label">Sudah Dibayar</div>
+        <div class="summary-value text-success">
+          Rp <%= new Intl.NumberFormat('id-ID').format(totalLunas) %>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-icon">
+          <i class="bi bi-exclamation-triangle-fill" style="color: #ef4444;"></i>
+        </div>
+        <div class="summary-label">Sisa Tagihan</div>
+        <div class="summary-value text-danger">
+          Rp <%= new Intl.NumberFormat('id-ID').format(sisaTagihan) %>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Statistik Cards -->
-  <div class="row g-4 mb-5">
-    <div class="col-md-3">
-      <div class="stat-card text-center">
-        <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto">
-          <i class="bi bi-book"></i>
-        </div>
-        <div class="stat-value"><%= totalSks || 0 %></div>
-        <div class="stat-label">SKS Diambil</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card text-center">
-        <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto">
-          <i class="bi bi-calendar-week"></i>
-        </div>
-        <div class="stat-value"><%= semesterSekarang || 'Genap 2025/2026' %></div>
-        <div class="stat-label">Semester Aktif</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card text-center">
-        <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto">
-          <i class="bi bi-bar-chart-steps"></i>
-        </div>
-        <div class="stat-value"><%= pertemuanRata || 0 %> / 16</div>
-        <div class="stat-label">Pertemuan Terkini</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card text-center">
-        <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto">
-          <i class="bi bi-file-earmark-text"></i>
-        </div>
-        <div class="stat-value"><%= tugasAktif.length %></div>
-        <div class="stat-label">Tugas Aktif</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tagihan SPP -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="tagihan-card">
-        <div class="tagihan-header d-flex justify-content-between align-items-center">
-          <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin me-2"></i>Tagihan SPP</h5>
-          <a href="/mahasiswa/tagihan" class="btn btn-sm btn-light">Lihat Semua</a>
-        </div>
-        <div class="card-body p-0">
+  <!-- Tabel Tagihan -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table table-tagihan">
+        <thead>
+          <tr>
+            <th>Semester</th>
+            <th>Jumlah</th>
+            <th>Jatuh Tempo</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
           <% if (tagihan.length === 0) { %>
-            <div class="p-4 text-center text-muted">
-              <i class="bi bi-check-circle-fill fs-2 text-success d-block mb-2"></i>
-              <p>Tidak ada tagihan aktif.</p>
-            </div>
+            <tr>
+              <td colspan="4" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Tidak Ada Tagihan</h4>
+                  <p class="text-muted">Tidak ada tagihan SPP yang perlu dibayar saat ini.</p>
+                </div>
+              </td>
+            </tr>
           <% } else { %>
-            <% tagihan.slice(0, 3).forEach(t => { %>
-              <div class="tagihan-item d-flex justify-content-between align-items-center">
-                <div>
-                  <strong><%= t.semester %></strong>
-                  <p class="mb-0 text-muted small">Jatuh tempo: <%= t.jatuhTempo ? new Date(t.jatuhTempo).toLocaleDateString('id-ID') : '-' %></p>
-                </div>
-                <div class="text-end">
-                  <span class="fw-bold fs-5">Rp <%= new Intl.NumberFormat('id-ID').format(t.jumlah) %></span><br>
-                  <span class="badge bg-<%= t.status === 'lunas' ? 'success' : 'warning' %>">
-                    <%= t.status %>
-                  </span>
-                </div>
-              </div>
+            <% tagihan.forEach(t => { %>
+              <tr>
+                <td><strong><%= t.semester %></strong></td>
+                <td>Rp <%= new Intl.NumberFormat('id-ID').format(t.jumlah) %></td>
+                <td>
+                  <%= t.jatuhTempo ? new Date(t.jatuhTempo).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '-' %>
+                </td>
+                <td>
+                  <% if (t.status === 'lunas') { %>
+                    <span class="badge-status badge-lunas"><i class="bi bi-check-circle"></i> Lunas</span>
+                  <% } else { %>
+                    <span class="badge-status badge-belum"><i class="bi bi-hourglass-split"></i> Belum Lunas</span>
+                  <% } %>
+                </td>
+              </tr>
             <% }) %>
           <% } %>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Menu Akses Cepat -->
-  <h4 class="fw-bold mb-3">Layanan Mahasiswa</h4>
-  <div class="row g-4">
-    <!-- Akademik -->
-    <div class="col-md-4">
-      <a href="/mahasiswa/akademik" class="text-decoration-none">
-        <div class="menu-card p-3 text-center">
-          <div class="menu-icon bg-primary bg-opacity-10 text-primary">
-            <i class="bi bi-journal-bookmark-fill"></i>
-          </div>
-          <h6 class="menu-title">Akademik</h6>
-          <p class="menu-desc small">KRS, KHS, Transkrip, Kalender</p>
-        </div>
-      </a>
-    </div>
-    <!-- ELK-Learning -->
-    <div class="col-md-4">
-      <a href="/mahasiswa/elearning" class="text-decoration-none">
-        <div class="menu-card p-3 text-center">
-          <div class="menu-icon bg-success bg-opacity-10 text-success">
-            <i class="bi bi-laptop"></i>
-          </div>
-          <h6 class="menu-title">ELK-Learning</h6>
-          <p class="menu-desc small">Jadwal kuliah, tugas, kumpul tugas</p>
-        </div>
-      </a>
-    </div>
-    <!-- ELK-Magang -->
-    <div class="col-md-4">
-      <a href="/mahasiswa/magang" class="text-decoration-none">
-        <div class="menu-card p-3 text-center">
-          <div class="menu-icon bg-warning bg-opacity-10 text-warning">
-            <i class="bi bi-briefcase"></i>
-          </div>
-          <h6 class="menu-title">ELK-Magang</h6>
-          <p class="menu-desc small">Logbook, upload nilai, permohonan seminar</p>
-        </div>
-      </a>
-    </div>
-    <!-- Persuratan -->
-    <div class="col-md-4">
-      <a href="/mahasiswa/persuratan" class="text-decoration-none">
-        <div class="menu-card p-3 text-center">
-          <div class="menu-icon bg-info bg-opacity-10 text-info">
-            <i class="bi bi-envelope-paper"></i>
-          </div>
-          <h6 class="menu-title">Persuratan</h6>
-          <p class="menu-desc small">Surat aktif kuliah</p>
-        </div>
-      </a>
-    </div>
-    <!-- Tracer Study -->
-    <div class="col-md-4">
-      <a href="/mahasiswa/tracer" class="text-decoration-none">
-        <div class="menu-card p-3 text-center">
-          <div class="menu-icon bg-danger bg-opacity-10 text-danger">
-            <i class="bi bi-bar-chart-line"></i>
-          </div>
-          <h6 class="menu-title">Tracer Study</h6>
-          <p class="menu-desc small">Isi survei keberkerjaan</p>
-        </div>
-      </a>
-    </div>
-    <!-- Biodata -->
-    <div class="col-md-4">
-      <a href="/mahasiswa/biodata" class="text-decoration-none">
-        <div class="menu-card p-3 text-center">
-          <div class="menu-icon bg-secondary bg-opacity-10 text-secondary">
-            <i class="bi bi-person-circle"></i>
-          </div>
-          <h6 class="menu-title">Biodata</h6>
-          <p class="menu-desc small">Profil, foto, ubah password</p>
-        </div>
-      </a>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

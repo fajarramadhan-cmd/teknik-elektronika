@@ -1,34 +1,106 @@
 <%- include('../partials/header') %>
 
 <style>
-  .page-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    color: white;
-    padding: 2rem;
-    border-radius: 1rem;
-    margin-bottom: 2rem;
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
   }
+
+  /* ===== PAGE HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header .btn-light {
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+    background: white;
+    color: var(--primary-start);
+  }
+  .page-header .btn-light:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: var(--primary-dark);
+  }
+
+  /* ===== CARD MATA KULIAH ===== */
   .mk-card {
     border: none;
-    border-radius: 1rem;
-    transition: all 0.3s;
+    border-radius: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     overflow: hidden;
     background: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     height: 100%;
+    border: 1px solid rgba(33,147,176,0.1);
   }
   .mk-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(33,147,176,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+    border-color: transparent;
   }
   .mk-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    padding: 1.2rem 1.5rem;
     color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .mk-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 150px;
+    height: 150px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
   }
   .mk-header h5 {
     margin: 0;
     font-weight: 700;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 1;
   }
   .mk-body {
     padding: 1.5rem;
@@ -36,45 +108,86 @@
   .mk-info {
     display: flex;
     gap: 1rem;
-    margin-bottom: 1rem;
-    color: #6c757d;
+    margin-bottom: 0.8rem;
+    color: #64748b;
+    font-size: 0.9rem;
   }
   .mk-info i {
     width: 20px;
-    color: #2193b0;
+    color: var(--primary-start);
+    font-size: 1rem;
+  }
+  .mk-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .badge-progress {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
   }
   .btn-detail {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
     border-radius: 50px;
     transition: all 0.3s;
     width: 100%;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
   }
   .btn-detail:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
     color: white;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="page-header">
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="fw-bold">Mata Kuliah Saya</h1>
-        <p class="mb-0 opacity-75">Daftar mata kuliah yang Anda ampu pada semester aktif</p>
-      </div>
-      <div>
-        <a href="/dosen/dashboard" class="btn btn-light">
-          <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
-        </a>
-      </div>
+  <!-- Page Header -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h1 class="fw-bold"><i class="bi bi-book-fill me-2"></i>Mata Kuliah Saya</h1>
+      <p class="mb-0 opacity-75">Daftar mata kuliah yang Anda ampu pada semester aktif</p>
     </div>
+    <a href="/dosen/dashboard" class="btn-light btn mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
+    </a>
   </div>
 
+  <!-- Daftar Mata Kuliah -->
   <% if (mkList && mkList.length > 0) { %>
     <div class="row g-4">
       <% mkList.forEach(mk => { %>
@@ -84,17 +197,17 @@
               <h5><%= mk.kode %></h5>
             </div>
             <div class="mk-body">
-              <h6 class="fw-bold mb-3"><%= mk.nama %></h6>
+              <h6 class="fw-bold mb-3" style="font-size: 1.1rem; color: #1e293b;"><%= mk.nama %></h6>
               <div class="mk-info">
-                <div><i class="bi bi-calendar"></i> Semester <%= mk.semester || '-' %></div>
-                <div><i class="bi bi-clock"></i> <%= mk.sks %> SKS</div>
+                <span class="mk-info-item"><i class="bi bi-calendar"></i> Semester <%= mk.semester || '-' %></span>
+                <span class="mk-info-item"><i class="bi bi-clock"></i> <%= mk.sks %> SKS</span>
               </div>
               <div class="mk-info">
-                <div><i class="bi bi-people"></i> <%= mk.jumlahMahasiswa || '?' %> Mahasiswa</div>
-                <div><i class="bi bi-bar-chart"></i> <%= mk.progress || 0 %>% Progress</div>
+                <span class="mk-info-item"><i class="bi bi-people"></i> <%= mk.jumlahMahasiswa || 0 %> Mahasiswa</span>
+                <span class="mk-info-item"><i class="bi bi-bar-chart"></i> <span class="badge-progress"><%= mk.progress || 0 %>%</span></span>
               </div>
-              <a href="/dosen/mk/<%= mk.id %>" class="btn btn-detail">
-                <i class="bi bi-eye me-2"></i>Detail
+              <a href="/dosen/mk/<%= mk.id %>" class="btn-detail mt-2">
+                <i class="bi bi-eye me-2"></i>Lihat Detail
               </a>
             </div>
           </div>
@@ -102,9 +215,10 @@
       <% }) %>
     </div>
   <% } else { %>
-    <div class="alert alert-info">
-      <i class="bi bi-info-circle me-2"></i>
-      Anda belum mengampu mata kuliah apapun.
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <h4>Belum Ada Mata Kuliah</h4>
+      <p class="text-muted">Anda belum mengampu mata kuliah apapun pada semester ini.</p>
     </div>
   <% } %>
 </div>

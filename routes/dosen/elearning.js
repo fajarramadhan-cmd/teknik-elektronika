@@ -1,6 +1,7 @@
 /**
  * routes/dosen/elearning.js
  * Fitur E-Learning untuk dosen: mengelola pertemuan, tugas, dan nilai per mata kuliah
+ * Terintegrasi dengan Data WEB untuk penyimpanan file soal tugas
  */
 
 const express = require('express');
@@ -12,17 +13,58 @@ const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0'; // Ganti dengan ID folder Anda
+
 router.use(verifyToken);
 router.use(isDosen);
 
 // ============================================================================
-// DAFTAR MATA KULIAH YANG DIAMPU (untuk e-learning)
+// FUNGSI BANTU
 // ============================================================================
 
 /**
- * GET /dosen/elearning
- * Menampilkan daftar mata kuliah yang diampu (ringkasan)
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
  */
+async function getOrCreateSubFolder(parentId, name) {
+  const query = await drive.files.list({
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (query.data.files.length > 0) {
+    return query.data.files[0].id;
+  } else {
+    const folder = await drive.files.create({
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id',
+    });
+    return folder.data.id;
+  }
+}
+
+/**
+ * Mendapatkan folder untuk menyimpan file soal tugas.
+ * Struktur: Data WEB / Dosen / Tugas / [KodeMK] / Soal /
+ * @param {string} kodeMK - Kode mata kuliah (contoh: "PDK001")
+ * @returns {Promise<string>} ID folder
+ */
+async function getSoalTugasFolder(kodeMK) {
+  const parentDosen = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Dosen');
+  const parentTugas = await getOrCreateSubFolder(parentDosen, 'Tugas');
+  const mkFolder = await getOrCreateSubFolder(parentTugas, kodeMK);
+  const soalFolder = await getOrCreateSubFolder(mkFolder, 'Soal');
+  return soalFolder;
+}
+
+// ============================================================================
+// DAFTAR MATA KULIAH YANG DIAMPU
+// ============================================================================
+
 router.get('/', async (req, res) => {
   try {
     const snapshot = await db.collection('mataKuliah')
@@ -46,10 +88,6 @@ router.get('/', async (req, res) => {
 // DETAIL MATA KULIAH (PERTEMUAN, TUGAS, MAHASISWA)
 // ============================================================================
 
-/**
- * GET /dosen/elearning/:mkId
- * Menampilkan detail MK: info, progress pertemuan, daftar mahasiswa, tugas
- */
 router.get('/:mkId', async (req, res) => {
   try {
     const mkId = req.params.mkId;
@@ -57,12 +95,10 @@ router.get('/:mkId', async (req, res) => {
     if (!mkDoc.exists) return res.status(404).send('Mata kuliah tidak ditemukan');
     const mk = { id: mkDoc.id, ...mkDoc.data() };
 
-    // Cek apakah dosen ini mengampu MK tersebut
     if (!mk.dosenIds || !mk.dosenIds.includes(req.user.id)) {
       return res.status(403).send('Anda tidak berhak mengakses MK ini');
     }
 
-    // Ambil daftar mahasiswa yang mengambil MK ini
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('mkId', '==', mkId)
       .get();
@@ -73,7 +109,6 @@ router.get('/:mkId', async (req, res) => {
       if (userDoc.exists) mahasiswaList.push({ id: uid, ...userDoc.data() });
     }
 
-    // Siapkan array pertemuan 1-16
     const materi = mk.materi || [];
     const pertemuanList = [];
     for (let i = 1; i <= 16; i++) {
@@ -88,7 +123,6 @@ router.get('/:mkId', async (req, res) => {
       });
     }
 
-    // Ambil tugas untuk MK ini
     const tugasSnapshot = await db.collection('tugas')
       .where('mkId', '==', mkId)
       .orderBy('deadline', 'asc')
@@ -112,10 +146,6 @@ router.get('/:mkId', async (req, res) => {
 // KELOLA PERTEMUAN
 // ============================================================================
 
-/**
- * POST /dosen/elearning/:mkId/pertemuan/:pertemuan
- * Update satu pertemuan (topik, tanggal, catatan, status)
- */
 router.post('/:mkId/pertemuan/:pertemuan', async (req, res) => {
   try {
     const { mkId, pertemuan } = req.params;
@@ -153,14 +183,10 @@ router.post('/:mkId/pertemuan/:pertemuan', async (req, res) => {
   }
 });
 
-/**
- * POST /dosen/elearning/:mkId/pertemuan/bulk
- * Bulk update centang pertemuan yang sudah dilaksanakan
- */
 router.post('/:mkId/pertemuan/bulk', async (req, res) => {
   try {
     const { mkId } = req.params;
-    const { completed } = req.body; // array of pertemuan numbers
+    const { completed } = req.body; // array of numbers
 
     const mkRef = db.collection('mataKuliah').doc(mkId);
     const mkDoc = await mkRef.get();
@@ -203,10 +229,6 @@ router.post('/:mkId/pertemuan/bulk', async (req, res) => {
 // KELOLA TUGAS
 // ============================================================================
 
-/**
- * GET /dosen/elearning/:mkId/tugas/create
- * Form buat tugas baru
- */
 router.get('/:mkId/tugas/create', async (req, res) => {
   try {
     const { mkId } = req.params;
@@ -229,7 +251,7 @@ router.get('/:mkId/tugas/create', async (req, res) => {
 
 /**
  * POST /dosen/elearning/:mkId/tugas
- * Simpan tugas baru
+ * Simpan tugas baru, upload file soal ke folder Data WEB/Dosen/Tugas/[KodeMK]/Soal/
  */
 router.post('/:mkId/tugas', upload.single('file'), async (req, res) => {
   try {
@@ -242,19 +264,28 @@ router.post('/:mkId/tugas', upload.single('file'), async (req, res) => {
     if (!mkDoc.data().dosenIds.includes(req.user.id)) {
       return res.status(403).send('Tidak diizinkan');
     }
+    const mk = mkDoc.data();
 
     let fileUrl = null, fileId = null;
     if (file) {
-      // Buat folder berdasarkan kode MK (sederhana, kita upload di root dulu)
+      // Dapatkan folder Soal berdasarkan kode MK
+      const folderId = await getSoalTugasFolder(mk.kode);
       const fileName = `${Date.now()}_${file.originalname}`;
-      const fileMetadata = { name: fileName };
+      const fileMetadata = { name: fileName, parents: [folderId] };
       const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
       const response = await drive.files.create({
         resource: fileMetadata,
         media,
-        fields: 'id, webViewLink'
+        fields: 'id'
       });
-      fileUrl = response.data.webViewLink;
+
+      // Set akses publik
+      await drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: { role: 'reader', type: 'anyone' }
+      });
+
+      fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
       fileId = response.data.id;
     }
 
@@ -266,7 +297,7 @@ router.post('/:mkId/tugas', upload.single('file'), async (req, res) => {
       deadline: new Date(deadline).toISOString(),
       tipe: tipe || 'tugas',
       fileUrl,
-      fileId,
+      fileId, // simpan fileId untuk kemudahan hapus nanti
       createdAt: new Date().toISOString()
     });
 
@@ -294,7 +325,6 @@ router.get('/:mkId/tugas/:tugasId', async (req, res) => {
     if (!tugasDoc.exists) return res.status(404).send('Tugas tidak ditemukan');
     const tugas = { id: tugasDoc.id, ...tugasDoc.data() };
 
-    // Ambil mahasiswa yang terdaftar di MK ini
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('mkId', '==', mkId)
       .get();
@@ -353,10 +383,6 @@ router.post('/pengumpulan/:id/nilai', async (req, res) => {
 // INPUT NILAI MAHASISWA (UTS, UAS, DLL)
 // ============================================================================
 
-/**
- * GET /dosen/elearning/:mkId/nilai
- * Menampilkan halaman input nilai untuk MK tertentu
- */
 router.get('/:mkId/nilai', async (req, res) => {
   try {
     const mkId = req.params.mkId;
@@ -375,7 +401,6 @@ router.get('/:mkId/nilai', async (req, res) => {
     for (const uid of mahasiswaIds) {
       const userDoc = await db.collection('users').doc(uid).get();
       if (userDoc.exists) {
-        // Ambil semua nilai dari collection nilai untuk MK ini
         const nilaiSnapshot = await db.collection('nilai')
           .where('mahasiswaId', '==', uid)
           .where('mkId', '==', mkId)
@@ -404,10 +429,6 @@ router.get('/:mkId/nilai', async (req, res) => {
   }
 });
 
-/**
- * POST /dosen/elearning/nilai/update
- * Update nilai untuk satu mahasiswa dan tipe tertentu
- */
 router.post('/nilai/update', async (req, res) => {
   try {
     const { mahasiswaId, mkId, tipe, nilai } = req.body;

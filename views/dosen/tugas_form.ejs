@@ -1,79 +1,155 @@
 <%- include('../partials/header') %>
 
 <style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== FORM CARD ===== */
   .form-card {
     border: none;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 35px rgba(0,0,0,0.1);
     overflow: hidden;
     max-width: 800px;
     margin: 0 auto;
+    background: white;
+    transition: transform 0.3s, box-shadow 0.3s;
   }
+  .form-card:hover {
+    box-shadow: 0 25px 45px rgba(33,147,176,0.15);
+  }
+
+  /* ===== HEADER ===== */
   .form-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    padding: 1.8rem 2rem;
     color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .form-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -5%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(15deg);
   }
   .form-header h3 {
     margin: 0;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.8rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
+
+  /* ===== BODY ===== */
   .form-body {
     padding: 2rem;
   }
+
+  /* ===== LABEL ===== */
+  .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+  .form-label i {
+    color: var(--primary-start);
+    font-size: 1rem;
+  }
+
+  /* ===== INPUT & SELECT ===== */
+  .form-control, .form-select {
+    border-radius: 0.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e1;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.2rem rgba(33,147,176,0.25);
+  }
+
+  /* ===== TOMBOL ===== */
   .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
     padding: 0.6rem 2rem;
     border-radius: 50px;
     transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
   }
   .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
     color: white;
   }
+
   .btn-outline-gradient {
     background: transparent;
-    border: 2px solid #2193b0;
-    color: #2193b0;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
     font-weight: 500;
     padding: 0.6rem 2rem;
     border-radius: 50px;
     transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
   .btn-outline-gradient:hover {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-color: transparent;
     color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
   }
-  .form-label {
-    font-weight: 600;
-    color: #1e293b;
-  }
-  .form-control, .form-select {
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid #cbd5e1;
-    transition: all 0.3s;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: #2193b0;
-    box-shadow: 0 0 0 0.2rem rgba(33,147,176,0.25);
+
+  /* ===== TEXT MUTED ===== */
+  .text-muted {
+    color: #64748b !important;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+    display: block;
   }
 </style>
 
 <div class="container mt-4">
   <div class="form-card">
+    <!-- Header -->
     <div class="form-header">
-      <h3><i class="bi bi-plus-circle me-2"></i>Buat Tugas Baru</h3>
+      <h3><i class="bi bi-plus-circle-fill"></i> Buat Tugas Baru</h3>
     </div>
+
+    <!-- Body Form -->
     <div class="form-body">
       <form method="POST" action="/dosen/tugas" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="mkId" class="form-label">Mata Kuliah <span class="text-danger">*</span></label>
+        <!-- Mata Kuliah -->
+        <div class="mb-4">
+          <label for="mkId" class="form-label">
+            <i class="bi bi-book-fill"></i> Mata Kuliah <span class="text-danger">*</span>
+          </label>
           <select class="form-select" id="mkId" name="mkId" required>
             <option value="" disabled selected>-- Pilih Mata Kuliah --</option>
             <% mkList.forEach(mk => { %>
@@ -82,23 +158,36 @@
           </select>
         </div>
 
-        <div class="mb-3">
-          <label for="judul" class="form-label">Judul Tugas <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="judul" name="judul" placeholder="Contoh: Tugas 1 - Persamaan Diferensial" required>
+        <!-- Judul Tugas -->
+        <div class="mb-4">
+          <label for="judul" class="form-label">
+            <i class="bi bi-card-heading"></i> Judul Tugas <span class="text-danger">*</span>
+          </label>
+          <input type="text" class="form-control" id="judul" name="judul" 
+                 placeholder="Contoh: Tugas 1 - Persamaan Diferensial" required>
         </div>
 
-        <div class="mb-3">
-          <label for="deskripsi" class="form-label">Deskripsi</label>
-          <textarea class="form-control" id="deskripsi" name="deskripsi" rows="4" placeholder="Jelaskan detail tugas, petunjuk pengerjaan, dll."></textarea>
+        <!-- Deskripsi -->
+        <div class="mb-4">
+          <label for="deskripsi" class="form-label">
+            <i class="bi bi-text-paragraph"></i> Deskripsi
+          </label>
+          <textarea class="form-control" id="deskripsi" name="deskripsi" rows="4" 
+                    placeholder="Jelaskan detail tugas, petunjuk pengerjaan, dll."></textarea>
         </div>
 
+        <!-- Deadline & Tipe -->
         <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="deadline" class="form-label">Deadline <span class="text-danger">*</span></label>
+          <div class="col-md-6 mb-4">
+            <label for="deadline" class="form-label">
+              <i class="bi bi-calendar-event-fill"></i> Deadline <span class="text-danger">*</span>
+            </label>
             <input type="datetime-local" class="form-control" id="deadline" name="deadline" required>
           </div>
-          <div class="col-md-6 mb-3">
-            <label for="tipe" class="form-label">Tipe Tugas</label>
+          <div class="col-md-6 mb-4">
+            <label for="tipe" class="form-label">
+              <i class="bi bi-tags-fill"></i> Tipe Tugas
+            </label>
             <select class="form-select" id="tipe" name="tipe">
               <option value="tugas">Tugas</option>
               <option value="uts">UTS</option>
@@ -107,18 +196,24 @@
           </div>
         </div>
 
-        <div class="mb-3">
-          <label for="file" class="form-label">File Soal (opsional)</label>
+        <!-- File Soal -->
+        <div class="mb-4">
+          <label for="file" class="form-label">
+            <i class="bi bi-file-earmark-arrow-up-fill"></i> File Soal (opsional)
+          </label>
           <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx,.zip">
-          <small class="text-muted">Upload file soal (PDF, DOC, ZIP) maks. 10MB</small>
+          <small class="text-muted">
+            <i class="bi bi-info-circle"></i> Upload file soal (PDF, DOC, ZIP) maks. 10MB
+          </small>
         </div>
 
-        <div class="d-flex justify-content-between mt-4">
+        <!-- Tombol -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
           <a href="/dosen/tugas" class="btn-outline-gradient">
-            <i class="bi bi-arrow-left me-2"></i>Kembali
+            <i class="bi bi-arrow-left"></i> Kembali
           </a>
           <button type="submit" class="btn-gradient">
-            <i class="bi bi-save me-2"></i>Simpan Tugas
+            <i class="bi bi-save"></i> Simpan Tugas
           </button>
         </div>
       </form>

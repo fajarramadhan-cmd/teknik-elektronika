@@ -12,12 +12,27 @@ const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
+
 // Semua route memerlukan autentikasi
 router.use(verifyToken);
 
 // ============================================================================
 // FUNGSI BANTU
 // ============================================================================
+
+/**
+ * Sanitasi string untuk nama folder/file (hapus karakter khusus, spasi jadi underscore)
+ * @param {string} str - String yang akan disanitasi
+ * @returns {string} String yang sudah aman
+ */
+function sanitizeName(str) {
+  if (!str) return '';
+  return str.replace(/[^a-zA-Z0-9]/g, '_');
+}
 
 /**
  * Mendapatkan mata kuliah yang diambil mahasiswa (dari enrollment)
@@ -27,8 +42,8 @@ router.use(verifyToken);
 async function getMataKuliahDiambil(userId) {
   try {
     const enrollmentSnapshot = await db.collection('enrollment')
-      .where('userId', '==', userId)        // ganti dari mahasiswaId
-      .where('status', '==', 'active')     // tambahkan filter status
+      .where('userId', '==', userId)
+      .where('status', '==', 'active')
       .get();
     const mkList = [];
     for (const doc of enrollmentSnapshot.docs) {
@@ -49,15 +64,6 @@ async function getMataKuliahDiambil(userId) {
     console.error('Error getMataKuliahDiambil:', error);
     return [];
   }
-}
-
-/**
- * Mendapatkan jadwal kuliah (dari field jadwal di mataKuliah)
- * @param {Object} mk - data mata kuliah
- * @returns {string} jadwal kuliah atau pesan default
- */
-function getJadwal(mk) {
-  return mk.jadwal || 'Jadwal belum diatur';
 }
 
 /**
@@ -82,24 +88,6 @@ function getMateri(mk) {
 }
 
 /**
- * Mendapatkan tugas untuk suatu mata kuliah
- * @param {string} mkId - ID mata kuliah
- * @returns {Promise<Array>} daftar tugas
- */
-async function getTugasByMk(mkId) {
-  try {
-    const snapshot = await db.collection('tugas')
-      .where('mkId', '==', mkId)
-      .orderBy('deadline', 'asc')
-      .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.error('Error getTugasByMk:', error);
-    return [];
-  }
-}
-
-/**
  * Mendapatkan status pengumpulan untuk setiap tugas
  * @param {string} tugasId - ID tugas
  * @param {string} mahasiswaId - UID mahasiswa
@@ -109,7 +97,7 @@ async function getPengumpulan(tugasId, mahasiswaId) {
   try {
     const snapshot = await db.collection('pengumpulan')
       .where('tugasId', '==', tugasId)
-      .where('mahasiswaId', '==', mahasiswaId)   // ← sesuaikan field
+      .where('mahasiswaId', '==', mahasiswaId)
       .limit(1)
       .get();
     return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
@@ -120,25 +108,11 @@ async function getPengumpulan(tugasId, mahasiswaId) {
 }
 
 /**
- * Membuat folder di Google Drive untuk jawaban mahasiswa per mata kuliah
- * Struktur: Tugas/[TahunAjaran]/[KodeMK]/Jawaban/[NIM]/
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari (sudah disanitasi)
+ * @returns {Promise<string>} ID folder
  */
-async function getOrCreateJawabanFolder(mk, nim, tahunAjaran) {
-  // Asumsikan ada folder utama Tugas (dengan ID di .env)
-  const TUGAS_FOLDER_ID = process.env.TUGAS_FOLDER_ID;
-  if (!TUGAS_FOLDER_ID) throw new Error('TUGAS_FOLDER_ID tidak didefinisikan');
-
-  // Folder tahun ajaran
-  const tahunFolder = await getOrCreateSubFolder(TUGAS_FOLDER_ID, tahunAjaran);
-  // Folder mata kuliah
-  const mkFolder = await getOrCreateSubFolder(tahunFolder, mk.kode);
-  // Folder Jawaban
-  const jawabanFolder = await getOrCreateSubFolder(mkFolder, 'Jawaban');
-  // Folder NIM
-  const nimFolder = await getOrCreateSubFolder(jawabanFolder, nim);
-  return nimFolder;
-}
-
 async function getOrCreateSubFolder(parentId, name) {
   const query = await drive.files.list({
     q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
@@ -155,17 +129,47 @@ async function getOrCreateSubFolder(parentId, name) {
   }
 }
 
+/**
+ * Membuat folder di Google Drive untuk jawaban mahasiswa dengan struktur:
+ * Data WEB / Tugas / [TahunAjaran] / [NamaMK] / Jawaban / [NIM] /
+ * @param {Object} mk - data mata kuliah (harus memiliki nama)
+ * @param {string} nim - NIM mahasiswa
+ * @param {string} tahunAjaran - Tahun ajaran (contoh: "2025/2026")
+ * @returns {Promise<string>} ID folder tempat menyimpan jawaban
+ */
+async function getOrCreateJawabanFolder(mk, nim, tahunAjaran) {
+  // 1. Folder "Tugas" di dalam Data WEB
+  const tugasFolderId = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Tugas');
+  // 2. Folder tahun ajaran
+  const tahunFolder = await getOrCreateSubFolder(tugasFolderId, tahunAjaran);
+  // 3. Folder mata kuliah berdasarkan NAMA (bukan kode) - sanitasi nama
+  const sanitizedNamaMK = sanitizeName(mk.nama);
+  const mkFolder = await getOrCreateSubFolder(tahunFolder, sanitizedNamaMK);
+  // 4. Folder "Jawaban"
+  const jawabanFolder = await getOrCreateSubFolder(mkFolder, 'Jawaban');
+  // 5. Folder NIM mahasiswa
+  const nimFolder = await getOrCreateSubFolder(jawabanFolder, nim);
+  return nimFolder;
+}
+
 // ============================================================================
 // HALAMAN UTAMA E‑LEARNING
 // ============================================================================
 
-/**
- * GET /mahasiswa/elearning
- * Menampilkan daftar mata kuliah yang diambil
- */
 router.get('/', async (req, res) => {
   try {
     const mkList = await getMataKuliahDiambil(req.user.id);
+    
+    // Tambahkan jumlah mahasiswa untuk setiap MK
+    for (let mk of mkList) {
+      const countSnapshot = await db.collection('enrollment')
+        .where('mkId', '==', mk.id)
+        .where('status', '==', 'active')
+        .count()
+        .get();
+      mk.jumlahMahasiswa = countSnapshot.data().count;
+    }
+
     res.render('mahasiswa/elearning/index', { title: 'ELK‑Learning', mkList });
   } catch (error) {
     console.error(error);
@@ -177,14 +181,6 @@ router.get('/', async (req, res) => {
 // DETAIL MATA KULIAH (JADWAL, MATERI, TUGAS)
 // ============================================================================
 
-/**
- * GET /mahasiswa/elearning/mk/:id
- * Menampilkan detail mata kuliah: jadwal, materi, daftar tugas
- */
-// GET /mahasiswa/elearning/mk/:id
-// GET /mahasiswa/elearning/mk/:id
-// GET /mahasiswa/elearning/mk/:id
-// GET /mahasiswa/elearning/mk/:id
 router.get('/mk/:id', async (req, res) => {
   try {
     const mkId = req.params.id;
@@ -194,7 +190,7 @@ router.get('/mk/:id', async (req, res) => {
 
     // Verifikasi mahasiswa terdaftar di MK ini
     const enrollmentSnapshot = await db.collection('enrollment')
-      .where('userId', '==', req.user.id)   // ← ganti dari mahasiswaId ke userId
+      .where('userId', '==', req.user.id)
       .where('mkId', '==', mkId)
       .where('status', '==', 'active')
       .get();
@@ -258,7 +254,7 @@ router.get('/mk/:id', async (req, res) => {
       jadwal,
       materi: pertemuanList,
       dosenList,
-      jumlahMahasiswa,   // ← pastikan variabel ini dikirim
+      jumlahMahasiswa,
       tugasList
     });
   } catch (error) {
@@ -269,16 +265,11 @@ router.get('/mk/:id', async (req, res) => {
     });
   }
 });
+
 // ============================================================================
 // DETAIL TUGAS & KUMPUL TUGAS
 // ============================================================================
 
-/**
- * GET /mahasiswa/elearning/tugas/:id
- * Menampilkan detail tugas dan form upload (jika belum dikumpul)
- */
-// GET /mahasiswa/elearning/tugas/:id
-// GET /mahasiswa/elearning/tugas/:id
 router.get('/tugas/:id', async (req, res) => {
   try {
     const tugasId = req.params.id;
@@ -312,7 +303,7 @@ router.get('/tugas/:id', async (req, res) => {
       tugas,
       mk,
       pengumpulan,
-      deadlineLewat,           // <-- kirim ke view
+      deadlineLewat,
       sekarang: sekarang.toISOString()
     });
   } catch (error) {
@@ -323,7 +314,7 @@ router.get('/tugas/:id', async (req, res) => {
 
 /**
  * POST /mahasiswa/elearning/tugas/:id/kumpul
- * Upload jawaban tugas ke Google Drive
+ * Upload jawaban tugas ke Google Drive dengan struktur folder baru
  */
 router.post('/tugas/:id/kumpul', upload.single('file'), async (req, res) => {
   try {
@@ -337,9 +328,9 @@ router.post('/tugas/:id/kumpul', upload.single('file'), async (req, res) => {
 
     // Verifikasi mahasiswa terdaftar
     const enrollmentSnapshot = await db.collection('enrollment')
-      .where('userId', '==', req.user.id)      // ganti
+      .where('userId', '==', req.user.id)
       .where('mkId', '==', tugas.mkId)
-      .where('status', '==', 'active')         // tambahkan
+      .where('status', '==', 'active')
       .get();
     if (enrollmentSnapshot.empty) {
       return res.status(403).send('Anda tidak terdaftar di mata kuliah ini');
@@ -351,25 +342,35 @@ router.post('/tugas/:id/kumpul', upload.single('file'), async (req, res) => {
       return res.status(400).send('Anda sudah mengumpulkan tugas ini. Hapus terlebih dahulu jika ingin mengganti file.');
     }
 
-    // Dapatkan data MK untuk kode dan tahun ajaran
+    // Dapatkan data MK untuk nama dan tahun ajaran
     const mkDoc = await db.collection('mataKuliah').doc(tugas.mkId).get();
     const mk = mkDoc.data();
-    // Ambil tahun ajaran dari enrollment (asumsi semua sama, bisa diambil dari salah satu)
+    // Ambil tahun ajaran dari enrollment
     const enrollment = enrollmentSnapshot.docs[0].data();
     const tahunAjaran = enrollment.tahunAjaran || '2025/2026';
 
     const nim = req.user.nim;
     const nama = req.user.nama;
 
-    // Buat folder jawaban
-    const folderId = await getOrCreateJawabanFolder({ kode: mk.kode }, nim, tahunAjaran);
+    // Buat folder jawaban (menggunakan struktur Data WEB) - sekarang menggunakan nama MK
+    const folderId = await getOrCreateJawabanFolder({ nama: mk.nama }, nim, tahunAjaran);
 
-    // Nama file: NIM_JudulTugas_Timestamp.pdf
+    // Sanitasi nama mahasiswa dan judul tugas
+    const sanitizedNama = sanitizeName(nama);
+    const sanitizedJudul = sanitizeName(tugas.judul);
+    
     const ext = file.originalname.split('.').pop();
-    const fileName = `${nim}_${tugas.judul.replace(/\s+/g, '_')}_${Date.now()}.${ext}`;
+    // Format file: nama_nim_judulTugas_timestamp.ekstensi
+    const fileName = `${sanitizedNama}_${nim}_${sanitizedJudul}_${Date.now()}.${ext}`;
     const fileMetadata = { name: fileName, parents: [folderId] };
     const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
     const response = await drive.files.create({ resource: fileMetadata, media, fields: 'id, webViewLink' });
+
+    // Beri akses publik agar bisa dilihat dosen (opsional, tergantung kebijakan)
+    await drive.permissions.create({
+      fileId: response.data.id,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
 
     // Simpan ke collection pengumpulan
     await db.collection('pengumpulan').add({

@@ -11,6 +11,11 @@ const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const {
+  getCurrentAcademicSemester,
+  getAngkatanFromNim,
+  getStudentCurrentSemester
+} = require('../../helpers/academicHelper');
 
 // Semua route memerlukan autentikasi
 router.use(verifyToken);
@@ -63,7 +68,7 @@ router.get('/', async (req, res) => {
     res.render('mahasiswa/akademik', { title: 'Akademik', user: req.user });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Gagal memuat halaman akademik');
+    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat halaman akademik' });
   }
 });
 
@@ -85,12 +90,10 @@ router.get('/krs', async (req, res) => {
     const krsList = [];
     for (const doc of snapshot.docs) {
       const data = doc.data();
-      const mkIds = data.mataKuliah || []; // field menyimpan array ID mata kuliah
-
-      // Ambil detail 3 mata kuliah pertama untuk preview
+      const mkIds = data.mataKuliah || [];
       const courses = [];
       for (const mkId of mkIds.slice(0, 3)) {
-        if (!mkId) continue; // lewati jika ID kosong
+        if (!mkId) continue;
         try {
           const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
           if (mkDoc.exists) {
@@ -104,7 +107,6 @@ router.get('/krs', async (req, res) => {
           console.error(`Gagal ambil mata kuliah ${mkId}:`, err.message);
         }
       }
-
       krsList.push({
         id: doc.id,
         ...data,
@@ -126,44 +128,97 @@ router.get('/krs', async (req, res) => {
 
 /**
  * GET /mahasiswa/akademik/krs/baru
- * Form buat KRS baru (pilih mata kuliah)
+ * Form buat KRS baru (pilih mata kuliah) dengan semester otomatis
  */
 router.get('/krs/baru', async (req, res) => {
   try {
+    const angkatan = getAngkatanFromNim(req.user.nim);
+    if (!angkatan) {
+      return res.status(400).render('error', {
+        title: 'Error',
+        message: 'NIM tidak valid untuk menentukan angkatan'
+      });
+    }
+    const currentSemesterNumber = getStudentCurrentSemester(angkatan);
+    const academicLabel = getCurrentAcademicSemester().label;
+
     const coursesSnapshot = await db.collection('mataKuliah').orderBy('kode').get();
     const courses = coursesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.render('mahasiswa/krs_form', { user: req.user, courses });
+
+    // Tandai mata kuliah yang direkomendasikan (sesuai semester saat ini)
+    courses.forEach(c => {
+      c.isRecommended = (c.semester === currentSemesterNumber);
+    });
+
+    res.render('mahasiswa/krs_form', {
+      user: req.user,
+      courses,
+      currentSemester: currentSemesterNumber,
+      academicLabel
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Gagal memuat data mata kuliah');
+    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat data mata kuliah' });
   }
 });
 
 /**
  * POST /mahasiswa/akademik/krs
- * Simpan KRS baru
+ * Simpan KRS baru atau gabungkan dengan KRS pending yang sudah ada
  */
 router.post('/krs', async (req, res) => {
   try {
-    const { semester, courses } = req.body;
-    
-    if (!semester || !courses) {
-      return res.status(400).send('Semester dan mata kuliah harus diisi');
+    const { courses } = req.body; // string JSON dari array ID
+    if (!courses) {
+      return res.status(400).render('error', { title: 'Error', message: 'Mata kuliah harus dipilih' });
     }
 
-    const krsData = {
-      userId: req.user.id,
-      semester,
-      mataKuliah: JSON.parse(courses), // simpan sebagai array ID
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    
-    const docRef = await db.collection('krs').add(krsData);
-    res.redirect(`/mahasiswa/akademik/krs/${docRef.id}`);
+    const mkIds = JSON.parse(courses);
+    if (!Array.isArray(mkIds) || mkIds.length === 0) {
+      return res.status(400).render('error', { title: 'Error', message: 'Pilih minimal satu mata kuliah' });
+    }
+
+    const angkatan = getAngkatanFromNim(req.user.nim);
+    if (!angkatan) {
+      return res.status(400).render('error', { title: 'Error', message: 'NIM tidak valid' });
+    }
+
+    const academicLabel = getCurrentAcademicSemester().label;
+
+    // Cek apakah sudah ada KRS pending untuk semester ini
+    const existingSnapshot = await db.collection('krs')
+      .where('userId', '==', req.user.id)
+      .where('semester', '==', academicLabel)
+      .where('status', '==', 'pending')
+      .limit(1)
+      .get();
+
+    if (!existingSnapshot.empty) {
+      // Gabungkan dengan KRS yang sudah ada
+      const existingDoc = existingSnapshot.docs[0];
+      const existingData = existingDoc.data();
+      const existingMkIds = existingData.mataKuliah || [];
+      const combined = [...new Set([...existingMkIds, ...mkIds])]; // hilangkan duplikat
+      await existingDoc.ref.update({
+        mataKuliah: combined,
+        updatedAt: new Date().toISOString()
+      });
+      res.redirect(`/mahasiswa/akademik/krs/${existingDoc.id}`);
+    } else {
+      // Buat KRS baru
+      const krsData = {
+        userId: req.user.id,
+        semester: academicLabel,
+        mataKuliah: mkIds,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      const docRef = await db.collection('krs').add(krsData);
+      res.redirect(`/mahasiswa/akademik/krs/${docRef.id}`);
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).send('Gagal menyimpan KRS');
+    res.status(500).render('error', { title: 'Error', message: 'Gagal menyimpan KRS' });
   }
 });
 
@@ -174,11 +229,14 @@ router.post('/krs', async (req, res) => {
 router.get('/krs/:id', async (req, res) => {
   try {
     const krsDoc = await db.collection('krs').doc(req.params.id).get();
-    if (!krsDoc.exists) return res.status(404).send('KRS tidak ditemukan');
+    if (!krsDoc.exists) {
+      return res.status(404).render('error', { title: 'Tidak Ditemukan', message: 'KRS tidak ditemukan' });
+    }
     const krs = { id: krsDoc.id, ...krsDoc.data() };
-    if (krs.userId !== req.user.id) return res.status(403).send('Akses ditolak');
+    if (krs.userId !== req.user.id) {
+      return res.status(403).render('error', { title: 'Akses Ditolak', message: 'Anda tidak memiliki akses ke KRS ini' });
+    }
 
-    // Ambil detail mata kuliah
     const mkIds = krs.mataKuliah || [];
     const mkList = [];
     for (const mkId of mkIds) {
@@ -205,7 +263,7 @@ router.get('/krs/:id', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Gagal memuat detail KRS');
+    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat detail KRS' });
   }
 });
 
@@ -216,19 +274,24 @@ router.get('/krs/:id', async (req, res) => {
 router.post('/krs/:id/upload', upload.single('file'), async (req, res) => {
   try {
     const krsDoc = await db.collection('krs').doc(req.params.id).get();
-    if (!krsDoc.exists) return res.status(404).send('KRS tidak ditemukan');
+    if (!krsDoc.exists) {
+      return res.status(404).render('error', { title: 'Tidak Ditemukan', message: 'KRS tidak ditemukan' });
+    }
     const krsData = krsDoc.data();
-    if (krsData.userId !== req.user.id) return res.status(403).send('Akses ditolak');
+    if (krsData.userId !== req.user.id) {
+      return res.status(403).render('error', { title: 'Akses Ditolak', message: 'Anda tidak memiliki akses ke KRS ini' });
+    }
 
     const file = req.file;
-    if (!file) return res.status(400).send('Tidak ada file');
+    if (!file) {
+      return res.status(400).render('error', { title: 'Error', message: 'Tidak ada file yang diupload' });
+    }
 
     const user = req.user;
     const nim = user.nim;
     const nama = user.nama;
     const angkatan = nim && nim.length >= 2 ? '20' + nim.substring(0, 2) : new Date().getFullYear().toString();
 
-    // Gunakan environment variable KRS_FOLDER_ID (pastikan di .env)
     const rootFolderId = process.env.KRS_FOLDER_ID;
     if (!rootFolderId) throw new Error('KRS_FOLDER_ID tidak diatur di environment');
 
@@ -240,7 +303,6 @@ router.post('/krs/:id/upload', upload.single('file'), async (req, res) => {
     const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
     const response = await drive.files.create({ resource: fileMetadata, media, fields: 'id, webViewLink' });
 
-    // Beri permission publik
     await drive.permissions.create({
       fileId: response.data.id,
       requestBody: { role: 'reader', type: 'anyone' }
@@ -256,7 +318,7 @@ router.post('/krs/:id/upload', upload.single('file'), async (req, res) => {
     res.redirect(`/mahasiswa/akademik/krs/${req.params.id}`);
   } catch (error) {
     console.error('Gagal upload KRS:', error);
-    res.status(500).send('Upload gagal: ' + error.message);
+    res.status(500).render('error', { title: 'Error', message: 'Gagal upload KRS: ' + error.message });
   }
 });
 
@@ -272,7 +334,6 @@ router.get('/khs', async (req, res) => {
   try {
     const { semester } = req.query;
 
-    // Ambil semua KHS milik mahasiswa ini
     let khsQuery = db.collection('khs')
       .where('userId', '==', req.user.id)
       .orderBy('semester', 'asc');
@@ -284,7 +345,6 @@ router.get('/khs', async (req, res) => {
     const khsSnapshot = await khsQuery.get();
     const khsList = khsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Ambil daftar semester unik untuk filter
     const allKhsSnapshot = await db.collection('khs')
       .where('userId', '==', req.user.id)
       .get();
@@ -314,9 +374,13 @@ router.get('/khs', async (req, res) => {
 router.get('/khs/:id', async (req, res) => {
   try {
     const khsDoc = await db.collection('khs').doc(req.params.id).get();
-    if (!khsDoc.exists) return res.status(404).send('KHS tidak ditemukan');
+    if (!khsDoc.exists) {
+      return res.status(404).render('error', { title: 'Tidak Ditemukan', message: 'KHS tidak ditemukan' });
+    }
     const khs = { id: khsDoc.id, ...khsDoc.data() };
-    if (khs.userId !== req.user.id) return res.status(403).send('Akses ditolak');
+    if (khs.userId !== req.user.id) {
+      return res.status(403).render('error', { title: 'Akses Ditolak', message: 'Anda tidak memiliki akses ke KHS ini' });
+    }
 
     res.render('mahasiswa/khs_detail', {
       title: 'Detail KHS',
@@ -325,7 +389,7 @@ router.get('/khs/:id', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Gagal memuat detail KHS');
+    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat detail KHS' });
   }
 });
 
@@ -339,7 +403,6 @@ router.get('/khs/:id', async (req, res) => {
  */
 router.get('/transkrip', async (req, res) => {
   try {
-    // Query grades dengan indeks yang diperlukan (pastikan indeks sudah dibuat)
     const gradesSnapshot = await db.collection('grades')
       .where('userId', '==', req.user.id)
       .orderBy('semester', 'asc')
@@ -347,7 +410,6 @@ router.get('/transkrip', async (req, res) => {
 
     const grades = gradesSnapshot.docs.map(doc => doc.data());
 
-    // Hitung IPK
     let totalSKS = 0, totalNilai = 0;
     grades.forEach(g => {
       totalSKS += g.sks;
@@ -363,14 +425,13 @@ router.get('/transkrip', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    // Jika error karena indeks, beri pesan yang lebih ramah
     if (error.code === 9) {
       return res.status(500).render('error', {
         title: 'Error',
         message: 'Fitur transkrip membutuhkan indeks database. Silakan hubungi administrator.'
       });
     }
-    res.status(500).send('Gagal memuat transkrip');
+    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat transkrip' });
   }
 });
 
@@ -382,18 +443,79 @@ router.get('/transkrip', async (req, res) => {
  * GET /mahasiswa/akademik/kalender
  * Menampilkan kalender akademik (dari collection kalenderAkademik)
  */
+// routes/mahasiswa/akademik.js bagian kalender
 router.get('/kalender', async (req, res) => {
   try {
-    const now = new Date().toISOString();
-    const snapshot = await db.collection('kalenderAkademik')
-      .where('tanggal', '>=', now)
+    const today = new Date().toISOString().split('T')[0];
+    const snapshot = await db.collection('jadwalPenting')
+      .where('tanggal', '>=', today)
       .orderBy('tanggal', 'asc')
       .get();
     const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.render('mahasiswa/kalender', { title: 'Kalender Akademik', user: req.user, events });
+    
+    // Group events per bulan
+    const months = [];
+    const now = new Date();
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthName = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+      const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); // 0 = Minggu, 1 = Senin, ...
+      // Ubah ke Senin = 0? Kita ingin Senin pertama. Kita akan buat array 35 atau 42.
+      // Sederhana: buat array 42 elemen (6 minggu)
+      const days = [];
+      // Hitung offset: jika firstDay = 0 (Minggu), maka Senin adalah 1? Kita ingin grid dimulai Senin.
+      // Di Indonesia, minggu dimulai Senin. Kita perlu menyesuaikan.
+      // firstDay dari JS: 0 = Minggu, 1 = Senin, ... 6 = Sabtu.
+      // Agar Senin menjadi kolom pertama, kita hitung offset: jika firstDay = 0 (Minggu), maka offset = 6 (karena Minggu adalah hari ke-7)
+      let offset = firstDay === 0 ? 6 : firstDay - 1;
+      
+      // Isi dengan kosong untuk hari sebelum tanggal 1
+      for (let j = 0; j < offset; j++) {
+        days.push({ date: null, events: [] });
+      }
+      // Isi tanggal
+      for (let d = 1; d <= daysInMonth; d++) {
+        days.push({ date: d, events: [] });
+      }
+      // Sisa sampai 42
+      while (days.length < 42) {
+        days.push({ date: null, events: [] });
+      }
+      
+      months.push({
+        monthName,
+        monthIndex: date.getMonth(),
+        year: date.getFullYear(),
+        days,
+        events: []
+      });
+    }
+
+    // Masukkan event ke dalam days dan juga ke events array bulan
+    events.forEach(event => {
+      const eventDate = new Date(event.tanggal);
+      const eventMonth = eventDate.getMonth();
+      const eventYear = eventDate.getFullYear();
+      const monthItem = months.find(m => m.monthIndex === eventMonth && m.year === eventYear);
+      if (monthItem) {
+        monthItem.events.push(event);
+        const day = eventDate.getDate();
+        const dayItem = monthItem.days.find(d => d.date === day);
+        if (dayItem) {
+          dayItem.events.push(event);
+        }
+      }
+    });
+
+    res.render('mahasiswa/kalender', { 
+      title: 'Kalender Akademik', 
+      user: req.user, 
+      months 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Gagal memuat kalender');
+    console.error('Error mengambil kalender:', error);
+    res.status(500).render('error', { message: 'Gagal memuat kalender' });
   }
 });
 

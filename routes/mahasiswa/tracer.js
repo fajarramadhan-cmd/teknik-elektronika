@@ -10,7 +10,13 @@ const { db } = require('../../config/firebaseAdmin');
 const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
+const sharp = require('sharp');
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
 
 // Semua route memerlukan autentikasi
 router.use(verifyToken);
@@ -20,34 +26,38 @@ router.use(verifyToken);
 // ============================================================================
 
 /**
- * Mendapatkan ID folder foto tracer study di Google Drive
- * Membuat folder jika belum ada
+ * Membuat atau mendapatkan subfolder di dalam folder induk
  */
-async function getTracerFotoFolderId() {
-  const folderName = 'Tracer_Foto';
+async function getOrCreateSubFolder(parentId, name) {
   const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
   });
   if (query.data.files.length > 0) {
     return query.data.files[0].id;
   } else {
     const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
       fields: 'id',
     });
     return folder.data.id;
   }
 }
 
+/**
+ * Mendapatkan folder foto tracer study untuk mahasiswa tertentu
+ * Struktur: Data WEB / Tracer Study / [nim] /
+ */
+async function getTracerFotoFolder(nim) {
+  const parentFolder = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Tracer Study');
+  const mahasiswaFolder = await getOrCreateSubFolder(parentFolder, nim);
+  return mahasiswaFolder;
+}
+
 // ============================================================================
 // CEK STATUS SURVEY & TAMPILKAN FORM ATAU HASIL
 // ============================================================================
 
-/**
- * GET /mahasiswa/tracer
- * Menampilkan halaman tracer study: jika sudah mengisi, tampilkan hasil; jika belum, tampilkan form
- */
 router.get('/', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -81,10 +91,6 @@ router.get('/', async (req, res) => {
 // SIMPAN DATA SURVEY
 // ============================================================================
 
-/**
- * POST /mahasiswa/tracer
- * Menyimpan data tracer study (tanpa foto, foto diupload terpisah)
- */
 router.post('/', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -93,7 +99,6 @@ router.post('/', async (req, res) => {
       tanggalMulai, statusPekerjaan, bidang, namaPerusahaan
     } = req.body;
 
-    // Validasi minimal
     if (!pekerjaan || !tempatKerja || !statusPekerjaan) {
       return res.status(400).send('Pekerjaan, tempat kerja, dan status pekerjaan wajib diisi');
     }
@@ -123,13 +128,9 @@ router.post('/', async (req, res) => {
 });
 
 // ============================================================================
-// UPLOAD FOTO TEMPAT KERJA
+// UPLOAD FOTO TEMPAT KERJA (dengan kompresi)
 // ============================================================================
 
-/**
- * POST /mahasiswa/tracer/foto
- * Upload foto tempat kerja ke Google Drive dan simta URL di Firestore
- */
 router.post('/foto', upload.single('foto'), async (req, res) => {
   try {
     const file = req.file;
@@ -137,30 +138,33 @@ router.post('/foto', upload.single('foto'), async (req, res) => {
       return res.status(400).send('Tidak ada file yang diupload');
     }
 
-    // Dapatkan folder foto tracer (buat jika belum ada)
-    const folderId = await getTracerFotoFolderId();
+    const nim = req.user.nim;
+    const folderId = await getTracerFotoFolder(nim);
 
-    // Upload ke Google Drive
-    const fileName = `Tracer_${req.user.nim}_${Date.now()}.${file.originalname.split('.').pop()}`;
+    // Kompres gambar
+    const compressedBuffer = await sharp(file.buffer)
+      .resize({ width: 800, withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+
+    const fileName = `Tracer_${nim}_${Date.now()}.jpg`;
     const fileMetadata = { name: fileName, parents: [folderId] };
-    const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+    const media = { mimeType: 'image/jpeg', body: Readable.from(compressedBuffer) };
     const response = await drive.files.create({
       resource: fileMetadata,
       media,
-      fields: 'id, webViewLink'
+      fields: 'id'
     });
 
-    // Beri akses publik (PENTING!)
+    // Beri akses publik
     await drive.permissions.create({
       fileId: response.data.id,
-      requestBody: {
-        role: 'reader',
-        type: 'anyone'
-      }
+      requestBody: { role: 'reader', type: 'anyone' }
     });
 
-    // Simpan URL publik ke Firestore (gunakan set dengan merge agar data lain tidak hilang)
     const directLink = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
+
+    // Simpan ke Firestore (merge agar data lain tidak hilang)
     await db.collection('tracerStudy').doc(req.user.id).set({
       fotoUrl: directLink,
       fotoId: response.data.id,
@@ -178,10 +182,6 @@ router.post('/foto', upload.single('foto'), async (req, res) => {
 // HAPUS FOTO
 // ============================================================================
 
-/**
- * POST /mahasiswa/tracer/foto/hapus
- * Menghapus foto tempat kerja dari Drive dan Firestore
- */
 router.post('/foto/hapus', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -211,13 +211,9 @@ router.post('/foto/hapus', async (req, res) => {
 });
 
 // ============================================================================
-// EDIT DATA (jika ingin mengubah)
+// EDIT DATA
 // ============================================================================
 
-/**
- * GET /mahasiswa/tracer/edit
- * Menampilkan form edit data tracer study
- */
 router.get('/edit', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -240,10 +236,6 @@ router.get('/edit', async (req, res) => {
   }
 });
 
-/**
- * POST /mahasiswa/tracer/edit
- * Menyimpan perubahan data tracer study
- */
 router.post('/edit', async (req, res) => {
   try {
     const userId = req.user.id;

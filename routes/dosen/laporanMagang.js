@@ -28,26 +28,77 @@ async function getMahasiswa(userId) {
   }
 }
 
+/**
+ * Mendapatkan semua laporan untuk seorang mahasiswa (laporan 1,2,3)
+ */
+async function getLaporanMahasiswa(userId) {
+  const laporanList = [];
+  for (let i = 1; i <= 3; i++) {
+    const docId = `${userId}_${i}`;
+    const doc = await db.collection('laporanMagang').doc(docId).get();
+    if (doc.exists) {
+      laporanList.push({
+        id: docId,
+        ...doc.data()
+      });
+    } else {
+      laporanList.push({
+        id: docId,
+        userId,
+        laporanKe: i,
+        exists: false
+      });
+    }
+  }
+  return laporanList;
+}
+
 // ============================================================================
-// DAFTAR LAPORAN
+// DAFTAR MAHASISWA YANG MEMILIKI LAPORAN
 // ============================================================================
 
 router.get('/', async (req, res) => {
   try {
-    const snapshot = await db.collection('laporanMagang').orderBy('uploadedAt', 'desc').get();
-    const laporanList = [];
-    for (const doc of snapshot.docs) {
+    // Ambil semua dokumen laporan (tanpa filter, karena jumlah tidak terlalu banyak)
+    const snapshot = await db.collection('laporanMagang').get();
+    const mahasiswaMap = new Map();
+
+    snapshot.docs.forEach(doc => {
       const data = doc.data();
-      const mahasiswa = await getMahasiswa(data.userId);
-      laporanList.push({
+      const userId = data.userId;
+      if (!userId) return;
+
+      if (!mahasiswaMap.has(userId)) {
+        mahasiswaMap.set(userId, {
+          userId,
+          laporan: []
+        });
+      }
+      mahasiswaMap.get(userId).laporan.push({
         id: doc.id,
-        ...data,
-        mahasiswa
+        laporanKe: data.laporanKe,
+        status: data.status,
+        fileUrl: data.fileUrl,
+        uploadedAt: data.uploadedAt
+      });
+    });
+
+    // Ubah map menjadi array dan tambahkan data mahasiswa
+    const mahasiswaList = [];
+    for (const [userId, item] of mahasiswaMap.entries()) {
+      const mahasiswa = await getMahasiswa(userId);
+      mahasiswaList.push({
+        ...mahasiswa,
+        laporan: item.laporan
       });
     }
+
+    // Urutkan berdasarkan nama
+    mahasiswaList.sort((a, b) => a.nama.localeCompare(b.nama));
+
     res.render('dosen/laporan_list', {
       title: 'Laporan Magang Mahasiswa',
-      laporanList
+      mahasiswaList
     });
   } catch (error) {
     console.error('Error ambil laporan:', error);
@@ -59,25 +110,19 @@ router.get('/', async (req, res) => {
 });
 
 // ============================================================================
-// DETAIL LAPORAN
+// DETAIL LAPORAN PER MAHASISWA
 // ============================================================================
 
 router.get('/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
-    const laporanDoc = await db.collection('laporanMagang').doc(userId).get();
-    if (!laporanDoc.exists) {
-      return res.status(404).render('error', {
-        title: 'Tidak Ditemukan',
-        message: 'Laporan tidak ditemukan'
-      });
-    }
-    const laporan = laporanDoc.data();
     const mahasiswa = await getMahasiswa(userId);
+    const laporanList = await getLaporanMahasiswa(userId);
+
     res.render('dosen/laporan_detail', {
       title: `Laporan Magang - ${mahasiswa.nama}`,
-      laporan,
-      mahasiswa
+      mahasiswa,
+      laporanList
     });
   } catch (error) {
     console.error('Error detail laporan:', error);
