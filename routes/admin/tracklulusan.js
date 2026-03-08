@@ -1,6 +1,7 @@
 /**
  * routes/admin/tracklulusan.js
  * Track Lulusan - Kelola data lulusan dan survey tracer study
+ * Terintegrasi dengan Data WEB, kompresi gambar, dan fileId
  */
 
 const express = require('express');
@@ -10,34 +11,56 @@ const { db } = require('../../config/firebaseAdmin');
 const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
+const sharp = require('sharp'); // untuk kompresi gambar
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
 
 router.use(verifyToken);
 router.use(isAdmin);
 
 // ============================================================================
-// FUNGSI BANTU
+// FUNGSI BANTU UMUM
 // ============================================================================
 
 /**
- * Mendapatkan ID folder foto lulusan di Google Drive.
- * Membuat folder jika belum ada.
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
  */
-async function getLulusanFotoFolderId() {
-  const folderName = 'Foto_Lulusan';
+async function getOrCreateSubFolder(parentId, name) {
   const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
   });
   if (query.data.files.length > 0) {
     return query.data.files[0].id;
   } else {
     const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
       fields: 'id',
     });
     return folder.data.id;
   }
+}
+
+/**
+ * Mendapatkan folder foto lulusan dengan struktur:
+ * Data WEB / Lulusan / Foto / [tahunLulus] / [nim] /
+ * @param {number} tahunLulus - Tahun lulus
+ * @param {string} nim - NIM lulusan
+ * @returns {Promise<string>} ID folder
+ */
+async function getLulusanFotoFolder(tahunLulus, nim) {
+  const parentLulusan = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Lulusan');
+  const parentFoto = await getOrCreateSubFolder(parentLulusan, 'Foto');
+  const tahunFolder = await getOrCreateSubFolder(parentFoto, tahunLulus.toString());
+  const nimFolder = await getOrCreateSubFolder(tahunFolder, nim);
+  return nimFolder;
 }
 
 // ============================================================================
@@ -96,7 +119,7 @@ router.get('/create', (req, res) => {
 
 /**
  * POST /admin/tracklulusan
- * Simpan lulusan baru (dengan upload foto)
+ * Simpan lulusan baru (dengan upload foto + kompresi)
  */
 router.post('/', upload.single('foto'), async (req, res) => {
   try {
@@ -112,16 +135,30 @@ router.post('/', upload.single('foto'), async (req, res) => {
 
     let fotoUrl = null, fotoFileId = null;
     if (file) {
-      const folderId = await getLulusanFotoFolderId();
-      const fileName = `${nim}_${Date.now()}.${file.originalname.split('.').pop()}`;
+      // Kompres gambar
+      const compressedBuffer = await sharp(file.buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      // Dapatkan folder
+      const folderId = await getLulusanFotoFolder(parseInt(tahunLulus), nim);
+      const fileName = `${nim}_${Date.now()}.jpg`;
       const fileMetadata = { name: fileName, parents: [folderId] };
-      const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+      const media = { mimeType: 'image/jpeg', body: Readable.from(compressedBuffer) };
       const response = await drive.files.create({
         resource: fileMetadata,
         media,
-        fields: 'id, webViewLink',
+        fields: 'id',
       });
-      fotoUrl = response.data.webViewLink;
+
+      // Set akses publik
+      await drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: { role: 'reader', type: 'anyone' }
+      });
+
+      fotoUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
       fotoFileId = response.data.id;
     }
 
@@ -195,7 +232,7 @@ router.get('/:id/edit', async (req, res) => {
 
 /**
  * POST /admin/tracklulusan/:id/update
- * Update lulusan (dengan upload foto baru opsional)
+ * Update lulusan (dengan upload foto baru opsional + kompresi)
  */
 router.post('/:id/update', upload.single('foto'), async (req, res) => {
   try {
@@ -235,16 +272,30 @@ router.post('/:id/update', upload.single('foto'), async (req, res) => {
           console.error('Gagal hapus foto lama:', err);
         }
       }
-      const folderId = await getLulusanFotoFolderId();
-      const fileName = `${nim}_${Date.now()}.${file.originalname.split('.').pop()}`;
+
+      // Kompres gambar
+      const compressedBuffer = await sharp(file.buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      // Dapatkan folder
+      const folderId = await getLulusanFotoFolder(parseInt(tahunLulus), nim);
+      const fileName = `${nim}_${Date.now()}.jpg`;
       const fileMetadata = { name: fileName, parents: [folderId] };
-      const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+      const media = { mimeType: 'image/jpeg', body: Readable.from(compressedBuffer) };
       const response = await drive.files.create({
         resource: fileMetadata,
         media,
-        fields: 'id, webViewLink',
+        fields: 'id',
       });
-      updateData.foto = response.data.webViewLink;
+
+      await drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: { role: 'reader', type: 'anyone' }
+      });
+
+      updateData.foto = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
       updateData.fotoFileId = response.data.id;
     }
 

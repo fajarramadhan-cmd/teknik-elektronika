@@ -3,6 +3,7 @@
  * Daftar dan detail mata kuliah yang diampu oleh dosen
  * Dilengkapi dengan upload materi per pertemuan ke Google Drive
  * dan daftar mahasiswa per mata kuliah
+ * Terintegrasi dengan folder Data WEB (ID: 17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0)
  */
 
 const express = require('express');
@@ -20,8 +21,46 @@ router.use(verifyToken);
 router.use(isDosen);
 
 // ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
+
+// ============================================================================
 // FUNGSI BANTU (HELPER)
 // ============================================================================
+
+/**
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
+ */
+async function getOrCreateSubFolder(parentId, name) {
+  const query = await drive.files.list({
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (query.data.files.length > 0) {
+    return query.data.files[0].id;
+  } else {
+    const folder = await drive.files.create({
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id',
+    });
+    return folder.data.id;
+  }
+}
+
+/**
+ * Mendapatkan folder untuk materi mata kuliah:
+ * Data WEB / Dosen / Materi MK / [KodeMK] /
+ */
+async function getMateriMkFolder(kodeMK) {
+  const parentDosen = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Dosen');
+  const parentMateri = await getOrCreateSubFolder(parentDosen, 'Materi MK');
+  const mkFolder = await getOrCreateSubFolder(parentMateri, kodeMK);
+  return mkFolder;
+}
 
 /**
  * Menghapus properti dengan nilai undefined dari objek (untuk Firestore)
@@ -29,27 +68,6 @@ router.use(isDosen);
 function removeUndefined(obj) {
   Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
   return obj;
-}
-
-/**
- * Mendapatkan folder materi mata kuliah di Google Drive.
- * Membuat folder jika belum ada.
- */
-async function getMateriFolderId() {
-  const folderName = 'Materi_MK';
-  const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id)',
-  });
-  if (query.data.files.length > 0) {
-    return query.data.files[0].id;
-  } else {
-    const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
-      fields: 'id',
-    });
-    return folder.data.id;
-  }
 }
 
 // ============================================================================
@@ -239,14 +257,15 @@ router.post('/:id/pertemuan/:pertemuan', upload.single('file'), async (req, res)
     // Proses file jika ada
     if (file) {
       try {
-        const folderId = await getMateriFolderId();
-        const fileName = `MK_${mkData.kode}_Pertemuan_${req.params.pertemuan}_${Date.now()}.pdf`;
+        // Dapatkan folder untuk MK ini berdasarkan kode
+        const folderId = await getMateriMkFolder(mkData.kode);
+        const fileName = `Pertemuan_${req.params.pertemuan}_${Date.now()}.pdf`;
         const fileMetadata = { name: fileName, parents: [folderId] };
         const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
         const response = await drive.files.create({
           resource: fileMetadata,
           media,
-          fields: 'id, webViewLink'
+          fields: 'id'
         });
         // Set permission publik
         await drive.permissions.create({
@@ -350,7 +369,7 @@ router.get('/:id', async (req, res) => {
         tanggal: existing.tanggal || null,
         status: existing.status || 'belum',
         catatan: existing.catatan || '',
-        fileUrl: existing.fileUrl || null  // konsisten gunakan fileUrl
+        fileUrl: existing.fileUrl || null
       });
     }
 

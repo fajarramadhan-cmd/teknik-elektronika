@@ -118,7 +118,20 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="/mahasiswa/dashboard">
+            <%
+                // Tentukan link dashboard berdasarkan role
+                let dashboardLink = '/'; // default
+                if (typeof user !== 'undefined' && user) {
+                    if (user.role === 'mahasiswa') {
+                        dashboardLink = '/mahasiswa/dashboard';
+                    } else if (user.role === 'dosen') {
+                        dashboardLink = '/dosen/dashboard';
+                    } else if (user.role === 'admin') {
+                        dashboardLink = '/admin/dashboard';
+                    }
+                }
+            %>
+            <a class="navbar-brand" href="<%= dashboardLink %>">
                 <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo Politeknik Dewantara">
                 <span class="separator">|</span>
                 <span class="brand-text">
@@ -131,25 +144,37 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/mahasiswa/dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mahasiswa/akademik">Akademik</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mahasiswa/elearning">ELK-Learning</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mahasiswa/magang">ELK-Magang</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> 
-                            <% if (typeof user !== 'undefined' && user) { %>
-                                <%= user.nama || user.email %>
-                            <% } else { %>
-                                Akun
-                            <% } %>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                            <li><a class="dropdown-item" href="/mahasiswa/biodata"><i class="bi bi-person me-2"></i>Profil</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                        </ul>
-                    </li>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <% if (user.role === 'mahasiswa') { %>
+                            <li class="nav-item"><a class="nav-link" href="/mahasiswa/dashboard">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/mahasiswa/akademik">Akademik</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/mahasiswa/elearning">ELK-Learning</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/mahasiswa/magang">ELK-Magang</a></li>
+                        <% } else if (user.role === 'dosen') { %>
+                            <li class="nav-item"><a class="nav-link" href="/dosen/dashboard">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/dosen/mk">Mata Kuliah</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/dosen/mahasiswa">Mahasiswa Bimbingan</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/dosen/nilai">Nilai</a></li>
+                        <% } else if (user.role === 'admin') { %>
+                            <li class="nav-item"><a class="nav-link" href="/admin/dashboard">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/admin/users">Pengguna</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/admin/mahasiswa">Mahasiswa</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/admin/dosen">Dosen</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/admin/matakuliah">Mata Kuliah</a></li>
+                        <% } %>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> <%= user.nama || user.email %>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="<%= user.role === 'mahasiswa' ? '/mahasiswa/biodata' : (user.role === 'dosen' ? '/dosen/biodata' : '/admin/biodata') %>"><i class="bi bi-person me-2"></i>Profil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item"><a class="nav-link" href="/auth/login">Login</a></li>
+                    <% } %>
                 </ul>
             </div>
         </div>

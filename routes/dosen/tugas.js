@@ -1,6 +1,7 @@
 /**
  * routes/dosen/tugas.js
  * Kelola tugas untuk dosen (CRUD tugas)
+ * Terintegrasi dengan folder Data WEB (ID: 17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0)
  */
 
 const express = require('express');
@@ -12,8 +13,53 @@ const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
+
 router.use(verifyToken);
 router.use(isDosen);
+
+// ============================================================================
+// FUNGSI BANTU (HELPER)
+// ============================================================================
+
+/**
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
+ */
+async function getOrCreateSubFolder(parentId, name) {
+  const query = await drive.files.list({
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (query.data.files.length > 0) {
+    return query.data.files[0].id;
+  } else {
+    const folder = await drive.files.create({
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id',
+    });
+    return folder.data.id;
+  }
+}
+
+/**
+ * Mendapatkan folder untuk menyimpan file soal tugas dosen.
+ * Struktur: Data WEB / Dosen / Tugas / [KodeMK] / Soal /
+ * @param {string} kodeMK - Kode mata kuliah (contoh: "PDK001")
+ * @returns {Promise<string>} ID folder
+ */
+async function getSoalTugasFolder(kodeMK) {
+  const parentDosen = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Dosen');
+  const parentTugas = await getOrCreateSubFolder(parentDosen, 'Tugas');
+  const mkFolder = await getOrCreateSubFolder(parentTugas, kodeMK);
+  const soalFolder = await getOrCreateSubFolder(mkFolder, 'Soal');
+  return soalFolder;
+}
 
 // ============================================================================
 // DAFTAR TUGAS
@@ -74,7 +120,7 @@ router.get('/create', async (req, res) => {
 });
 
 // ============================================================================
-// SIMPAN TUGAS BARU
+// SIMPAN TUGAS BARU (dengan upload file ke Data WEB)
 // ============================================================================
 router.post('/', upload.single('file'), async (req, res) => {
   try {
@@ -85,20 +131,26 @@ router.post('/', upload.single('file'), async (req, res) => {
       return res.status(400).send('MK, judul, dan deadline wajib diisi');
     }
 
+    // Ambil data MK untuk mendapatkan kode
+    const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
+    if (!mkDoc.exists) {
+      return res.status(404).send('Mata kuliah tidak ditemukan');
+    }
+    const mkData = mkDoc.data();
+
     let fileUrl = null, fileId = null;
     if (file) {
-      // Upload ke Drive (gunakan folder tugas yang sudah ada)
-      const folderId = process.env.TUGAS_FOLDER_ID; // atau buat fungsi helper
-      if (!folderId) throw new Error('TUGAS_FOLDER_ID tidak diatur');
-      const fileName = `${Date.now()}_${file.originalname}`;
+      // Dapatkan folder soal berdasarkan kode MK
+      const folderId = await getSoalTugasFolder(mkData.kode);
+      const fileName = `${mkData.kode}_${Date.now()}_${file.originalname}`;
       const fileMetadata = { name: fileName, parents: [folderId] };
       const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
       const response = await drive.files.create({
         resource: fileMetadata,
         media,
-        fields: 'id, webViewLink'
+        fields: 'id'
       });
-      // Set publik
+      // Set permission publik
       await drive.permissions.create({
         fileId: response.data.id,
         requestBody: { role: 'reader', type: 'anyone' }
@@ -116,6 +168,7 @@ router.post('/', upload.single('file'), async (req, res) => {
       tipe: tipe || 'tugas',
       fileUrl,
       fileId,
+      mkKode: mkData.kode, // simpan kode untuk keperluan tampilan
       createdAt: new Date().toISOString()
     });
 
@@ -125,8 +178,6 @@ router.post('/', upload.single('file'), async (req, res) => {
     res.status(500).send('Gagal membuat tugas: ' + error.message);
   }
 });
-
-
 
 // ============================================================================
 // DETAIL TUGAS

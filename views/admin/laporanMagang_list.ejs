@@ -1,0 +1,78 @@
+<%- include('../partials/header') %>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        border-radius: 1.5rem;
+        padding: 1.5rem 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .table-laporan th {
+        background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border: none;
+    }
+    .badge-status {
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-weight: 500;
+    }
+    .badge-submitted { background: #ffc107; color: #212529; }
+    .badge-approved { background: #28a745; color: white; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="page-header">
+        <h2><i class="bi bi-file-earmark-pdf me-2"></i>Persetujuan Laporan Magang</h2>
+    </div>
+
+    <% if (typeof success !== 'undefined' && success === 'approved') { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>Laporan berhasil disetujui.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <% } %>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-laporan">
+            <thead>
+                <tr>
+                    <th>NIM</th>
+                    <th>Nama</th>
+                    <th>Laporan ke-</th>
+                    <th>Semester</th>
+                    <th>Tanggal Upload</th>
+                    <th>File</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (laporanList.length === 0) { %>
+                    <tr><td colspan="7" class="text-center py-5">Tidak ada laporan yang perlu disetujui.</td></tr>
+                <% } %>
+                <% laporanList.forEach(l => { %>
+                    <tr>
+                        <td><%= l.nim %></td>
+                        <td><%= l.nama %></td>
+                        <td><%= l.laporanKe %></td>
+                        <td><%= l.semester %></td>
+                        <td><%= new Date(l.uploadedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                        <td><a href="<%= l.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i> Lihat</a></td>
+                        <td>
+                            <a href="/admin/laporan-magang/<%= l.id %>/approve" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Setujui</a>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

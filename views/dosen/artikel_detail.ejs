@@ -1,0 +1,84 @@
+<%- include('../partials/header') %>
+
+<style>
+  .detail-header {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+  }
+  .content-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .btn-download {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-download:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+  .meta-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed #e9ecef;
+  }
+  .meta-label {
+    font-weight: 600;
+    color: #1e293b;
+    width: 120px;
+    display: inline-block;
+  }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="detail-header">
+    <h2><%= artikel.judul %></h2>
+    <p class="mb-0 opacity-75">oleh <%= artikel.penulis %></p>
+  </div>
+
+  <div class="content-card">
+    <div class="meta-item"><span class="meta-label">Status</span> 
+      <span class="badge 
+        <%= artikel.status === 'approved' ? 'bg-success' : '' %>
+        <%= artikel.status === 'pending' ? 'bg-warning text-dark' : '' %>
+        <%= artikel.status === 'rejected' ? 'bg-danger' : '' %>">
+        <%= artikel.status %>
+      </span>
+    </div>
+    <div class="meta-item"><span class="meta-label">Kata Kunci</span> <%= artikel.kataKunci || '-' %></div>
+    <div class="meta-item"><span class="meta-label">Tanggal Upload</span> <%= new Date(artikel.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></div>
+
+    <hr class="my-4">
+
+    <h5 class="fw-bold mb-3">Abstrak</h5>
+    <p><%= artikel.abstrak || 'Tidak ada abstrak.' %></p>
+
+    <hr class="my-4">
+
+    <div class="text-center">
+      <a href="<%= artikel.fileUrl %>" target="_blank" class="btn-download">
+        <i class="bi bi-file-earmark-pdf"></i> Baca / Unduh Artikel
+      </a>
+    </div>
+  </div>
+
+  <div class="text-center mt-3">
+    <a href="/dosen/artikel" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Kembali</a>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

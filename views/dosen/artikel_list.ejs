@@ -1,0 +1,84 @@
+<%- include('../partials/header') %>
+
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border-radius: 1.5rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .table-artikel th {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    border: none;
+  }
+  .badge-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-weight: 500;
+  }
+  .badge-pending { background: #ffc107; color: #212529; }
+  .badge-approved { background: #28a745; color: white; }
+  .badge-rejected { background: #dc3545; color: white; }
+</style>
+
+<div class="container-fluid mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-journal-richtext me-2"></i>Artikel Saya</h2>
+    <a href="/dosen/artikel/create" class="btn btn-light">+ Buat Artikel Baru</a>
+  </div>
+
+  <% if (typeof success !== 'undefined' && success === 'deleted') { %>
+    <div class="alert alert-info">Artikel berhasil dihapus.</div>
+  <% } %>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-artikel">
+      <thead>
+        <tr>
+          <th>Judul</th>
+          <th>Abstrak</th>
+          <th>Tanggal Upload</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (artikelList.length === 0) { %>
+          <tr><td colspan="5" class="text-center py-5">Belum ada artikel.</td></tr>
+        <% } %>
+        <% artikelList.forEach(a => { %>
+          <tr>
+            <td><strong><%= a.judul %></strong></td>
+            <td><%= (a.abstrak || '').substring(0, 80) %>...</td>
+            <td><%= new Date(a.createdAt).toLocaleDateString('id-ID') %></td>
+            <td>
+              <span class="badge-status 
+                <%= a.status === 'pending' ? 'badge-pending' : '' %>
+                <%= a.status === 'approved' ? 'badge-approved' : '' %>
+                <%= a.status === 'rejected' ? 'badge-rejected' : '' %>">
+                <%= a.status %>
+              </span>
+            </td>
+            <td>
+              <a href="/dosen/artikel/<%= a.id %>" class="btn btn-sm btn-info">Detail</a>
+              <a href="/dosen/artikel/<%= a.id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+              <form method="POST" action="/dosen/artikel/<%= a.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus artikel ini?')">
+                <button class="btn btn-sm btn-danger">Hapus</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

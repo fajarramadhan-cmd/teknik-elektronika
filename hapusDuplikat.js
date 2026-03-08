@@ -1,31 +1,60 @@
-// scripts/cleanup-enrollment.js
+// scripts/cleanup-laporan.js
 const { db } = require('./config/firebaseAdmin');
 
-async function cleanupOrphanEnrollments() {
-  console.log('Memulai pembersihan enrollment orphan...');
-  const enrollmentSnapshot = await db.collection('enrollment').get();
+async function cleanupLaporan() {
+  const snapshot = await db.collection('laporanMagang').get();
   let deleted = 0;
-  let skipped = 0;
+  let updated = 0;
 
-  for (const doc of enrollmentSnapshot.docs) {
+  for (const doc of snapshot.docs) {
     const data = doc.data();
-    if (data.krsId) {
-      // Cek apakah KRS dengan ID tersebut masih ada
-      const krsDoc = await db.collection('krs').doc(data.krsId).get();
-      if (!krsDoc.exists) {
-        console.log(`Menghapus enrollment ${doc.id} (krsId: ${data.krsId}) karena KRS tidak ditemukan.`);
-        await doc.ref.delete();
-        deleted++;
-      } else {
-        skipped++;
-      }
-    } else {
-      // Jika tidak ada krsId, mungkin perlu penanganan lain? Lewati saja.
-      skipped++;
+    let changed = false;
+
+    // Hapus dokumen jika nim atau nama tidak ada
+    if (!data.nim || !data.nama) {
+      console.log(`❌ Menghapus dokumen ${doc.id} karena nim atau nama kosong.`);
+      await doc.ref.delete();
+      deleted++;
+      continue;
+    }
+
+    // Ubah status 'pending' menjadi 'submitted' (untuk laporan yang perlu disetujui)
+    if (data.status === 'pending') {
+      console.log(`🔄 Mengubah status dokumen ${doc.id} dari pending menjadi submitted.`);
+      await doc.ref.update({ status: 'submitted' });
+      updated++;
+      changed = true;
+    }
+
+    // Jika tidak ada uploadedAt, set dengan createdAt atau sekarang
+    if (!data.uploadedAt) {
+      const uploadedAt = data.createdAt || new Date().toISOString();
+      await doc.ref.update({ uploadedAt });
+      console.log(`📅 Menambahkan uploadedAt untuk ${doc.id}: ${uploadedAt}`);
+      updated++;
+      changed = true;
+    }
+
+    // Jika status approved tapi tidak ada approvedAt, set dengan sekarang
+    if (data.status === 'approved' && !data.approvedAt) {
+      await doc.ref.update({ approvedAt: new Date().toISOString() });
+      console.log(`✅ Menambahkan approvedAt untuk ${doc.id}`);
+      updated++;
+      changed = true;
+    }
+
+    // Jika tidak ada, tambahkan laporanKe (default 1 jika tidak ada)
+    if (!data.laporanKe) {
+      await doc.ref.update({ laporanKe: 1 });
+      console.log(`📄 Menambahkan laporanKe=1 untuk ${doc.id}`);
+      updated++;
+      changed = true;
     }
   }
 
-  console.log(`Selesai. ${deleted} enrollment dihapus, ${skipped} enrollment valid.`);
+  console.log('\n========== HASIL PEMBERSIHAN ==========');
+  console.log(`🗑️  Dokumen dihapus: ${deleted}`);
+  console.log(`✏️  Dokumen diperbarui: ${updated}`);
 }
 
-cleanupOrphanEnrollments().catch(console.error);
+cleanupLaporan().catch(console.error);

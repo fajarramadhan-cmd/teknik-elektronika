@@ -1,0 +1,135 @@
+<%- include('../partials/header') %>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        border-radius: 1.5rem;
+        padding: 1.5rem 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .nav-tabs-custom {
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+    .nav-tabs-custom .nav-link {
+        border: none;
+        color: #64748b;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px 50px 0 0;
+        transition: all 0.2s;
+    }
+    .nav-tabs-custom .nav-link:hover {
+        color: #2193b0;
+        background: rgba(33,147,176,0.05);
+    }
+    .nav-tabs-custom .nav-link.active {
+        background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        color: white;
+        box-shadow: 0 5px 15px rgba(33,147,176,0.3);
+    }
+    .table th {
+        background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border: none;
+    }
+    .btn-action {
+        margin: 0 2px;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="page-header">
+        <h2><i class="bi bi-journal-richtext me-2"></i>Kelola E-Library</h2>
+        <p class="mb-0 opacity-75">Atur konten yang sudah dipublikasikan</p>
+    </div>
+
+    <!-- Tab navigasi -->
+    <ul class="nav nav-tabs-custom">
+        <li class="nav-item">
+            <a class="nav-link <%= currentType === 'all' ? 'active' : '' %>" href="/admin/elk-library?type=all">Semua</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link <%= currentType === 'laporan' ? 'active' : '' %>" href="/admin/elk-library?type=laporan">Laporan Magang</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link <%= currentType === 'artikel' ? 'active' : '' %>" href="/admin/elk-library?type=artikel">Artikel Dosen</a>
+        </li>
+    </ul>
+
+    <% if (currentType === 'all' || currentType === 'laporan') { %>
+        <h5 class="mb-3">📄 Laporan Magang</h5>
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Judul Publik</th>
+                        <th>Mahasiswa</th>
+                        <th>Pembimbing</th>
+                        <th>Tahun</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (laporanList.length === 0) { %>
+                        <tr><td colspan="5" class="text-center py-3">Tidak ada laporan.</td></tr>
+                    <% } %>
+                    <% laporanList.forEach(l => { %>
+                        <tr>
+                            <td><strong><%= l.judulPublik || '-' %></strong></td>
+                            <td><%= l.nama %> (<%= l.nim %>)</td>
+                            <td><%= l.pembimbing || '-' %></td>
+                            <td><%= l.tahun || '-' %></td>
+                            <td>
+                                <a href="/admin/elk-library/laporan/<%= l.id %>/edit" class="btn btn-sm btn-warning btn-action"><i class="bi bi-pencil"></i> Edit</a>
+                                <form method="POST" action="/admin/elk-library/laporan/<%= l.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus laporan ini?')">
+                                    <button class="btn btn-sm btn-danger btn-action"><i class="bi bi-trash"></i> Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+
+    <% if (currentType === 'all' || currentType === 'artikel') { %>
+        <h5 class="mb-3">📝 Artikel Dosen</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Judul</th>
+                        <th>Penulis</th>
+                        <th>Tahun</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (artikelList.length === 0) { %>
+                        <tr><td colspan="4" class="text-center py-3">Tidak ada artikel.</td></tr>
+                    <% } %>
+                    <% artikelList.forEach(a => { %>
+                        <tr>
+                            <td><strong><%= a.judul %></strong></td>
+                            <td><%= a.penulis || (a.authors ? a.authors.join(', ') : '-') %></td>
+                            <td><%= a.publicationYear || '-' %></td>
+                            <td>
+                                <a href="/admin/elk-library/artikel/<%= a.id %>/edit" class="btn btn-sm btn-warning btn-action"><i class="bi bi-pencil"></i> Edit</a>
+                                <form method="POST" action="/admin/elk-library/artikel/<%= a.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus artikel ini?')">
+                                    <button class="btn btn-sm btn-danger btn-action"><i class="bi bi-trash"></i> Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

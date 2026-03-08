@@ -56,10 +56,24 @@ app.get('/api/current-user', verifyToken, (req, res) => {
 // ============================================================================
 // ROUTES MAHASISWA
 // ============================================================================
+const adminLaporanMagangRouter = require('./routes/admin/elkLibrary');
+app.use('/admin/laporan-magang', adminLaporanMagangRouter);
 const mahasiswaRoutes = require('./routes/mahasiswa/index');
 app.use('/mahasiswa', mahasiswaRoutes);
+// Rute dosen untuk upload artikel
+const dosenArtikelRouter = require('./routes/dosen/artikel');
+app.use('/dosen/artikel', dosenArtikelRouter);
+// Rute admin untuk kelola elk library
+const adminElkLibraryRouter = require('./routes/admin/elkLibrary');
+app.use('/admin/elk-library', adminElkLibraryRouter);
+
+// Rute publik elk library (sudah ada)
+const elkLibraryRouter = require('./routes/elkLibrary');
+app.use('/elk-library', elkLibraryRouter);
 const mahasiswaKalenderRouter = require('./routes/mahasiswa/kalender');
 app.use('/mahasiswa/kalender', mahasiswaKalenderRouter);
+const dosenKalenderRouter = require('./routes/dosen/kalender');
+app.use('/dosen/kalender', dosenKalenderRouter);
 // ============================================================================
 // ROUTES DOSEN
 // ============================================================================

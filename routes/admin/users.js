@@ -156,10 +156,12 @@ router.post('/', upload.single('foto'), async (req, res) => {
       if (role === 'dosen') {
         userData.nip = nip || '';
         userData.role = 'dosen';
+        userData.userId = userRecord.uid; // tambahkan ini
         await db.collection('dosen').doc(userRecord.uid).set(userData);
       } else {
         userData.nim = role === 'mahasiswa' ? nim : '';
         userData.role = role;
+        userData.userId = userRecord.uid; // tambahkan ini
         await db.collection('users').doc(userRecord.uid).set(userData);
       }
     } catch (firestoreError) {

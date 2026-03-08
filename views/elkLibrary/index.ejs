@@ -1,0 +1,328 @@
+<%- include('../partials/header-landing') %>
+
+<style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER REPOSITORI ===== */
+  .repository-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 2rem;
+    padding: 3.5rem 2rem;
+    color: white;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+  }
+  .repository-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .repository-header h1 {
+    font-weight: 700;
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .repository-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== SEARCH CARD ===== */
+  .search-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.8rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom: 2.5rem;
+    border: 1px solid rgba(33,147,176,0.1);
+    transition: box-shadow 0.3s;
+  }
+  .search-card:hover {
+    box-shadow: 0 15px 40px rgba(33,147,176,0.1);
+  }
+  .search-card .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .search-card .form-select,
+  .search-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .search-card .form-select:focus,
+  .search-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+
+  /* ===== ITEM CARD ===== */
+  .item-card {
+    border: none;
+    border-radius: 1.2rem;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .item-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+  }
+  .item-header {
+    padding: 1rem 1.5rem 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .item-badge {
+    padding: 0.3rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: white;
+  }
+  .badge-laporan {
+    background: linear-gradient(135deg, #28a745, #5cb85c);
+  }
+  .badge-artikel {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+  }
+  .item-year {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .item-body {
+    padding: 0.5rem 1.5rem 1rem 1.5rem;
+    flex: 1;
+  }
+  .item-title {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .item-author {
+    color: var(--primary-dark);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .item-abstract {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .item-footer {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    margin-top: auto;
+  }
+  .btn-outline-primary {
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-outline-primary:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 2rem;
+    border: 1px dashed rgba(33,147,176,0.2);
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ===== PAGINATION ===== */
+  .pagination {
+    justify-content: center;
+    gap: 0.3rem;
+  }
+  .page-item .page-link {
+    border: none;
+    border-radius: 50px !important;
+    color: #1e293b;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+  }
+  .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    box-shadow: 0 5px 10px rgba(33,147,176,0.3);
+  }
+  .page-item .page-link:hover {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    transform: translateY(-2px);
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header Repositori -->
+  <div class="repository-header">
+    <h1><i class="bi bi-journals"></i> ELK Library</h1>
+    <p class="mb-0">Repositori laporan magang mahasiswa dan artikel dosen Teknik Elektronika</p>
+  </div>
+
+  <!-- Pencarian dan Filter -->
+  <div class="search-card">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label for="type" class="form-label"><i class="bi bi-tags"></i> Tipe</label>
+        <select class="form-select" id="type" name="type">
+          <option value="all" <%= filters.type === 'all' ? 'selected' : '' %>>Semua</option>
+          <option value="laporan" <%= filters.type === 'laporan' ? 'selected' : '' %>>Laporan Magang</option>
+          <option value="artikel" <%= filters.type === 'artikel' ? 'selected' : '' %>>Artikel Dosen</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="tahun" class="form-label"><i class="bi bi-calendar"></i> Tahun</label>
+        <select class="form-select" id="tahun" name="tahun">
+          <option value="">Semua Tahun</option>
+          <% tahunList.forEach(t => { %>
+            <option value="<%= t %>" <%= filters.tahun == t ? 'selected' : '' %>><%= t %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="search" class="form-label"><i class="bi bi-search"></i> Cari</label>
+        <input type="text" class="form-control" id="search" name="search" placeholder="Judul, penulis, abstrak..." value="<%= filters.search || '' %>">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Terapkan</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Daftar Item -->
+  <div class="row g-4">
+    <% if (items.length === 0) { %>
+      <div class="col-12">
+        <div class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <h4>Belum Ada Karya</h4>
+          <p class="text-muted">Belum ada karya yang dipublikasikan dalam repositori ini.</p>
+        </div>
+      </div>
+    <% } else { %>
+      <% items.forEach(item => { 
+        const judul = item.judulPublik || item.title || '(Judul tidak tersedia)';
+        const penulis = item.nama || item.penulis || 'Anonim';
+        const tahun = item.tahun || '-';
+        const abstrak = item.abstrak || item.abstract || '';
+      %>
+        <div class="col-md-6 col-lg-4">
+          <div class="item-card">
+            <div class="item-header">
+              <span class="item-badge <%= item._type === 'laporan' ? 'badge-laporan' : 'badge-artikel' %>">
+                <%= item._type === 'laporan' ? '📄 Laporan' : '📝 Artikel' %>
+              </span>
+              <span class="item-year">
+                <i class="bi bi-calendar3"></i> <%= tahun %>
+              </span>
+            </div>
+            <div class="item-body">
+              <h5 class="item-title"><%= judul %></h5>
+              <div class="item-author">
+                <i class="bi bi-person-circle"></i> <%= penulis %>
+              </div>
+              <p class="item-abstract"><%= abstrak.substring(0, 100) %><%= abstrak.length > 100 ? '...' : '' %></p>
+            </div>
+            <div class="item-footer">
+              <a href="/elk-library/<%= item.id %>" class="btn-outline-primary">Baca Selengkapnya</a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <nav class="mt-5">
+      <ul class="pagination">
+        <% for (let p = 1; p <= totalPages; p++) { %>
+          <li class="page-item <%= p === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?<%= new URLSearchParams({ ...filters, page: p }).toString() %>"><%= p %></a>
+          </li>
+        <% } %>
+      </ul>
+    </nav>
+  <% } %>
+</div>
+
+<%- include('../partials/footer-landing') %>

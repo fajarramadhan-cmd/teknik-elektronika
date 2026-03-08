@@ -1,0 +1,27 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+  <h2>Edit Laporan Magang</h2>
+  <form method="POST">
+    <div class="mb-3">
+      <label for="judulPublik" class="form-label">Judul Publik</label>
+      <input type="text" class="form-control" id="judulPublik" name="judulPublik" value="<%= laporan.judulPublik %>" required>
+    </div>
+    <div class="mb-3">
+      <label for="abstrak" class="form-label">Abstrak</label>
+      <textarea class="form-control" id="abstrak" name="abstrak" rows="4" required><%= laporan.abstrak %></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="pembimbing" class="form-label">Pembimbing</label>
+      <input type="text" class="form-control" id="pembimbing" name="pembimbing" value="<%= laporan.pembimbing || '' %>">
+    </div>
+    <div class="mb-3">
+      <label for="tahun" class="form-label">Tahun</label>
+      <input type="number" class="form-control" id="tahun" name="tahun" value="<%= laporan.tahun || new Date().getFullYear() %>">
+    </div>
+    <button type="submit" class="btn btn-primary">Simpan</button>
+    <a href="/admin/elk-library?type=laporan" class="btn btn-secondary">Batal</a>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

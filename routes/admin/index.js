@@ -15,7 +15,7 @@ const { db } = require('../../config/firebaseAdmin');
 // IMPORT SUB‑MODUL
 // ============================================================================
 const usersRoutes = require('./users');
-const laporanMagangRouter = require('./laporanMagang');
+const laporanMagangRouter = require('./elkLibrary');
 const seminarRouter = require('./seminar');          // pastikan file seminar.js ada di folder admin
 
 // ============================================================================
@@ -38,8 +38,8 @@ router.use((req, res, next) => {
 router.use('/users', usersRoutes);
 
 // Laporan Magang
-router.use('/laporan-magang', laporanMagangRouter);
-
+router.use('/laporan-magang', require('./laporanMagang'));   // untuk persetujuan laporan
+router.use('/elk-library', require('./elkLibrary'));        // untuk kelola konten library
 // Seminar Magang
 router.use('/seminar', seminarRouter);
 

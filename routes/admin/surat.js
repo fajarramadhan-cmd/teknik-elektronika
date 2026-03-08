@@ -1,6 +1,7 @@
 /**
  * routes/admin/surat.js
  * Manajemen surat mahasiswa (admin dapat upload file surat)
+ * Terintegrasi dengan Data WEB
  */
 
 const express = require('express');
@@ -11,6 +12,11 @@ const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
 
 router.use(verifyToken);
 router.use(isAdmin);
@@ -27,21 +33,37 @@ async function getMahasiswa(userId) {
   return { id: userId, nama: 'Unknown', nim: '-' };
 }
 
-async function getSuratFolderId() {
-  const folderName = 'Surat_Mahasiswa';
+/**
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ */
+async function getOrCreateSubFolder(parentId, name) {
   const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
   });
   if (query.data.files.length > 0) {
     return query.data.files[0].id;
   } else {
     const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
       fields: 'id',
     });
     return folder.data.id;
   }
+}
+
+/**
+ * Mendapatkan folder untuk menyimpan surat mahasiswa.
+ * Struktur: Data WEB / Surat / [tahunAkademik] / [nim] /
+ * @param {string} nim - NIM mahasiswa
+ * @param {string} tahunAkademik - misal "2025/2026"
+ * @returns {Promise<string>} ID folder
+ */
+async function getSuratFolder(nim, tahunAkademik) {
+  const parent = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Surat');
+  const tahunFolder = await getOrCreateSubFolder(parent, tahunAkademik);
+  const nimFolder = await getOrCreateSubFolder(tahunFolder, nim);
+  return nimFolder;
 }
 
 // ============================================================================
@@ -77,12 +99,12 @@ router.get('/', async (req, res) => {
       filters: { status, search }
     });
   } catch (error) {
-  console.error('Error ambil surat:', error);
-  res.status(500).render('error', { 
-    title: 'Error', 
-    message: 'Gagal memuat daftar surat' 
-  });
-}
+    console.error('Error ambil surat:', error);
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal memuat daftar surat' 
+    });
+  }
 });
 
 // ============================================================================
@@ -122,13 +144,23 @@ router.post('/:id/upload', upload.single('file'), async (req, res) => {
     if (!suratDoc.exists) return res.status(404).send('Surat tidak ditemukan');
     const surat = suratDoc.data();
 
-    // Upload ke Drive
-    const folderId = await getSuratFolderId();
-    const fileName = `Surat_${surat.jenis}_${surat.userId}_${Date.now()}.pdf`;
+    // Dapatkan folder surat berdasarkan NIM dan tahun akademik
+    const nim = surat.nim || (await getMahasiswa(surat.userId)).nim;
+    const tahunAkademik = surat.tahunAkademik || new Date().getFullYear() + '/' + (new Date().getFullYear() + 1);
+    const folderId = await getSuratFolder(nim, tahunAkademik);
+
+    // Buat nama file: NIM_jenis_timestamp.pdf
+    const fileName = `${nim}_${surat.jenis.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
     const fileMetadata = { name: fileName, parents: [folderId] };
     const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
-    const driveResponse = await drive.files.create({ resource: fileMetadata, media, fields: 'id, webViewLink' });
-    await drive.permissions.create({ fileId: driveResponse.data.id, requestBody: { role: 'reader', type: 'anyone' } });
+    const driveResponse = await drive.files.create({ resource: fileMetadata, media, fields: 'id' });
+
+    // Set permission publik
+    await drive.permissions.create({
+      fileId: driveResponse.data.id,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
+
     const fileUrl = `https://drive.google.com/uc?export=view&id=${driveResponse.data.id}`;
 
     // Update status surat
@@ -150,7 +182,7 @@ router.post('/:id/upload', upload.single('file'), async (req, res) => {
     res.redirect(`/admin/surat/${suratId}`);
   } catch (error) {
     console.error('Error upload surat:', error);
-    res.status(500).send('Gagal upload surat');
+    res.status(500).send('Gagal upload surat: ' + error.message);
   }
 });
 

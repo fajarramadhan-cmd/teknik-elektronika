@@ -16,7 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // ============================================================================
 // KONSTANTA FOLDER UTAMA (Data WEB)
 // ============================================================================
-const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0'; // Ganti dengan ID folder Anda
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0'; 
 
 router.use(verifyToken);
 router.use(isDosen);

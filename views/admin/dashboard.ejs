@@ -206,7 +206,7 @@
                 </div>
                 <div>
                     <h5 class="mb-1">Selamat Datang, <strong><%= user.nama || user.email %></strong></h5>
-                    <p class="mb-0 text-muted">Dosen Program Studi Teknik Elektronika</p>
+                    <p class="mb-0 text-muted">Admin Program Studi Teknik Elektronika</p>
                 </div>
             </div>
         </div>
@@ -360,7 +360,7 @@
             </a>
         </div>
 
-        <!-- Baris 2: Akademik Lanjutan -->
+        <!-- Baris 2: Akademik Lanjutan & Laporan -->
         <div class="col-md-3 mb-3">
             <a href="/admin/pengajaran" class="menu-card">
                 <div class="menu-icon" style="color: #dc3545; background: rgba(220,53,69,0.1);">
@@ -398,16 +398,27 @@
             </a>
         </div>
 
-        <!-- Baris 3: Laporan & Statistik -->
+        <!-- Baris 3: Laporan Magang & Kelola E-Library (ditempatkan di sini) -->
         <div class="col-md-3 mb-3">
             <a href="/admin/laporan-magang" class="menu-card">
                 <div class="menu-icon" style="color: #0d6efd; background: rgba(13,110,253,0.1);">
                     <i class="bi bi-file-earmark-pdf"></i>
                 </div>
                 <h5 class="menu-title">Laporan Magang</h5>
-                <p class="menu-desc">Lihat laporan mahasiswa</p>
+                <p class="menu-desc">Setujui laporan mahasiswa</p>
             </a>
         </div>
+        <div class="col-md-3 mb-3">
+            <a href="/admin/elk-library" class="menu-card">
+                <div class="menu-icon" style="color: #198754; background: rgba(25,135,84,0.1);">
+                    <i class="bi bi-journal-richtext"></i>
+                </div>
+                <h5 class="menu-title">Kelola E-Library</h5>
+                <p class="menu-desc">Atur konten library</p>
+            </a>
+        </div>
+
+        <!-- Baris 3 (lanjutan) dan 4: Statistik, Jadwal, dll -->
         <div class="col-md-3 mb-3">
             <a href="/admin/statistik" class="menu-card">
                 <div class="menu-icon" style="color: #0dcaf0; background: rgba(13,202,240,0.1);">

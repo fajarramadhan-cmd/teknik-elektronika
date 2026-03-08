@@ -1,0 +1,75 @@
+<%- include('../partials/header') %>
+
+<style>
+  .form-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .form-header {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    padding: 1.5rem;
+    color: white;
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="form-card">
+    <div class="form-header">
+      <h3><i class="bi bi-pencil-square me-2"></i><%= artikel ? 'Edit Artikel' : 'Tambah Artikel' %></h3>
+    </div>
+    <div class="form-body">
+      <form method="POST" action="<%= artikel ? '/dosen/artikel/' + artikel.id + '/update' : '/dosen/artikel' %>" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="judul" class="form-label fw-bold">Judul <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="judul" name="judul" value="<%= artikel ? artikel.judul : '' %>" required>
+        </div>
+        <div class="mb-3">
+          <label for="abstrak" class="form-label fw-bold">Abstrak</label>
+          <textarea class="form-control" id="abstrak" name="abstrak" rows="5"><%= artikel ? artikel.abstrak : '' %></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="kataKunci" class="form-label">Kata Kunci</label>
+          <input type="text" class="form-control" id="kataKunci" name="kataKunci" value="<%= artikel ? artikel.kataKunci : '' %>" placeholder="pisahkan dengan koma">
+        </div>
+        <div class="mb-3">
+          <label for="file" class="form-label fw-bold">File Artikel (PDF)</label>
+          <% if (artikel && artikel.fileUrl) { %>
+            <div class="mb-2">
+              <span>File saat ini: <a href="<%= artikel.fileUrl %>" target="_blank">Lihat file</a></span>
+            </div>
+          <% } %>
+          <input type="file" class="form-control" id="file" name="file" accept=".pdf" <%= artikel ? '' : 'required' %>>
+          <small class="text-muted">Upload file PDF. Kosongkan jika tidak ingin mengubah file.</small>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <a href="/dosen/artikel" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Kembali
+          </a>
+          <button type="submit" class="btn-gradient">
+            <i class="bi bi-save me-2"></i>Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

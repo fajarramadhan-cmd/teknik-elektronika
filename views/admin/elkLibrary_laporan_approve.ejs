@@ -1,0 +1,81 @@
+<%- include('../partials/header') %>
+
+<style>
+  .form-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .form-header {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    padding: 1.5rem;
+    color: white;
+  }
+  .preview-file {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="form-card">
+    <div class="form-header">
+      <h3><i class="bi bi-check2-circle me-2"></i>Setujui Laporan Magang</h3>
+    </div>
+    <div class="form-body p-4">
+      <div class="mb-4">
+        <h5>Informasi Laporan</h5>
+        <p><strong>Mahasiswa:</strong> <%= laporan.nama %> (NIM: <%= laporan.nim %>)</p>
+        <p><strong>Laporan ke-:</strong> <%= laporan.laporanKe %></p>
+        <p><strong>Semester:</strong> <%= laporan.semester %></p>
+        <p><strong>File:</strong> <a href="<%= laporan.fileUrl %>" target="_blank">Lihat file</a></p>
+      </div>
+
+      <form method="POST" action="/admin/elk-library/laporan/<%= laporan.id %>/approve">
+        <div class="mb-3">
+          <label for="judulPublik" class="form-label fw-bold">Judul Publik <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="judulPublik" name="judulPublik" required>
+          <small class="text-muted">Judul yang akan ditampilkan di ELK Library</small>
+        </div>
+        <div class="mb-3">
+          <label for="abstrak" class="form-label fw-bold">Abstrak <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="abstrak" name="abstrak" rows="4" required></textarea>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="pembimbing" class="form-label">Dosen Pembimbing</label>
+            <input type="text" class="form-control" id="pembimbing" name="pembimbing" value="<%= laporan.pembimbing || '' %>">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="tahun" class="form-label">Tahun Publikasi</label>
+            <input type="number" class="form-control" id="tahun" name="tahun" value="<%= new Date().getFullYear() %>" min="2000" max="2100">
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+          <a href="/admin/elk-library?filter=laporan" class="btn btn-outline-secondary">Kembali</a>
+          <button type="submit" class="btn-gradient">Setujui & Publikasikan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

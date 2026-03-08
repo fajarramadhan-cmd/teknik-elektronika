@@ -1,6 +1,8 @@
 /**
  * routes/mahasiswa/magang.js
  * Modul ELK‑Magang: logbook, permohonan seminar, upload laporan akhir (3 laporan)
+ * Terintegrasi dengan folder Data WEB (ID: 17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0)
+ * Dilengkapi kompresi gambar (sharp) dan penyimpanan fileId.
  */
 
 const express = require('express');
@@ -10,35 +12,110 @@ const { db } = require('../../config/firebaseAdmin');
 const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
+const sharp = require('sharp');
 const { getCurrentAcademicSemester } = require('../../helpers/academicHelper');
+
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ============================================================================
+// KONSTANTA FOLDER UTAMA (Data WEB)
+// ============================================================================
+const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
 
 router.use(verifyToken);
 
 // ============================================================================
-// FUNGSI BANTU (HELPER)
+// FUNGSI BANTU UMUM
 // ============================================================================
 
-// --- Untuk logbook ---
-async function getMagangImageFolderId() {
-  const folderName = 'Magang_Images';
+/**
+ * Membuat atau mendapatkan subfolder di dalam folder induk
+ * @param {string} parentId - ID folder induk
+ * @param {string} name - Nama folder yang akan dibuat/dicari
+ * @returns {Promise<string>} ID folder
+ */
+async function getOrCreateSubFolder(parentId, name) {
   const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    q: `'${parentId}' in parents and name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: 'files(id)',
   });
   if (query.data.files.length > 0) {
     return query.data.files[0].id;
   } else {
     const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
+      resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
       fields: 'id',
     });
     return folder.data.id;
   }
 }
 
+/**
+ * Mendapatkan angkatan dari NIM (2 digit pertama -> 20xx)
+ */
+function getAngkatanFromNim(nim) {
+  if (!nim || nim.length < 2) return new Date().getFullYear().toString();
+  if (nim.length >= 4 && !isNaN(parseInt(nim.substring(0,4)))) {
+    return nim.substring(0,4);
+  }
+  return '20' + nim.substring(0,2);
+}
+
+/**
+ * Mendapatkan tahun ajaran dari label semester (misal "Genap 2025/2026" -> "2025/2026")
+ */
+function extractTahunAjaran(semesterLabel) {
+  const match = semesterLabel.match(/\d{4}\/\d{4}/);
+  return match ? match[0] : new Date().getFullYear() + '/' + (new Date().getFullYear() + 1);
+}
+
+// ============================================================================
+// FUNGSI BANTU KHUSUS LOGBOOK
+// ============================================================================
+
+/**
+ * Folder untuk dokumentasi logbook per mahasiswa:
+ * Data WEB / Dokumentasi Magang Mahasiswa / [tahunAjaran] / [angkatan] / [nim_nama] /
+ */
+async function getDokumentasiMagangFolder(nim, nama, semesterLabel) {
+  const tahunAjaran = extractTahunAjaran(semesterLabel);
+  const angkatan = getAngkatanFromNim(nim);
+  const sanitizedNama = nama.replace(/[^a-zA-Z0-9]/g, '_');
+  const folderMahasiswa = `${nim}_${sanitizedNama}`;
+
+  const parent = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Dokumentasi Magang Mahasiswa');
+  const tahunFolder = await getOrCreateSubFolder(parent, tahunAjaran);
+  const angkatanFolder = await getOrCreateSubFolder(tahunFolder, angkatan);
+  const mahasiswaFolder = await getOrCreateSubFolder(angkatanFolder, folderMahasiswa);
+  return mahasiswaFolder;
+}
+
+// ============================================================================
+// FUNGSI BANTU KHUSUS LAPORAN MAGANG
+// ============================================================================
+
+/**
+ * Folder untuk laporan magang per mahasiswa:
+ * Data WEB / Laporan Magang / [tahunAjaran] / [angkatan] / [nim_nama] /
+ */
+async function getLaporanMagangFolder(nim, nama, semesterLabel) {
+  const tahunAjaran = extractTahunAjaran(semesterLabel);
+  const angkatan = getAngkatanFromNim(nim);
+  const sanitizedNama = nama.replace(/[^a-zA-Z0-9]/g, '_');
+  const folderMahasiswa = `${nim}_${sanitizedNama}`;
+
+  const parent = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Laporan Magang');
+  const tahunFolder = await getOrCreateSubFolder(parent, tahunAjaran);
+  const angkatanFolder = await getOrCreateSubFolder(tahunFolder, angkatan);
+  const mahasiswaFolder = await getOrCreateSubFolder(angkatanFolder, folderMahasiswa);
+  return mahasiswaFolder;
+}
+
+// ============================================================================
+// FUNGSI BANTU VALIDASI PDK
+// ============================================================================
+
 async function hasActivePdkEnrollment(userId, courseId, semester) {
-  console.log('Validasi enrollment:', { userId, courseId, semester });
   const enrollmentSnapshot = await db.collection('enrollment')
     .where('userId', '==', userId)
     .where('mkId', '==', courseId)
@@ -50,77 +127,20 @@ async function hasActivePdkEnrollment(userId, courseId, semester) {
 }
 
 async function getEnrolledPdkCourses(userId) {
-  console.log('getEnrolledPdkCourses dipanggil untuk userId:', userId);
   const enrollmentSnapshot = await db.collection('enrollment')
     .where('userId', '==', userId)
     .where('status', '==', 'active')
     .get();
-  console.log('Jumlah enrollment aktif:', enrollmentSnapshot.size);
 
-  const mkIds = enrollmentSnapshot.docs.map(doc => {
-    const data = doc.data();
-    console.log('Enrollment mkId:', data.mkId, 'semester:', data.semester);
-    return data.mkId;
-  });
-
+  const mkIds = enrollmentSnapshot.docs.map(doc => doc.data().mkId);
   const courses = [];
   for (const mkId of mkIds) {
     const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
-    if (mkDoc.exists) {
-      console.log(`Mata kuliah ${mkId}: kode=${mkDoc.data().kode}, isPDK=${mkDoc.data().isPDK}`);
-      if (mkDoc.data().isPDK === true) {
-        courses.push({ id: mkId, ...mkDoc.data() });
-      }
-    } else {
-      console.log(`MK dengan ID ${mkId} tidak ditemukan`);
+    if (mkDoc.exists && mkDoc.data().isPDK === true) {
+      courses.push({ id: mkId, ...mkDoc.data() });
     }
   }
-  console.log('Jumlah PDK ditemukan:', courses.length);
   return courses;
-}
-
-// --- Untuk laporan magang (3 laporan) ---
-async function getLaporanFolderId() {
-  const folderName = 'Laporan_Magang';
-  const query = await drive.files.list({
-    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id)',
-  });
-  if (query.data.files.length > 0) {
-    return query.data.files[0].id;
-  } else {
-    const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder' },
-      fields: 'id',
-    });
-    return folder.data.id;
-  }
-}
-
-async function getMahasiswaLaporanFolder(nim, userId) {
-  const parentId = await getLaporanFolderId();
-  const folderName = `${nim}_${userId.substring(0, 6)}`;
-  const query = await drive.files.list({
-    q: `'${parentId}' in parents and name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id)',
-  });
-  if (query.data.files.length > 0) {
-    return query.data.files[0].id;
-  } else {
-    const folder = await drive.files.create({
-      resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
-      fields: 'id',
-    });
-    return folder.data.id;
-  }
-}
-
-function getAngkatanFromNim(nim) {
-  if (!nim || nim.length < 2) return new Date().getFullYear().toString();
-  if (nim.length >= 4 && !isNaN(parseInt(nim.substring(0,4)))) {
-    return nim.substring(0,4);
-  }
-  return '20' + nim.substring(0,2);
 }
 
 // ============================================================================
@@ -141,7 +161,6 @@ router.get('/', (req, res) => {
  * GET /mahasiswa/magang/logbook
  * Menampilkan daftar logbook milik mahasiswa
  */
-
 router.get('/logbook', async (req, res) => {
   try {
     const snapshot = await db.collection('logbookMagang')
@@ -151,14 +170,14 @@ router.get('/logbook', async (req, res) => {
     const logbook = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const pdkCourses = await getEnrolledPdkCourses(req.user.id);
-    const currentSemester = getCurrentAcademicSemester().label; // ambil label semester
+    const currentSemester = getCurrentAcademicSemester().label;
 
     res.render('mahasiswa/magang/logbook', {
       title: 'Logbook Magang',
       user: req.user,
       logbook,
       pdkCourses,
-      currentSemester // <- tambahkan ini
+      currentSemester
     });
   } catch (error) {
     console.error('❌ Error mengambil logbook:', error);
@@ -171,15 +190,12 @@ router.get('/logbook', async (req, res) => {
 
 /**
  * POST /mahasiswa/magang/logbook
- * Menyimpan logbook baru dengan upload gambar (maks 5)
+ * Menyimpan logbook baru dengan upload gambar (maks 5) + kompresi
  */
 router.post('/logbook', upload.array('images', 5), async (req, res) => {
   try {
     const { tanggal, kegiatan, lokasi, durasi, courseId, semester } = req.body;
     const files = req.files || [];
-
-    console.log('POST logbook - Data:', { tanggal, kegiatan, courseId, semester });
-    console.log('Jumlah file:', files.length);
 
     if (!tanggal || !kegiatan || !courseId || !semester) {
       return res.status(400).send('Tanggal, kegiatan, mata kuliah, dan semester wajib diisi.');
@@ -190,18 +206,33 @@ router.post('/logbook', upload.array('images', 5), async (req, res) => {
       return res.status(403).send('Anda tidak terdaftar di mata kuliah PDK untuk semester ini.');
     }
 
-    let imageUrls = [];
-    if (files.length > 0) {
-      const folderId = await getMagangImageFolderId();
-      for (const file of files) {
-        const fileName = `${req.user.nim}_${Date.now()}_${file.originalname}`;
-        const fileMetadata = { name: fileName, parents: [folderId] };
-        const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
-        const response = await drive.files.create({ resource: fileMetadata, media, fields: 'id, webViewLink' });
-        await drive.permissions.create({ fileId: response.data.id, requestBody: { role: 'reader', type: 'anyone' } });
-        const directLink = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
-        imageUrls.push(directLink);
-      }
+    const nim = req.user.nim;
+    const nama = req.user.nama;
+    const folderId = await getDokumentasiMagangFolder(nim, nama, semester);
+
+    const imageUrls = [];
+    const imageFileIds = [];
+
+    for (const file of files) {
+      // Kompres gambar
+      const compressedBuffer = await sharp(file.buffer)
+        .resize({ width: 800, withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      const fileName = `${nim}_${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const fileMetadata = { name: fileName, parents: [folderId] };
+      const media = { mimeType: 'image/jpeg', body: Readable.from(compressedBuffer) };
+      const response = await drive.files.create({ resource: fileMetadata, media, fields: 'id' });
+
+      await drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: { role: 'reader', type: 'anyone' }
+      });
+
+      const directLink = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
+      imageUrls.push(directLink);
+      imageFileIds.push(response.data.id);
     }
 
     await db.collection('logbookMagang').add({
@@ -213,6 +244,7 @@ router.post('/logbook', upload.array('images', 5), async (req, res) => {
       courseId,
       semester,
       imageUrls,
+      imageFileIds,
       status: 'pending',
       createdAt: new Date().toISOString()
     });
@@ -280,15 +312,12 @@ router.post('/logbook/:id/delete', async (req, res) => {
     if (doc.data().userId !== req.user.id) return res.status(403).send('Akses ditolak');
 
     const data = doc.data();
-    if (data.imageUrls && data.imageUrls.length > 0) {
-      for (const url of data.imageUrls) {
-        const match = url.match(/id=([^&]+)/);
-        if (match) {
-          try {
-            await drive.files.delete({ fileId: match[1] });
-          } catch (err) {
-            console.error('Gagal hapus gambar:', err.message);
-          }
+    if (data.imageFileIds && data.imageFileIds.length > 0) {
+      for (const fileId of data.imageFileIds) {
+        try {
+          await drive.files.delete({ fileId });
+        } catch (err) {
+          console.error('Gagal hapus gambar:', err.message);
         }
       }
     }
@@ -305,7 +334,6 @@ router.post('/logbook/:id/delete', async (req, res) => {
  * Cetak logbook (PDF)
  */
 router.get('/logbook-print', async (req, res) => {
-  console.log('✅ RUTE CETAK DIPANGGIL!');
   try {
     const snapshot = await db.collection('logbookMagang')
       .where('userId', '==', req.user.id)
@@ -334,7 +362,7 @@ router.get('/logbook-print', async (req, res) => {
 });
 
 // ============================================================================
-// LAPORAN MAGANG (3 laporan)
+// LAPORAN MAGANG (3 laporan per mahasiswa)
 // ============================================================================
 
 /**
@@ -379,18 +407,19 @@ router.post('/laporan/upload', upload.single('file'), async (req, res) => {
 
     const userId = req.user.id;
     const nim = req.user.nim;
-    const nama = (req.user.nama || 'mahasiswa').replace(/\s+/g, '_');
-    const angkatan = getAngkatanFromNim(nim);
-    const timestamp = Date.now();
-    const fileName = `${nama}_${nim}_laporan_${laporanKe}_${timestamp}.pdf`;
+    const nama = req.user.nama;
+    const currentSemester = getCurrentAcademicSemester().label;
 
-    const folderId = await getMahasiswaLaporanFolder(nim, userId);
+    // Dapatkan folder laporan mahasiswa
+    const folderId = await getLaporanMagangFolder(nim, nama, currentSemester);
+
+    const fileName = `Laporan_${laporanKe}_${Date.now()}.pdf`;
     const fileMetadata = { name: fileName, parents: [folderId] };
     const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
     const response = await drive.files.create({
       resource: fileMetadata,
       media,
-      fields: 'id, webViewLink'
+      fields: 'id'
     });
 
     await drive.permissions.create({
@@ -409,25 +438,32 @@ router.post('/laporan/upload', upload.single('file'), async (req, res) => {
       fileUrl,
       fileId: response.data.id,
       fileName,
+      semester: currentSemester,
       uploadedAt: new Date().toISOString(),
-      status: 'submitted' // submitted, approved, rejected
+      status: 'submitted'
     });
 
     res.redirect('/mahasiswa/magang/laporan');
   } catch (error) {
     console.error('Error upload laporan:', error);
-    res.status(500).send('Gagal upload laporan');
+    res.status(500).send('Gagal upload laporan: ' + error.message);
   }
 });
 
 /**
- * POST /mahasiswa/magang/laporan/hapus
- * Hapus laporan (hanya jika status submitted)
+ * POST /mahasiswa/magang/laporan/hapus/:laporanKe
+ * Hapus laporan berdasarkan nomor laporan (1,2,3)
  */
-router.post('/laporan/hapus', async (req, res) => {
+router.post('/laporan/hapus/:laporanKe', async (req, res) => {
   try {
+    const laporanKe = parseInt(req.params.laporanKe);
+    if (isNaN(laporanKe) || laporanKe < 1 || laporanKe > 3) {
+      return res.status(400).send('Nomor laporan tidak valid');
+    }
+
     const userId = req.user.id;
-    const laporanRef = db.collection('laporanMagang').doc(userId);
+    const docId = `${userId}_${laporanKe}`;
+    const laporanRef = db.collection('laporanMagang').doc(docId);
     const doc = await laporanRef.get();
     if (!doc.exists) return res.status(404).send('Laporan tidak ditemukan');
     const data = doc.data();
@@ -456,10 +492,6 @@ router.post('/laporan/hapus', async (req, res) => {
 // PERMOHONAN SEMINAR MAGANG
 // ============================================================================
 
-/**
- * GET /mahasiswa/magang/seminar
- * Daftar permohonan seminar milik mahasiswa
- */
 router.get('/seminar', async (req, res) => {
   try {
     const snapshot = await db.collection('permohonanMagang')
@@ -478,10 +510,6 @@ router.get('/seminar', async (req, res) => {
   }
 });
 
-/**
- * GET /mahasiswa/magang/seminar/baru
- * Form pengajuan seminar baru
- */
 router.get('/seminar/baru', (req, res) => {
   res.render('mahasiswa/magang/seminar_form', {
     title: 'Ajukan Seminar Magang',
@@ -490,10 +518,6 @@ router.get('/seminar/baru', (req, res) => {
   });
 });
 
-/**
- * POST /mahasiswa/magang/seminar
- * Simpan permohonan seminar baru
- */
 router.post('/seminar', async (req, res) => {
   try {
     const { judul, tanggal, waktu, tempat, pembimbing1, pembimbing2, penguji } = req.body;
@@ -529,10 +553,6 @@ router.post('/seminar', async (req, res) => {
   }
 });
 
-/**
- * GET /mahasiswa/magang/seminar/:id
- * Detail permohonan seminar
- */
 router.get('/seminar/:id', async (req, res) => {
   try {
     const doc = await db.collection('permohonanMagang').doc(req.params.id).get();
@@ -550,10 +570,6 @@ router.get('/seminar/:id', async (req, res) => {
   }
 });
 
-/**
- * POST /mahasiswa/magang/seminar/:id/batal
- * Batalkan pengajuan (hanya jika status pending)
- */
 router.post('/seminar/:id/batal', async (req, res) => {
   try {
     const docRef = db.collection('permohonanMagang').doc(req.params.id);
