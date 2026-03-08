@@ -82,6 +82,7 @@ async function getTugasAktif(mkIds) {
 // RUTE UTAMA DASHBOARD
 // ============================================================================
 
+// routes/mahasiswa/dashboard.js
 router.get('/', async (req, res) => {
   try {
     const user = req.user;
@@ -93,9 +94,8 @@ router.get('/', async (req, res) => {
     const totalSks = mkList.reduce((acc, mk) => acc + (mk.sks || 0), 0);
     const tugasAktif = await getTugasAktif(mkIds);
 
-    // Gunakan helper untuk mendapatkan semester aktif
     const currentSemester = getCurrentAcademicSemester();
-    const semesterSekarang = currentSemester.label; // misal "Genap 2025/2026"
+    const semesterSekarang = currentSemester.label;
 
     let pertemuanRata = 0;
     if (mkList.length > 0) {
@@ -103,10 +103,25 @@ router.get('/', async (req, res) => {
       pertemuanRata = Math.round(totalPertemuan / mkList.length);
     }
 
+    // ===== HITUNG TOTAL TAGIHAN =====
+    let totalTagihan = 0;
+    let totalLunas = 0;
+    tagihan.forEach(t => {
+      if (t.status === 'lunas') {
+        totalLunas += t.jumlah;
+      } else {
+        totalTagihan += t.jumlah;
+      }
+    });
+    const sisaTagihan = totalTagihan; // total yang belum lunas
+
     res.render('mahasiswa/dashboard', {
       user,
       uploadSuccess: req.query.upload === 'success',
       tagihan,
+      totalTagihan,
+      totalLunas,
+      sisaTagihan,
       totalSks,
       semesterSekarang,
       pertemuanRata,
@@ -121,5 +136,4 @@ router.get('/', async (req, res) => {
     });
   }
 });
-
 module.exports = router;

@@ -10,6 +10,7 @@ const { db } = require('../../config/firebaseAdmin');
 const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
+const { getCurrentAcademicSemester } = require('../../helpers/academicHelper');
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(verifyToken);
@@ -140,6 +141,7 @@ router.get('/', (req, res) => {
  * GET /mahasiswa/magang/logbook
  * Menampilkan daftar logbook milik mahasiswa
  */
+
 router.get('/logbook', async (req, res) => {
   try {
     const snapshot = await db.collection('logbookMagang')
@@ -149,12 +151,14 @@ router.get('/logbook', async (req, res) => {
     const logbook = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const pdkCourses = await getEnrolledPdkCourses(req.user.id);
+    const currentSemester = getCurrentAcademicSemester().label; // ambil label semester
 
     res.render('mahasiswa/magang/logbook', {
       title: 'Logbook Magang',
       user: req.user,
       logbook,
-      pdkCourses
+      pdkCourses,
+      currentSemester // <- tambahkan ini
     });
   } catch (error) {
     console.error('❌ Error mengambil logbook:', error);

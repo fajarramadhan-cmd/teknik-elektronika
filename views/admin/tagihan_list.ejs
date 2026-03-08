@@ -1,80 +1,282 @@
 <%- include('../partials/header') %>
 
 <style>
-  .tagihan-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
     color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== FILTER CARD ===== */
+  .filter-card {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid rgba(33,147,176,0.1);
+  }
+  .filter-card .form-label {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .filter-card .form-select,
+  .filter-card .form-control {
+    border-radius: 50px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .filter-card .form-select:focus,
+  .filter-card .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.25rem rgba(33,147,176,0.25);
+  }
+  .btn-filter {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
+    width: 100%;
+  }
+  .btn-filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-reset:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== TABEL ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(33,147,176,0.1);
+    transition: box-shadow 0.3s;
+  }
+  .table-container:hover {
+    box-shadow: 0 20px 35px rgba(33,147,176,0.15);
+  }
+  .tagihan-table {
+    margin-bottom: 0;
+  }
+  .tagihan-table thead th {
+    background: linear-gradient(135deg, var(--primary-light), rgba(109,213,237,0.1));
+    color: var(--primary-dark);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
-    border: none;
+    border-bottom: 2px solid var(--primary-start);
+    padding: 1rem 0.75rem;
+    white-space: nowrap;
+  }
+  .tagihan-table tbody tr {
+    transition: all 0.2s;
+  }
+  .tagihan-table tbody tr:hover {
+    background-color: var(--primary-light);
   }
   .tagihan-table td {
-    vertical-align: middle;
     padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
   }
-  .filter-card {
-    background: white;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-  }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-  }
-  .btn-action {
-    margin: 2px;
-    border-radius: 8px;
+
+  /* ===== BADGE ===== */
+  .badge-count {
+    background: var(--primary-light);
+    color: var(--primary-dark);
     padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-weight: 500;
+  }
+
+  /* ===== TOMBOL AKSI ===== */
+  .btn-detail {
+    background: transparent;
+    border: 1px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.3rem 1rem;
     font-size: 0.85rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-detail:hover {
+    background: var(--primary-start);
+    color: white;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <h2 class="fw-bold mb-4">Kelola Tagihan Mahasiswa</h2>
+  <!-- Header -->
+  <div class="page-header">
+    <h2><i class="bi bi-cash-coin me-2"></i>Kelola Tagihan Mahasiswa</h2>
+    <p class="mb-0 opacity-75">Daftar mahasiswa dan ringkasan tagihan SPP</p>
+  </div>
 
-  <div class="table-responsive">
-    <table class="table tagihan-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>NIM</th>
-          <th>Nama</th>
-          <th>Jumlah Tagihan</th>
-          <th>Total Belum Lunas</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (mahasiswaList.length === 0) { %>
-          <tr>
-            <td colspan="6" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Tidak ada mahasiswa.</p>
-            </td>
-          </tr>
-        <% } else { %>
-          <% mahasiswaList.forEach((m, index) => { %>
-          <tr>
-            <td class="text-center"><%= index + 1 %></td>
-            <td><%= m.nim || '-' %></td>
-            <td><%= m.nama %></td>
-            <td class="text-center"><%= m.tagihanCount %></td>
-            <td class="text-end">Rp <%= new Intl.NumberFormat('id-ID').format(m.totalBelumLunas) %></td>
-            <td>
-              <a href="/admin/tagihan/mahasiswa/<%= m.id %>" class="btn btn-sm btn-outline-info btn-action">
-                <i class="bi bi-eye"></i> Detail Tagihan
-              </a>
-            </td>
-          </tr>
+  <!-- Filter Card -->
+  <div class="filter-card">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label for="angkatan" class="form-label"><i class="bi bi-funnel me-1"></i>Filter Angkatan</label>
+        <select class="form-select" id="angkatan" name="angkatan">
+          <option value="">Semua Angkatan</option>
+          <% angkatanList.forEach(a => { %>
+            <option value="<%= a %>" <%= filters.angkatan === a ? 'selected' : '' %>><%= a %></option>
           <% }) %>
-        <% } %>
-      </tbody>
-    </table>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="search" class="form-label"><i class="bi bi-search me-1"></i>Cari NIM / Nama</label>
+        <input type="text" class="form-control" id="search" name="search" placeholder="Ketik NIM atau nama..." value="<%= filters.search || '' %>">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn-filter">Terapkan</button>
+      </div>
+      <div class="col-md-2">
+        <a href="/admin/tagihan" class="btn-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Info jumlah -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0 fw-semibold"><i class="bi bi-people-fill me-1" style="color: var(--primary-start);"></i> Menampilkan <strong><%= mahasiswaList.length %></strong> mahasiswa</p>
+  </div>
+
+  <!-- Tabel -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table tagihan-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>NIM</th>
+            <th>Nama</th>
+            <th>Jumlah Tagihan</th>
+            <th>Total Belum Lunas</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (mahasiswaList.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-inbox"></i>
+                  <h4>Tidak Ada Data</h4>
+                  <p class="text-muted">Tidak ada mahasiswa yang ditemukan.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% mahasiswaList.forEach((m, index) => { %>
+            <tr>
+              <td class="fw-bold"><%= index + 1 %></td>
+              <td><span class="badge bg-secondary"><%= m.nim || '-' %></span></td>
+              <td><strong><%= m.nama %></strong></td>
+              <td><span class="badge-count"><%= m.tagihanCount %></span></td>
+              <td class="fw-semibold">Rp <%= new Intl.NumberFormat('id-ID').format(m.totalBelumLunas) %></td>
+              <td>
+                <a href="/admin/tagihan/mahasiswa/<%= m.id %>" class="btn-detail">
+                  <i class="bi bi-eye"></i> Detail Tagihan
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

@@ -2,7 +2,6 @@
  * app.js
  * Entry point aplikasi Teknik Elektronika
  */
-
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -15,9 +14,10 @@ const app = express();
 // ============================================================================
 // MIDDLEWARE GLOBAL
 // ============================================================================
+// Cookie parser harus sebelum router dan session
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Konfigurasi session (untuk keperluan lain, jika diperlukan)
@@ -40,8 +40,7 @@ app.set('views', path.join(__dirname, 'views'));
 // ============================================================================
 const landingRoutes = require('./routes/landing');
 app.use('/', landingRoutes); // Landing page dan halaman publik lainnya
-const dosenKalenderRouter = require('./routes/dosen/kalender');
-app.use('/dosen/kalender', dosenKalenderRouter);
+
 // Auth routes
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
@@ -59,7 +58,8 @@ app.get('/api/current-user', verifyToken, (req, res) => {
 // ============================================================================
 const mahasiswaRoutes = require('./routes/mahasiswa/index');
 app.use('/mahasiswa', mahasiswaRoutes);
-
+const mahasiswaKalenderRouter = require('./routes/mahasiswa/kalender');
+app.use('/mahasiswa/kalender', mahasiswaKalenderRouter);
 // ============================================================================
 // ROUTES DOSEN
 // ============================================================================
@@ -69,10 +69,8 @@ app.use('/dosen', dosenRoutes);
 // ============================================================================
 // ROUTES ADMIN
 // ============================================================================
-// Admin utama (kelola pengguna, KRS, KHS, magang, nilai, dll)
 const adminRoutes = require('./routes/admin/index');
 app.use('/admin', adminRoutes);
-
 
 // ============================================================================
 // DASHBOARD REDIRECT (setelah login)
