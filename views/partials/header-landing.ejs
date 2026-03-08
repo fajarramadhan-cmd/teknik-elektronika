@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js (hanya library, tanpa inisialisasi) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         body {
@@ -19,7 +19,7 @@
             padding-top: 76px;
         }
         .navbar-custom {
-            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            background: linear-gradient(135deg, #213bb0, #6d84ed);
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             padding: 0.5rem 1rem;
             transition: all 0.3s ease;
@@ -106,6 +106,16 @@
             .brand-text { font-size: 0.85rem; }
             .brand-sub { font-size: 0.7rem; }
         }
+
+        /* Pembungkus konten agar tidak full */
+        .content-wrapper {
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -125,38 +135,28 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-<li class="nav-item">
-  <a class="nav-link" href="#berita">
-    <i class="bi bi-newspaper me-1"></i>Berita
-  </a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="/elk-library">
-    <i class="bi bi-book me-1"></i>ELK Library
-  </a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="#seminar">
-    <i class="bi bi-calendar-event me-1"></i>Seminar
-  </a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="/auth/login">
-    <i class="bi bi-box-arrow-in-right me-1"></i>Portal Mahasiswa
-  </a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="/auth/login?role=admin">
-    <i class="bi bi-shield-lock me-1"></i>Portal Dosen
-  </a>
-</li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#berita"><i class="bi bi-newspaper me-1"></i>Berita</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/elk-library"><i class="bi bi-book me-1"></i>ELK Library</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#seminar"><i class="bi bi-calendar-event me-1"></i>Seminar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login"><i class="bi bi-box-arrow-in-right me-1"></i>Portal Mahasiswa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login?role=admin"><i class="bi bi-shield-lock me-1"></i>Portal Dosen</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Konten Utama (kosong) -->
-    <div class="container">
+    <!-- Konten Utama dengan pembungkus -->
+    <div class="content-wrapper">
         <!-- Halaman siap diisi dengan konten landing page -->
     </div>
 

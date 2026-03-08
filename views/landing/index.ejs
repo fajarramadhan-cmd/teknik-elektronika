@@ -11,7 +11,7 @@
     return null;
   };
 %>
-
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
     /* ===== VARIABLES ===== */
     :root {
@@ -57,107 +57,143 @@
     }
 
     /* ===== HERO SECTION (RASIO 16:9 + ROUNDED CORNERS) ===== */
-    .hero-section {
-        margin-bottom: 3rem;
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-        border-radius: var(--border-radius);
-    }
-    .hero-carousel,
-    .hero-carousel .carousel-inner,
-    .hero-carousel .carousel-item {
-        width: 100%;
-        height: 100%;
-    }
-    .hero-carousel .carousel-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: brightness(0.85);
-        transition: transform 6s ease;
-    }
-    .hero-carousel .carousel-item.active img {
-        transform: scale(1.05);
-    }
-    .hero-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(13,110,253,0.3) 0%, rgba(13,202,240,0.2) 100%);
-        z-index: 5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: white;
-    }
-    .hero-content {
-        max-width: 800px;
-        padding: 2rem;
-        animation: fadeInUp 1.2s ease;
-    }
-    .hero-content h1 {
-        font-size: clamp(1.8rem, 4vw, 3.5rem);
-        font-weight: 800;
-        text-shadow: 2px 4px 15px rgba(0,0,0,0.7);
-        margin-bottom: 1rem;
-    }
-    .hero-content p {
-        font-size: clamp(0.9rem, 2vw, 1.3rem);
-        margin-bottom: 1.5rem;
-        opacity: 0.95;
-        text-shadow: 1px 2px 8px rgba(0,0,0,0.6);
-    }
-    .hero-buttons .btn {
-        padding: 0.6rem 1.5rem;
-        border-radius: 50px;
-        font-weight: 600;
-        margin: 0.3rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        transition: all 0.3s;
-        font-size: clamp(0.8rem, 1.5vw, 1rem);
-    }
-    .hero-buttons .btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    /* ===== RESPONSIVE HERO UNTUK HP ===== */
-    @media (max-width: 576px) {
-        .hero-section {
-            aspect-ratio: auto; /* lepaskan rasio tetap */
-            min-height: 80vh;   /* beri tinggi minimal agar gambar lebih luas */
-        }
-        .hero-content h1 {
-            font-size: 1.5rem;
-        }
-        .hero-content p {
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        .hero-buttons .btn {
-            padding: 0.5rem 1rem;
-            font-size: 0.8rem;
-        }
-    }
+/* ===== HERO SECTION ===== */
+
+.hero-section{
+position:relative;
+border-radius:20px;
+overflow:hidden;
+margin-bottom:50px;
+}
+
+/* carousel */
+
+.hero-carousel,
+.hero-carousel .carousel-inner,
+.hero-carousel .carousel-item{
+width:100%;
+}
+
+/* gambar menentukan tinggi */
+
+.hero-carousel .carousel-item img{
+width:100%;
+height:auto;
+display:block;
+object-fit:cover;
+filter:brightness(.9);
+transition:transform 6s ease;
+}
+
+.hero-carousel .carousel-item.active img{
+transform:scale(1.05);
+}
+
+/* ===== OVERLAY HITAM ===== */
+
+.hero-overlay{
+position:absolute;
+inset:0;
+
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+
+background:linear-gradient(
+180deg,
+rgba(0, 0, 0, 0.226),
+rgba(0, 0, 0, 0.212)
+);
+
+color:white;
+padding:clamp(10px,3vw,40px);
+z-index:5;
+}
+
+/* ===== CONTENT ===== */
+
+.hero-content{
+max-width:900px;
+width:100%;
+margin:auto;
+animation:fadeInUp 1.2s ease;
+}
+
+/* ===== TITLE ===== */
+
+.hero-content h1{
+font-size:clamp(1.6rem,4vw,3.2rem);
+font-weight:700;
+line-height:1.2;
+text-shadow:0 4px 20px rgba(0,0,0,.8);
+margin-bottom:clamp(10px,1.5vw,20px);
+}
+
+/* ===== SUBTITLE ===== */
+
+.hero-content p{
+font-size:clamp(.9rem,1.6vw,1.25rem);
+line-height:1.6;
+opacity:.95;
+text-shadow:0 2px 10px rgba(0,0,0,.7);
+margin-bottom:clamp(12px,2vw,25px);
+}
+
+/* ===== BUTTON ===== */
+
+.hero-buttons{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+}
+
+.hero-buttons .btn{
+padding:clamp(.45rem,1vw,.75rem) clamp(.9rem,2vw,1.6rem);
+border-radius:50px;
+font-weight:600;
+font-size:clamp(.75rem,1vw,.95rem);
+box-shadow:0 5px 20px rgba(0,0,0,.35);
+transition:.3s;
+}
+
+.hero-buttons .btn:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 30px rgba(0,0,0,.45);
+}
+
+/* ===== ANIMATION ===== */
+
+@keyframes fadeInUp{
+from{
+opacity:0;
+transform:translateY(30px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+/* ===== MOBILE OPTIMIZATION ===== */
+
+@media(max-width:576px){
+
+.hero-overlay{
+padding:20px 15px;
+}
+
+.hero-content{
+max-width:95%;
+}
+
+}
     /* ===== STATISTICS CARDS ===== */
     .stat-card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 2rem 1rem;
+        padding: 1.5rem 0.8rem;
         text-align: center;
         box-shadow: var(--shadow-sm);
         transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -185,7 +221,7 @@
         opacity: 1;
     }
     .stat-icon {
-        font-size: 3rem;
+        font-size: 2.4rem;
         background: var(--gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -193,12 +229,13 @@
         margin-bottom: 1rem;
     }
     .stat-number {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 800;
         color: #1e293b;
         line-height: 1.2;
     }
     .stat-label {
+        font-size: 0.8rem;
         color: #64748b;
         font-weight: 600;
         text-transform: uppercase;
@@ -210,7 +247,7 @@
     .visi-misi-card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 2rem;
+        padding: 1.5rem;
         box-shadow: var(--shadow-sm);
         transition: all 0.3s;
         height: 100%;
@@ -221,7 +258,7 @@
         box-shadow: var(--shadow-hover);
     }
     .visi-misi-icon {
-        font-size: 2.5rem;
+        font-size: 2.1rem;
         background: var(--gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -424,14 +461,14 @@
         color: var(--secondary);
     }
     .id-card-body {
-        padding: 1.2rem;
+        padding: 1rem;
         text-align: center;
         background: white;
     }
     .id-card-body h5 {
         font-weight: 700;
         margin-bottom: 0.25rem;
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: #1e293b;
     }
     .id-card-body p {

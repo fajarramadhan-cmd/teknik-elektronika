@@ -1,70 +1,218 @@
 <%- include('../partials/header') %>
 
 <style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #2193b0;
+    --primary-end: #6dd5ed;
+    --primary-light: rgba(33,147,176,0.1);
+    --primary-dark: #1a7a8f;
+  }
+
+  /* ===== FORM CARD ===== */
   .form-card {
     border: none;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.05);
     overflow: hidden;
     max-width: 800px;
     margin: 0 auto;
+    background: white;
+    transition: box-shadow 0.3s;
   }
+  .form-card:hover {
+    box-shadow: 0 20px 40px rgba(33,147,176,0.15);
+  }
+
+  /* ===== HEADER ===== */
   .form-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    padding: 1.8rem 2rem;
     color: white;
+    position: relative;
+    overflow: hidden;
   }
+  .form-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -5%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(15deg);
+  }
+  .form-header h3 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ===== BODY ===== */
+  .form-body {
+    padding: 2.5rem;
+  }
+
+  /* ===== LABEL ===== */
+  .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+  .form-label i {
+    color: var(--primary-start);
+    font-size: 1rem;
+  }
+
+  /* ===== INPUT & TEXTAREA ===== */
+  .form-control {
+    border-radius: 1rem;
+    padding: 0.75rem 1.2rem;
+    border: 1px solid #cbd5e1;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+  }
+  .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.2rem rgba(33,147,176,0.25);
+  }
+  textarea.form-control {
+    min-height: 120px;
+  }
+
+  /* ===== FILE INPUT ===== */
+  .form-control[type="file"] {
+    padding: 0.6rem 1rem;
+  }
+
+  /* ===== TOMBOL ===== */
   .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
     padding: 0.6rem 2rem;
     border-radius: 50px;
     transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 5px 15px rgba(33,147,176,0.2);
   }
   .btn-gradient:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(33,147,176,0.4);
+    color: white;
+  }
+
+  .btn-outline-secondary {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.6rem 2rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-outline-secondary:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+
+  /* ===== INFO FILE LAMA ===== */
+  .file-info {
+    background: var(--primary-light);
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-dark);
+  }
+  .file-info i {
+    font-size: 1.2rem;
+  }
+  .file-info a {
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .file-info a:hover {
+    color: var(--primary-start);
   }
 </style>
 
 <div class="container mt-4">
   <div class="form-card">
     <div class="form-header">
-      <h3><i class="bi bi-pencil-square me-2"></i><%= artikel ? 'Edit Artikel' : 'Tambah Artikel' %></h3>
+      <h3><i class="bi bi-pencil-square"></i> <%= artikel ? 'Edit Artikel' : 'Tambah Artikel Baru' %></h3>
     </div>
     <div class="form-body">
       <form method="POST" action="<%= artikel ? '/dosen/artikel/' + artikel.id + '/update' : '/dosen/artikel' %>" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="judul" class="form-label fw-bold">Judul <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="judul" name="judul" value="<%= artikel ? artikel.judul : '' %>" required>
+        <!-- Judul -->
+        <div class="mb-4">
+          <label for="judul" class="form-label">
+            <i class="bi bi-card-heading"></i> Judul <span class="text-danger">*</span>
+          </label>
+          <input type="text" class="form-control" id="judul" name="judul" value="<%= artikel ? artikel.judul : '' %>" placeholder="Masukkan judul artikel" required>
         </div>
-        <div class="mb-3">
-          <label for="abstrak" class="form-label fw-bold">Abstrak</label>
-          <textarea class="form-control" id="abstrak" name="abstrak" rows="5"><%= artikel ? artikel.abstrak : '' %></textarea>
+
+        <!-- Abstrak -->
+        <div class="mb-4">
+          <label for="abstrak" class="form-label">
+            <i class="bi bi-text-paragraph"></i> Abstrak
+          </label>
+          <textarea class="form-control" id="abstrak" name="abstrak" rows="5" placeholder="Tulis abstrak artikel..."><%= artikel ? artikel.abstrak : '' %></textarea>
         </div>
-        <div class="mb-3">
-          <label for="kataKunci" class="form-label">Kata Kunci</label>
-          <input type="text" class="form-control" id="kataKunci" name="kataKunci" value="<%= artikel ? artikel.kataKunci : '' %>" placeholder="pisahkan dengan koma">
+
+        <!-- Kata Kunci -->
+        <div class="mb-4">
+          <label for="kataKunci" class="form-label">
+            <i class="bi bi-tags"></i> Kata Kunci
+          </label>
+          <input type="text" class="form-control" id="kataKunci" name="kataKunci" value="<%= artikel ? artikel.kataKunci : '' %>" placeholder="pisahkan dengan koma (contoh: elektronika, magang, industri)">
         </div>
-        <div class="mb-3">
-          <label for="file" class="form-label fw-bold">File Artikel (PDF)</label>
+
+        <!-- File Artikel -->
+        <div class="mb-4">
+          <label for="file" class="form-label">
+            <i class="bi bi-file-earmark-pdf"></i> File Artikel (PDF) <span class="text-danger">*</span>
+          </label>
           <% if (artikel && artikel.fileUrl) { %>
-            <div class="mb-2">
-              <span>File saat ini: <a href="<%= artikel.fileUrl %>" target="_blank">Lihat file</a></span>
+            <div class="file-info">
+              <i class="bi bi-file-earmark-pdf-fill"></i>
+              <span>File saat ini: <a href="<%= artikel.fileUrl %>" target="_blank"><%= artikel.fileName || 'Lihat file' %></a></span>
             </div>
           <% } %>
           <input type="file" class="form-control" id="file" name="file" accept=".pdf" <%= artikel ? '' : 'required' %>>
-          <small class="text-muted">Upload file PDF. Kosongkan jika tidak ingin mengubah file.</small>
+          <small class="text-muted d-block mt-2">
+            <i class="bi bi-info-circle"></i> Upload file PDF. Maksimal 10MB. <%= artikel ? 'Kosongkan jika tidak ingin mengubah file.' : '' %>
+          </small>
         </div>
 
-        <div class="d-flex justify-content-between mt-4">
-          <a href="/dosen/artikel" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Kembali
+        <!-- Tombol Aksi -->
+        <div class="d-flex justify-content-between align-items-center mt-5">
+          <a href="/dosen/artikel" class="btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
           </a>
           <button type="submit" class="btn-gradient">
-            <i class="bi bi-save me-2"></i>Simpan
+            <i class="bi bi-save"></i> Simpan
           </button>
         </div>
       </form>
