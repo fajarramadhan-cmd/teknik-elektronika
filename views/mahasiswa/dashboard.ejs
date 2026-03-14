@@ -38,6 +38,17 @@
     --primary-light: rgba(30,58,138,0.1);
     --primary-dark: #0f2b5c;
     --warning-gradient: linear-gradient(135deg, #f97316, #fbbf24);
+    --font-base: 16px; /* base font size desktop */
+  }
+
+  /* Base styles */
+  html {
+    font-size: 16px; /* default desktop */
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
   }
 
   /* ===== PROFILE CARD ===== */
@@ -101,7 +112,7 @@
     font-size: 1rem;
   }
 
-  /* ===== BADGE TAGIHAN (warna oranye selaras tombol kumpul) ===== */
+  /* ===== BADGE TAGIHAN ===== */
   .badge-tagihan {
     background: var(--warning-gradient);
     color: white;
@@ -134,7 +145,7 @@
     color: #92400e;
   }
 
-  /* ===== CARD RINGKASAN (hanya event & tugas) ===== */
+  /* ===== CARD RINGKASAN ===== */
   .ringkasan-card {
     background: white;
     border-radius: 1.2rem;
@@ -281,35 +292,69 @@
     border-radius: 5px;
   }
 
-  /* ===== RESPONSIVE UNTUK HP (diperkecil) ===== */
+  /* ===== RESPONSIVE UNTUK HP (diperkecil dan konsisten) ===== */
   @media (max-width: 768px) {
-    body { zoom: 0.95; }
-    .profile-card h2 { font-size: 1.3rem; }
+    html { font-size: 15px; }
+    .profile-card h2 { font-size: 1.4rem; }
     .profile-avatar { width: 60px; height: 60px; }
-    .profile-stats { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
-    .badge-tagihan { padding: 0.4rem 1rem; font-size: 0.8rem; }
-    .menu-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+    .profile-stats { font-size: 0.85rem; padding: 0.5rem 0.9rem; }
+    .badge-tagihan { font-size: 0.85rem; padding: 0.4rem 1rem; }
+    .menu-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
   }
 
-  @media (max-width: 480px) {
-    body { zoom: 0.9; }
+  @media (max-width: 576px) {
+    html { font-size: 14px; }
+    .profile-card { padding: 1.2rem; }
+    .profile-card h2 { font-size: 1.2rem; }
+    .profile-avatar { width: 55px; height: 55px; }
+    .profile-stats { 
+      flex-direction: column; 
+      gap: 0.4rem; 
+      border-radius: 20px; 
+      padding: 0.5rem 0.8rem;
+    }
+    .profile-stats span { font-size: 0.8rem; }
+    .ringkasan-header h5 { font-size: 1rem; }
+    .ringkasan-header .badge-tugas { font-size: 0.75rem; }
+    .badge-tagihan { font-size: 0.8rem; padding: 0.3rem 0.8rem; }
+    .badge-tagihan i { font-size: 1rem; }
+    .menu-grid { 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 0.8rem; 
+    }
+    .menu-icon { width: 55px; height: 55px; font-size: 1.8rem; }
+    .menu-title { font-size: 0.9rem; }
+    .menu-desc { font-size: 0.7rem; }
+    .tagihan-header h5 { font-size: 1rem; }
+    .tagihan-header .btn-light { font-size: 0.8rem; padding: 0.2rem 0.8rem; }
+    .tagihan-item .fs-5 { font-size: 1rem !important; }
+    .section-title { font-size: 1.2rem; }
+  }
+
+  @media (max-width: 400px) {
+    html { font-size: 13px; }
     .profile-card h2 { font-size: 1.1rem; }
     .profile-avatar { width: 50px; height: 50px; }
-    .profile-stats { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
-    .ringkasan-header h5 { font-size: 1rem; }
-    .badge-tagihan { padding: 0.3rem 0.8rem; font-size: 0.7rem; }
-    .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
-    .menu-icon { width: 50px; height: 50px; font-size: 1.6rem; }
-    .menu-title { font-size: 0.85rem; }
+    .profile-stats span { font-size: 0.7rem; }
+    .badge-tagihan { font-size: 0.7rem; padding: 0.2rem 0.6rem; }
+    .menu-grid { gap: 0.5rem; }
+    .menu-icon { width: 48px; height: 48px; font-size: 1.5rem; }
+    .menu-title { font-size: 0.8rem; }
+    .menu-desc { font-size: 0.6rem; }
   }
 
-  @media (max-width: 360px) {
-    body { zoom: 0.85; }
-    .profile-stats { font-size: 0.7rem; }
+  @media (max-width: 340px) {
+    html { font-size: 12px; }
+    .profile-card h2 { font-size: 1rem; }
+    .profile-avatar { width: 45px; height: 45px; }
+    .profile-stats { padding: 0.4rem 0.6rem; }
+    .profile-stats span { font-size: 0.65rem; }
     .menu-grid { grid-template-columns: 1fr; }
+    .menu-icon { width: 45px; height: 45px; font-size: 1.4rem; }
   }
 </style>
 
+<!-- Gunakan container agar lebar konten selaras dengan navbar di desktop -->
 <div class="container mt-4">
   <!-- Notifikasi Upload Sukses -->
   <% if (uploadSuccess) { %>
