@@ -13,11 +13,34 @@
 %>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-    @media (max-width: 480px) {
-    body {
-        zoom: 0.60; 
+    /* ===== RESET & BASE ===== */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
-}
+
+    html {
+        font-size: 16px; /* base font untuk desktop */
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        scroll-behavior: smooth;
+        background-color: #f8fafc;
+    }
+
+    /* ===== TYPOGRAPHY RESPONSIF ===== */
+    @media (max-width: 768px) {
+        html { font-size: 15px; }
+    }
+    @media (max-width: 576px) {
+        html { font-size: 14px; }
+    }
+    @media (max-width: 400px) {
+        html { font-size: 13px; }
+    }
+
     /* ===== VARIABLES ===== */
     :root {
         --primary: #0d6efd;
@@ -29,19 +52,25 @@
         --shadow-hover: 0 1rem 2rem rgba(0,0,0,0.12);
         --border-radius: 1rem;
         --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --card-bg: white;
+        --card-border: 1px solid rgba(0,0,0,0.05);
     }
 
-    body {
-        font-family: var(--font-sans);
-        scroll-behavior: smooth;
+    /* ===== SECTION STYLES ===== */
+    .section-wrapper {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        border: var(--card-border);
     }
 
-    /* ===== TYPOGRAPHY ===== */
     .section-title {
         position: relative;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
         font-weight: 700;
-        font-size: 2.2rem;
+        font-size: 1.8rem; /* relative terhadap root */
         color: #1e293b;
         text-align: center;
     }
@@ -54,151 +83,103 @@
     .section-title:after {
         content: '';
         display: block;
-        width: 100px;
-        height: 5px;
+        width: 80px;
+        height: 4px;
         background: var(--gradient);
-        margin: 0.8rem auto 0;
+        margin: 0.6rem auto 0;
         border-radius: 50px;
     }
 
+    /* ===== HERO SECTION ===== */
+    .hero-section {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .hero-carousel,
+    .hero-carousel .carousel-inner,
+    .hero-carousel .carousel-item {
+        width: 100%;
+    }
+    .hero-carousel .carousel-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+        filter: brightness(.9);
+        transition: transform 6s ease;
+    }
+    .hero-carousel .carousel-item.active img {
+        transform: scale(1.05);
+    }
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(0,0,0,0.226), rgba(0,0,0,0.212));
+        color: white;
+        padding: clamp(1rem, 5vw, 2.5rem);
+        z-index: 5;
+    }
+    .hero-content {
+        max-width: 900px;
+        width: 100%;
+        margin: auto;
+        animation: fadeInUp 1.2s ease;
+    }
+    .hero-content h1 {
+        font-size: clamp(1.5rem, 5vw, 2.8rem);
+        font-weight: 700;
+        line-height: 1.2;
+        text-shadow: 0 4px 20px rgba(0,0,0,.8);
+        margin-bottom: clamp(0.5rem, 2vw, 1.5rem);
+    }
+    .hero-content p {
+        font-size: clamp(0.9rem, 2vw, 1.1rem);
+        line-height: 1.6;
+        opacity: .95;
+        text-shadow: 0 2px 10px rgba(0,0,0,.7);
+        margin-bottom: clamp(0.8rem, 2.5vw, 2rem);
+    }
+    .hero-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+    }
+    .hero-buttons .btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: clamp(0.8rem, 2vw, 0.95rem);
+        box-shadow: 0 5px 20px rgba(0,0,0,.35);
+        transition: .3s;
+    }
+    .hero-buttons .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    }
 
-/* ===== HERO SECTION ===== */
-
-.hero-section{
-position:relative;
-border-radius:20px;
-overflow:hidden;
-margin-bottom:50px;
-}
-
-/* carousel */
-
-.hero-carousel,
-.hero-carousel .carousel-inner,
-.hero-carousel .carousel-item{
-width:100%;
-}
-
-/* gambar menentukan tinggi */
-
-.hero-carousel .carousel-item img{
-width:100%;
-height:auto;
-display:block;
-object-fit:cover;
-filter:brightness(.9);
-transition:transform 6s ease;
-}
-
-.hero-carousel .carousel-item.active img{
-transform:scale(1.05);
-}
-
-/* ===== OVERLAY HITAM ===== */
-
-.hero-overlay{
-position:absolute;
-inset:0;
-
-display:flex;
-align-items:center;
-justify-content:center;
-text-align:center;
-
-background:linear-gradient(
-180deg,
-rgba(0, 0, 0, 0.226),
-rgba(0, 0, 0, 0.212)
-);
-
-color:white;
-padding:clamp(10px,3vw,40px);
-z-index:5;
-}
-
-/* ===== CONTENT ===== */
-
-.hero-content{
-max-width:900px;
-width:100%;
-margin:auto;
-animation:fadeInUp 1.2s ease;
-}
-
-/* ===== TITLE ===== */
-
-.hero-content h1{
-font-size:clamp(1.6rem,4vw,3.2rem);
-font-weight:700;
-line-height:1.2;
-text-shadow:0 4px 20px rgba(0,0,0,.8);
-margin-bottom:clamp(10px,1.5vw,20px);
-}
-
-/* ===== SUBTITLE ===== */
-
-.hero-content p{
-font-size:clamp(.9rem,1.6vw,1.25rem);
-line-height:1.6;
-opacity:.95;
-text-shadow:0 2px 10px rgba(0,0,0,.7);
-margin-bottom:clamp(12px,2vw,25px);
-}
-
-/* ===== BUTTON ===== */
-
-.hero-buttons{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:10px;
-}
-
-.hero-buttons .btn{
-padding:clamp(.45rem,1vw,.75rem) clamp(.9rem,2vw,1.6rem);
-border-radius:50px;
-font-weight:600;
-font-size:clamp(.75rem,1vw,.95rem);
-box-shadow:0 5px 20px rgba(0,0,0,.35);
-transition:.3s;
-}
-
-.hero-buttons .btn:hover{
-transform:translateY(-3px);
-box-shadow:0 10px 30px rgba(0,0,0,.45);
-}
-
-/* ===== ANIMATION ===== */
-
-@keyframes fadeInUp{
-from{
-opacity:0;
-transform:translateY(30px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* ===== MOBILE OPTIMIZATION ===== */
-
-@media(max-width:576px){
-
-.hero-overlay{
-padding:20px 15px;
-}
-
-.hero-content{
-max-width:95%;
-}
-
-}
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     /* ===== STATISTICS CARDS ===== */
     .stat-card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 1.5rem 0.8rem;
+        padding: 1.2rem 0.5rem;
         text-align: center;
         box-shadow: var(--shadow-sm);
         transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -206,9 +187,10 @@ max-width:95%;
         backdrop-filter: blur(2px);
         position: relative;
         overflow: hidden;
+        height: 100%;
     }
     .stat-card:hover {
-        transform: translateY(-10px) scale(1.02);
+        transform: translateY(-8px) scale(1.02);
         box-shadow: var(--shadow-hover);
     }
     .stat-card::before {
@@ -226,29 +208,28 @@ max-width:95%;
         opacity: 1;
     }
     .stat-icon {
-        font-size: 2.4rem;
+        font-size: 2.2rem;
         background: var(--gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
     .stat-number {
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 800;
         color: #1e293b;
         line-height: 1.2;
     }
     .stat-label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: #64748b;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1px;
-        font-size: 0.9rem;
     }
 
-    /* ===== VISI MISI SECTION ===== */
+    /* ===== VISI MISI CARD ===== */
     .visi-misi-card {
         background: white;
         border-radius: var(--border-radius);
@@ -263,19 +244,20 @@ max-width:95%;
         box-shadow: var(--shadow-hover);
     }
     .visi-misi-icon {
-        font-size: 2.1rem;
+        font-size: 2rem;
         background: var(--gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
     }
     .visi-misi-card h4 {
         font-weight: 700;
         color: #1e293b;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
         position: relative;
         display: inline-block;
+        font-size: 1.2rem;
     }
     .visi-misi-card h4:after {
         content: '';
@@ -288,8 +270,9 @@ max-width:95%;
     }
     .visi-misi-card p {
         color: #475569;
-        line-height: 1.7;
+        line-height: 1.6;
         margin-bottom: 0.5rem;
+        font-size: 0.95rem;
     }
     .visi-misi-list {
         list-style: none;
@@ -297,18 +280,19 @@ max-width:95%;
         margin: 0;
     }
     .visi-misi-list li {
-        padding: 0.5rem 0;
+        padding: 0.4rem 0;
         border-bottom: 1px dashed #e2e8f0;
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        font-size: 0.95rem;
     }
     .visi-misi-list li:last-child {
         border-bottom: none;
     }
     .visi-misi-list i {
         color: var(--primary);
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 
     /* ===== CHART CARD ===== */
@@ -339,7 +323,7 @@ max-width:95%;
         box-shadow: var(--shadow-hover);
     }
     .news-card .card-img-wrapper {
-        height: 220px;
+        height: 200px;
         overflow: hidden;
     }
     .news-card img {
@@ -352,23 +336,26 @@ max-width:95%;
         transform: scale(1.05);
     }
     .news-card .card-body {
-        padding: 1.5rem;
+        padding: 1.2rem;
         flex-grow: 1;
     }
     .news-card .card-title {
         font-weight: 700;
         margin-bottom: 0.5rem;
         color: #1e293b;
+        font-size: 1.1rem;
     }
     .news-card .card-text {
         color: #475569;
         margin-bottom: 1rem;
+        font-size: 0.9rem;
     }
     .news-card .btn-outline-primary {
         border-radius: 50px;
-        padding: 0.5rem 1.2rem;
+        padding: 0.4rem 1rem;
         font-weight: 600;
         border-width: 2px;
+        font-size: 0.85rem;
         transition: all 0.3s;
     }
     .news-card .btn-outline-primary:hover {
@@ -392,10 +379,12 @@ max-width:95%;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border: none;
+        font-size: 0.85rem;
     }
     .table-schedule td {
         vertical-align: middle;
         border-color: #f1f5f9;
+        font-size: 0.95rem;
     }
     .table-schedule tbody tr:hover {
         background-color: #f8fafc;
@@ -403,10 +392,10 @@ max-width:95%;
     .badge-schedule {
         background: linear-gradient(135deg, #0d6efd, #0dcaf0);
         color: white;
-        padding: 0.4rem 0.8rem;
+        padding: 0.3rem 0.7rem;
         border-radius: 50px;
         font-weight: 500;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
 
     /* ===== ID CARD STYLE (DOSEN) ===== */
@@ -446,7 +435,7 @@ max-width:95%;
         left: 0;
         right: 0;
         background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-        padding: 1rem 0.5rem 0.5rem;
+        padding: 0.8rem 0.5rem 0.5rem;
         display: flex;
         justify-content: center;
         gap: 0.8rem;
@@ -458,7 +447,7 @@ max-width:95%;
     }
     .id-card-social a {
         color: white;
-        font-size: 1.2rem;
+        font-size: 1rem;
         transition: transform 0.2s;
     }
     .id-card-social a:hover {
@@ -466,19 +455,19 @@ max-width:95%;
         color: var(--secondary);
     }
     .id-card-body {
-        padding: 1rem;
+        padding: 0.8rem;
         text-align: center;
         background: white;
     }
     .id-card-body h5 {
         font-weight: 700;
-        margin-bottom: 0.25rem;
-        font-size: 1rem;
+        margin-bottom: 0.2rem;
+        font-size: 0.95rem;
         color: #1e293b;
     }
     .id-card-body p {
         color: #64748b;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         margin-bottom: 0;
         font-weight: 500;
     }
@@ -487,11 +476,11 @@ max-width:95%;
     .mitra-item {
         background: white;
         border-radius: 1rem;
-        padding: 1.5rem;
+        padding: 1rem;
         text-align: center;
         box-shadow: var(--shadow-sm);
         transition: all 0.3s;
-        height: 120px;
+        height: 100px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -502,7 +491,7 @@ max-width:95%;
     }
     .mitra-item img {
         max-width: 100%;
-        max-height: 60px;
+        max-height: 50px;
         filter: grayscale(100%);
         opacity: 0.7;
         transition: all 0.3s;
@@ -516,14 +505,14 @@ max-width:95%;
     .testimonial-card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 2rem;
+        padding: 1.5rem;
         box-shadow: var(--shadow-sm);
         margin: 1rem;
         text-align: center;
         position: relative;
     }
     .testimonial-card i {
-        font-size: 3rem;
+        font-size: 2.5rem;
         color: var(--primary);
         opacity: 0.2;
         position: absolute;
@@ -531,8 +520,8 @@ max-width:95%;
         right: 20px;
     }
     .testimonial-img {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         object-fit: cover;
         margin: 0 auto 1rem;
@@ -541,15 +530,17 @@ max-width:95%;
     .testimonial-name {
         font-weight: 700;
         color: #1e293b;
+        font-size: 1rem;
     }
     .testimonial-role {
         color: #64748b;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
+        font-size: 0.8rem;
+        margin-bottom: 0.8rem;
     }
     .testimonial-text {
         font-style: italic;
         color: #334155;
+        font-size: 0.9rem;
     }
     .carousel-control-prev,
     .carousel-control-next {
@@ -591,6 +582,120 @@ max-width:95%;
         height: 10px;
         border-radius: 50%;
     }
+
+    /* ===== RESPONSIVE EXTRA ===== */
+    @media (max-width: 576px) {
+        .mitra-item {
+            height: 80px;
+            padding: 0.5rem;
+        }
+        .mitra-item img {
+            max-height: 40px;
+        }
+        .section-wrapper {
+            padding: 1rem;
+        }
+    }
+    /* Efek background gradien lembut pada semua card */
+.stat-card,
+.visi-misi-card,
+.chart-card,
+.news-card,
+.id-card,
+.mitra-item,
+.testimonial-card {
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    border: 1px solid rgba(13, 110, 253, 0.1);
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+/* Efek border gradien saat hover */
+.stat-card:hover,
+.visi-misi-card:hover,
+.chart-card:hover,
+.news-card:hover,
+.id-card:hover,
+.mitra-item:hover,
+.testimonial-card:hover {
+    border: 1px solid transparent;
+    background: linear-gradient(#ffffff, #f8fafc) padding-box,
+                linear-gradient(135deg, #0d6efd, #0dcaf0) border-box;
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.15);
+}
+
+/* Alternatif: aksen garis bawah gradien */
+.card-akademik::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #0d6efd, #0dcaf0);
+    border-radius: 0 0 1rem 1rem;
+}
+/* Soft gradient background untuk semua card */
+.stat-card,
+.visi-misi-card,
+.chart-card,
+.news-card,
+.id-card,
+.mitra-item,
+.testimonial-card,
+.table-schedule {
+    background: linear-gradient(145deg, rgba(13,110,253,0.03), rgba(13,202,240,0.03));
+    backdrop-filter: blur(1px);
+    border: 1px solid rgba(13,110,253,0.1);
+    transition: all 0.3s ease;
+}
+
+/* Efek hover yang lebih terlihat */
+.stat-card:hover,
+.visi-misi-card:hover,
+.chart-card:hover,
+.news-card:hover,
+.id-card:hover,
+.mitra-item:hover,
+.testimonial-card:hover,
+.table-schedule:hover {
+    background: linear-gradient(145deg, rgba(13,110,253,0.05), rgba(13,202,240,0.05));
+    border-color: rgba(13,110,253,0.3);
+    box-shadow: 0 5px 20px rgba(13,110,253,0.1);
+}
+/* Soft gradient background untuk semua card */
+.stat-card,
+.visi-misi-card,
+.chart-card,
+.news-card,
+.id-card,
+.mitra-item,
+.testimonial-card,
+.table-schedule {
+    background: linear-gradient(135deg, rgba(13,110,253,0.05) 0%, rgba(13,202,240,0.05) 100%);
+    border: 1px solid rgba(13,110,253,0.15);
+    transition: all 0.3s ease;
+}
+
+/* Efek hover dengan warna lebih terang */
+.stat-card:hover,
+.visi-misi-card:hover,
+.chart-card:hover,
+.news-card:hover,
+.id-card:hover,
+.mitra-item:hover,
+.testimonial-card:hover,
+.table-schedule:hover {
+    background: linear-gradient(135deg, rgba(13,110,253,0.1) 0%, rgba(13,202,240,0.1) 100%);
+    border-color: rgba(13,110,253,0.3);
+    box-shadow: 0 8px 20px rgba(13,110,253,0.15);
+}
+
+/* Untuk tabel, biarkan background putih agar kontras dengan header */
+.table-schedule {
+    background: white;
+}
 </style>
 
 <!-- HERO SECTION (RASIO 16:9 + ROUNDED CORNERS) -->
@@ -640,24 +745,24 @@ max-width:95%;
 
 <div class="container">
     <!-- STATISTIK PRODI -->
-    <section id="statistik" class="mb-5">
+    <section id="statistik" class="section-wrapper">
         <h2 class="section-title">Statistik <span>Prodi</span></h2>
         <div class="row g-4">
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
                     <div class="stat-number"><%= statistik.mahasiswaAktif || 0 %></div>
                     <div class="stat-label">Mahasiswa Aktif</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="bi bi-briefcase-fill"></i></div>
                     <div class="stat-number"><%= statistik.mahasiswaMagang || 0 %></div>
                     <div class="stat-label">Mahasiswa Magang</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
                     <div class="stat-number">
@@ -672,7 +777,7 @@ max-width:95%;
                     <div class="stat-label">Total Mahasiswa</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
                     <div class="stat-number"><%= seminar.length %></div>
@@ -682,8 +787,8 @@ max-width:95%;
         </div>
     </section>
 
-    <!-- VISI MISI (di bawah statistik) -->
-    <section class="mb-5">
+    <!-- VISI MISI -->
+    <section class="section-wrapper">
         <h2 class="section-title">Visi & <span>Misi</span></h2>
         <div class="row g-4">
             <div class="col-md-6">
@@ -709,7 +814,7 @@ max-width:95%;
     </section>
 
     <!-- GRAFIK ANGKATAN -->
-    <section class="mb-5">
+    <section class="section-wrapper">
         <h2 class="section-title">Sebaran <span>Mahasiswa</span> per Angkatan</h2>
         <div class="chart-card">
             <% const punyaData = statistik.angkatan && Array.isArray(statistik.angkatan) && statistik.angkatan.length > 0; %>
@@ -773,7 +878,7 @@ max-width:95%;
     </section>
 
     <!-- BERITA TERBARU -->
-    <section id="berita" class="mb-5">
+    <section id="berita" class="section-wrapper">
         <h2 class="section-title">Berita <span>Terbaru</span></h2>
         <div class="row g-4">
             <% if (!berita || berita.length === 0) { %>
@@ -807,7 +912,7 @@ max-width:95%;
     </section>
 
     <!-- JADWAL PENTING -->
-    <section id="seminar" class="mb-5">
+    <section id="seminar" class="section-wrapper">
         <h2 class="section-title">Jadwal <span>Penting</span></h2>
         <div class="table-responsive table-schedule">
             <table class="table table-hover align-middle mb-0">
@@ -839,15 +944,15 @@ max-width:95%;
         </div>
     </section>
 
-    <!-- DOSEN PROGRAM STUDI (dengan carousel) -->
-    <section class="mb-5">
+    <!-- DOSEN PROGRAM STUDI (dengan carousel) - 3 card per baris -->
+    <section class="section-wrapper">
         <h2 class="section-title">Dosen <span>Program Studi</span></h2>
         <div id="dosenCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <!-- Slide 1: 3 dosen pertama -->
                 <div class="carousel-item active">
-                    <div class="row g-4">
-                        <div class="col-md-4">
+                    <div class="row g-2 g-md-4">
+                        <div class="col-4">
                             <div class="id-card">
                                 <div class="id-card-img-wrapper">
                                     <img src="https://i.ibb.co.com/pjGLDjZc/ID.png" class="id-card-img" alt="Fajar Ramadhan">
@@ -863,7 +968,7 @@ max-width:95%;
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-4">
                             <div class="id-card">
                                 <div class="id-card-img-wrapper">
                                     <img src="https://i.ibb.co.com/B2yS6Ry4/SUARDI.png" class="id-card-img" alt="Suardi">
@@ -878,7 +983,7 @@ max-width:95%;
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-4">
                             <div class="id-card">
                                 <div class="id-card-img-wrapper">
                                     <img src="https://i.ibb.co.com/m73P8nx/ARIANI.png" class="id-card-img" alt="Ariani Amri">
@@ -897,8 +1002,8 @@ max-width:95%;
                 </div>
                 <!-- Slide 2: 3 dosen berikutnya -->
                 <div class="carousel-item">
-                    <div class="row g-4">
-                        <div class="col-md-4">
+                    <div class="row g-2 g-md-4">
+                        <div class="col-4">
                             <div class="id-card">
                                 <div class="id-card-img-wrapper">
                                     <img src="https://i.ibb.co.com/5XfTGCqb/GUNAWAN.png" class="id-card-img" alt="Gunawan Tari">
@@ -913,7 +1018,7 @@ max-width:95%;
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-4">
                             <div class="id-card">
                                 <div class="id-card-img-wrapper">
                                     <img src="https://i.ibb.co.com/PGm8NTcQ/MIFTAH.png" class="id-card-img" alt="Miftahul Hairia">
@@ -928,7 +1033,7 @@ max-width:95%;
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-4">
                             <div class="id-card">
                                 <div class="id-card-img-wrapper">
                                     <img src="https://i.ibb.co.com/S7xrMCb8/RAHMAN-SYAM.png" class="id-card-img" alt="Rahman Syam">
@@ -963,33 +1068,33 @@ max-width:95%;
         </div>
     </section>
 
-    <!-- MITRA INDUSTRI (TAMBAHAN) -->
-    <section class="mb-5">
+    <!-- MITRA INDUSTRI - 3 card per baris -->
+    <section class="section-wrapper">
         <h2 class="section-title">Mitra <span>Industri</span></h2>
         <div class="row g-4 align-items-center">
-            <div class="col-6 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="mitra-item"><img src="https://i.ibb.co.com/SDJ2YCbN/image.png" alt="Mitra"></div>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="mitra-item"><img src="https://image.indonetwork.co.id/companies/thumbs/400x300/2020/06/25/764823d5-147c-4a45-85ed-5123b5e766d8.jpeg" alt="Mitra"></div>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="mitra-item"><img src="https://i.ibb.co.com/m51k6j91/image.png" alt="Mitra"></div>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="mitra-item"><img src="https://i.ibb.co.com/pjqQkgbz/image.png" alt="Mitra"></div>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="mitra-item"><img src="https://i.ibb.co.com/1G8Xn9QR/image.png" alt="Mitra"></div>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="mitra-item"><img src="https://i.ibb.co.com/5h2FWN6F/image.png" alt="Mitra"></div>
             </div>
         </div>
     </section>
 
-    <!-- TESTIMONI ALUMNI (TAMBAHAN) -->
-    <section class="mb-5">
+    <!-- TESTIMONI ALUMNI -->
+    <section class="section-wrapper">
         <h2 class="section-title">Apa Kata <span>Alumni?</span></h2>
         <div id="testimoniCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
@@ -1032,8 +1137,8 @@ max-width:95%;
         </div>
     </section>
 </div>
-  <div class="text-center text-muted mt-5 mb-3">
-    <small><i class="bi bi-shield-check me-1"></i> Sistem Informasi Program Studi Elektronika- Politeknik Dewantara 2025 by Fajar Elektrik</small>
-  </div>
+<div class="text-center text-muted mt-5 mb-3">
+    <small><i class="bi bi-shield-check me-1"></i> Sistem Informasi Program Studi Elektronika - Politeknik Dewantara 2025 by Fajar Elektrik</small>
+</div>
 
 <%- include('../partials/footer-landing') %>
