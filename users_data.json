@@ -1,0 +1,750 @@
+{
+  "mahasiswa": [
+    {
+      "id": "aykxI7bNL4P39UYqN4WS5L5wkbQ2",
+      "nim": "12345678",
+      "nama": "HelpDesk Prodi",
+      "email": "12345678@teknik-elektronika.ac.id"
+    },
+    {
+      "id": "VzjexmSOUpb4FFPWcZIWxZXgDw43",
+      "nim": "23302001",
+      "nama": "Muh. Reski Chalik",
+      "email": "23302001@polidewa.elk"
+    },
+    {
+      "id": "XHDor68cDCZexyHpzIJKO7cFlig2",
+      "nim": "23302002",
+      "nama": "Muh Ibrahim Hasan",
+      "email": "23302002@polidewa.elk"
+    },
+    {
+      "id": "rF3OJ1lEIWYTC47AbwxlpODpmks1",
+      "nim": "23302008",
+      "nama": "Juniansa",
+      "email": "23302008@polidewa.elk"
+    },
+    {
+      "id": "MlZlrYVzDNPGfdrgVxlskVSJDSS2",
+      "nim": "23302011",
+      "nama": "Anwar",
+      "email": "23302011@polidewa.elk"
+    },
+    {
+      "id": "xW6IFlcBHANqNTEyJ3e7aqmsveD3",
+      "nim": "23302012",
+      "nama": "Vicky Prasetio",
+      "email": "23302012@polidewa.elk"
+    },
+    {
+      "id": "xiWlKQhLfINeN8qgCGafUHtgzuI2",
+      "nim": "23302014",
+      "nama": "Afdhal",
+      "email": "23302014@polidewa.elk"
+    },
+    {
+      "id": "52h3AtCfvlUWbqmS3Hmy33FCXF03",
+      "nim": "23302015",
+      "nama": "Hairullah Hairuddin",
+      "email": "23302015@polidewa.elk"
+    },
+    {
+      "id": "Rdt7RDQwN9T3BdNlkXo9aWqJyTw2",
+      "nim": "23302016",
+      "nama": "Abdul Jaya",
+      "email": "23302016@polidewa.elk"
+    },
+    {
+      "id": "YcrwdSnhqaYZ5Wr1qcRCQMnwykK2",
+      "nim": "23302022",
+      "nama": "Shabrina Malika Azzahra",
+      "email": "23302022@polidewa.elk"
+    },
+    {
+      "id": "LPdzVGJFiqOUhiUsUQjj8fiLQMd2",
+      "nim": "23302023",
+      "nama": "Erina",
+      "email": "23302023@polidewa.elk"
+    },
+    {
+      "id": "PPfyEoXVPWOI70NtNfPPFFxxJ013",
+      "nim": "23302024",
+      "nama": "Faras Nur Anjani",
+      "email": "23302024@polidewa.elk"
+    },
+    {
+      "id": "sLpSDUvhiWTD5tSg4RYZ6qF0kOh2",
+      "nim": "23302025",
+      "nama": "Sulmika",
+      "email": "23302025@polidewa.elk"
+    },
+    {
+      "id": "9HDVnGe4UaPTtli6Uk2HalNx4gB2",
+      "nim": "23302026",
+      "nama": "Muhammad Salman",
+      "email": "23302026@polidewa.elk"
+    },
+    {
+      "id": "zJaaflTzIMeabpnNKM2r4Qk7JXC3",
+      "nim": "23302028",
+      "nama": "Afandi Jhon Malabi",
+      "email": "23302028@polidewa.elk"
+    },
+    {
+      "id": "tzkjPxaPdpXRdkvVhrdPZ1pvOnz1",
+      "nim": "23302029",
+      "nama": "Ibnu Muarif",
+      "email": "23302029@polidewa.elk"
+    },
+    {
+      "id": "VrLxsw5KMtWeWVOgAxUHPXPiruK2",
+      "nim": "23302031",
+      "nama": "Arbaiyah",
+      "email": "23302031@polidewa.elk"
+    },
+    {
+      "id": "F6m4TBAVdHfMC5FEydJnYMtBChF2",
+      "nim": "23302032",
+      "nama": "Asriyadi",
+      "email": "23302032@polidewa.elk"
+    },
+    {
+      "id": "Axk7q0bKySgQrr0m49hQXxyoOOm1",
+      "nim": "23302033",
+      "nama": "Muh. Gading Riyanto",
+      "email": "23302033@polidewa.elk"
+    },
+    {
+      "id": "U9U51vBdPAObGVpx4YkZgepEjN23",
+      "nim": "23302034",
+      "nama": "Nurfadillah",
+      "email": "23302034@polidewa.elk"
+    },
+    {
+      "id": "aoFjc4sE4nO1AtnAIrVyEUxtdhs1",
+      "nim": "23302035",
+      "nama": "Saania Maharani",
+      "email": "23302035@polidewa.elk"
+    },
+    {
+      "id": "j1QHXG34kQdGbhvb8l3le6Xy7vt1",
+      "nim": "23302036",
+      "nama": "Armayanti A",
+      "email": "23302036@polidewa.elk"
+    },
+    {
+      "id": "csOew6ZLeeYsK08X4BZJ9tHx9y92",
+      "nim": "23302039",
+      "nama": "Lira",
+      "email": "23302039@polidewa.elk"
+    },
+    {
+      "id": "IWlXlKTdzXhLKf4gUI0aeyKV2YF2",
+      "nim": "23302040",
+      "nama": "Muh Rifky",
+      "email": "23302040@polidewa.elk"
+    },
+    {
+      "id": "hlQ1k7k8lFgRFnPYh4UMpVOaBFh2",
+      "nim": "23302043",
+      "nama": "Nova Samulung",
+      "email": "23302043@polidewa.elk"
+    },
+    {
+      "id": "VXOrwzuy3Jh9K5Jblg8MIaTeD2D3",
+      "nim": "23302046",
+      "nama": "Dela",
+      "email": "23302046@polidewa.elk"
+    },
+    {
+      "id": "o1Z1eQEPpLTKToBOdrKGETSMSoD2",
+      "nim": "23302047",
+      "nama": "Saenal",
+      "email": "23302047@polidewa.elk"
+    },
+    {
+      "id": "TCwN8xVaGKQ2vmDWLYpw5YJV6jG3",
+      "nim": "23302048",
+      "nama": "Ibra Razak",
+      "email": "23302048@polidewa.elk"
+    },
+    {
+      "id": "Eq41HEe7XXTGO0T6G0ZTc5lbZuX2",
+      "nim": "23302053",
+      "nama": "Muh. Fariel",
+      "email": "23302053@polidewa.elk"
+    },
+    {
+      "id": "DaDWyx1aySeKNCUCTaMdqQxoG2L2",
+      "nim": "23302055",
+      "nama": "Agung",
+      "email": "23302055@polidewa.elk"
+    },
+    {
+      "id": "rOLljMtnqeNYsd4xL6T7dzMYWaK2",
+      "nim": "23302056",
+      "nama": "Muh. Sulsabilah",
+      "email": "23302056@polidewa.elk"
+    },
+    {
+      "id": "e8v864o1wIbwnj1grTMg70G33K32",
+      "nim": "23302058",
+      "nama": "Muhammad Adam",
+      "email": "23302058@polidewa.elk"
+    },
+    {
+      "id": "XlebxGFHsyaOaMnOP3IImoOEPGu2",
+      "nim": "23302060",
+      "nama": "Ridwan",
+      "email": "23302060@polidewa.elk"
+    },
+    {
+      "id": "jr5OCURms9ZS0w8JD5Dbgvwiz0n2",
+      "nim": "23302062",
+      "nama": "Muh. Akram",
+      "email": "23302062@polidewa.elk"
+    },
+    {
+      "id": "3cThiC8TkYPQRDMDmaJ7F8CLy8f1",
+      "nim": "23302063",
+      "nama": "Muh. Gerald Rofi'if",
+      "email": "23302063@polidewa.elk"
+    },
+    {
+      "id": "VSKf66X7aVXrgqVP5iZLOXKZ5nq2",
+      "nim": "23302064",
+      "nama": "Muhammad Faiz Al-Gifari",
+      "email": "23302064@polidewa.elk"
+    },
+    {
+      "id": "eFmJckmOEkXe8kdjGYMkT3osNhK2",
+      "nim": "23302065",
+      "nama": "Ahmad Gazali",
+      "email": "23302065@polidewa.elk"
+    },
+    {
+      "id": "dee5hCQCoHMps4RFcFP0xfySHuP2",
+      "nim": "23302066",
+      "nama": "Fendi Kurniawan",
+      "email": "23302066@polidewa.elk"
+    },
+    {
+      "id": "7B1Q1YUrBnZ0fNqMQ3WQMHBw8Nw1",
+      "nim": "23302067",
+      "nama": "Vito Aditya",
+      "email": "23302067@polidewa.elk"
+    },
+    {
+      "id": "Eo44hpsDQHbFSXiqSpYY3qDotKd2",
+      "nim": "23302070",
+      "nama": "Fitriany",
+      "email": "23302070@polidewa.elk"
+    },
+    {
+      "id": "za9sVUj0ZMcEl19KxpMRKPMKP382",
+      "nim": "23302071",
+      "nama": "Muliani",
+      "email": "23302071@polidewa.elk"
+    },
+    {
+      "id": "IpKsKWruQwfqhPfGV7mpdq92bqj2",
+      "nim": "23302072",
+      "nama": "Hasniar",
+      "email": "23302072@polidewa.elk"
+    },
+    {
+      "id": "CnJgCUe3s2fdGsuXUUZeitNrum03",
+      "nim": "23302074",
+      "nama": "Muh. Wedi",
+      "email": "23302074@polidewa.elk"
+    },
+    {
+      "id": "vqH3DoQjuKOZLaDibUETTmo3OGg2",
+      "nim": "23302081",
+      "nama": "Yusnia Wulandari",
+      "email": "23302081@polidewa.elk"
+    },
+    {
+      "id": "RrxxuIBDYyTSRvciz212sV9DFAG3",
+      "nim": "23302082",
+      "nama": "Nurliana",
+      "email": "23302082@polidewa.elk"
+    },
+    {
+      "id": "kg6Bqecj4dMKDvKRVoe1f81HT253",
+      "nim": "23302088",
+      "nama": "Lusiana",
+      "email": "23302088@polidewa.elk"
+    },
+    {
+      "id": "b7nZZ95NuPPHkPot7GpdvsMJQhU2",
+      "nim": "23302094",
+      "nama": "Nurul Hikmah",
+      "email": "23302094@polidewa.elk"
+    },
+    {
+      "id": "tz8BX71CXgU903BrKY1UArRK2Bn1",
+      "nim": "23302100",
+      "nama": "Yuliani",
+      "email": "23302100@polidewa.elk"
+    },
+    {
+      "id": "eXrWcFzFqYOnYv8r56nL3mjXB0U2",
+      "nim": "23302110",
+      "nama": "Mawar Bilang Tua",
+      "email": "23302110@polidewa.elk"
+    },
+    {
+      "id": "oHfUs8SjbKS6DR7a2yVQS7cKH0F3",
+      "nim": "23302117",
+      "nama": "Pratiwi S",
+      "email": "23302117@polidewa.elk"
+    },
+    {
+      "id": "9RQeougIWPMQSCTSZKvj4ghqlVb2",
+      "nim": "23302120",
+      "nama": "Nirmala",
+      "email": "23302120@polidewa.elk"
+    },
+    {
+      "id": "q6YzpCDsfaRdyZzhlpnvEdOrdsg2",
+      "nim": "23302129",
+      "nama": "Widyanti",
+      "email": "23302129@polidewa.elk"
+    },
+    {
+      "id": "O2C57c7tzqaNNON0vkWVxXV7hj12",
+      "nim": "23302132",
+      "nama": "Laura Malla",
+      "email": "23302132@polidewa.elk"
+    },
+    {
+      "id": "ucg7FzJY1tRxnt972aOE2kxerVU2",
+      "nim": "23302138",
+      "nama": "Nur Ainun",
+      "email": "23302138@polidewa.elk"
+    },
+    {
+      "id": "caBBgu66rsTH5g8TUePnPgHt1ez2",
+      "nim": "23302141",
+      "nama": "Aisyah Radiallahuanha",
+      "email": "23302141@polidewa.elk"
+    },
+    {
+      "id": "LsILjULvsygKvqXauqXgt4EdKyJ3",
+      "nim": "23302144",
+      "nama": "Arini",
+      "email": "23302144@polidewa.elk"
+    },
+    {
+      "id": "4UPZ8AYZjdfjzguhDNevVRqPOH02",
+      "nim": "23302146",
+      "nama": "Srilisa",
+      "email": "23302146@polidewa.elk"
+    },
+    {
+      "id": "G8fcJfoZr8Sh1AtWD4or0irOmFA2",
+      "nim": "23302148",
+      "nama": "Rifkhu Noperdiansyah",
+      "email": "23302148@polidewa.elk"
+    },
+    {
+      "id": "CoEDAeZDnWcXj30TOFHIbtTPoNA3",
+      "nim": "24302001",
+      "nama": "Wahidin Salim",
+      "email": "24302001@polidewa.elk"
+    },
+    {
+      "id": "q41An83iodh13Q1u3d9NeWwUNJJ3",
+      "nim": "24302002",
+      "nama": "Stanislaus Agung Paborrong",
+      "email": "24302002@polidewa.elk"
+    },
+    {
+      "id": "1oCu2AQLW4euI7N7qCSQdpG04KU2",
+      "nim": "24302003",
+      "nama": "Asmunandar",
+      "email": "24302003@polidewa.elk"
+    },
+    {
+      "id": "WyVG4x6Tx6PTUCYhXZaUp0bZHfh2",
+      "nim": "24302004",
+      "nama": "Ahmad Arifin",
+      "email": "24302004@polidewa.elk"
+    },
+    {
+      "id": "BViWnpsnO7hyG1CCKWcam2TRVY12",
+      "nim": "24302005",
+      "nama": "Aidil Jalil",
+      "email": "24302005@polidewa.elk"
+    },
+    {
+      "id": "KHY1iZALNebS73rMpdoPjKMioMi1",
+      "nim": "24302006",
+      "nama": "Aida Pita",
+      "email": "24302006@polidewa.elk"
+    },
+    {
+      "id": "I4OLEFkMqDcstItn6nSyGqbDfWi1",
+      "nim": "24302007",
+      "nama": "Aan Alamsyah",
+      "email": "24302007@polidewa.elk"
+    },
+    {
+      "id": "VdSSJSzTWyaCPmcjpfLosjB2rZv1",
+      "nim": "24302008",
+      "nama": "Lukman",
+      "email": "24302008@polidewa.elk"
+    },
+    {
+      "id": "ugyu1iTySvfabJaobqlWUFsO6Sp2",
+      "nim": "24302009",
+      "nama": "Muhammad Akbar Ali",
+      "email": "24302009@polidewa.elk"
+    },
+    {
+      "id": "fPYLklhKKsTw8WqTkrRxWDDmCvz2",
+      "nim": "24302010",
+      "nama": "Muhammad Ramadhan ",
+      "email": "24302010@polidewa.elk"
+    },
+    {
+      "id": "hyQt76Pfi9fMpMYbfQOEu2jsllm2",
+      "nim": "24302011",
+      "nama": "Andi Rezki Utama",
+      "email": "24302011@polidewa.elk"
+    },
+    {
+      "id": "YM5CfOhUE1QyKAMJwW7CBh410Sr2",
+      "nim": "24302012",
+      "nama": "Ahmad Idul Fatri",
+      "email": "24302012@polidewa.elk"
+    },
+    {
+      "id": "TGNcpfMYw6St3k6rFgFJ7XL9J9m2",
+      "nim": "24302013",
+      "nama": "Randi Saputra",
+      "email": "24302013@polidewa.elk"
+    },
+    {
+      "id": "fEW9pwBIzga2Gcut7yAYso3p94g2",
+      "nim": "24302014",
+      "nama": "Muh. Aswan ",
+      "email": "24302014@polidewa.elk"
+    },
+    {
+      "id": "RE7SvprYFpSFCIYgQaHixuM3Xv02",
+      "nim": "24302015",
+      "nama": "Muh. Amri Saharuddin",
+      "email": "24302015@polidewa.elk"
+    },
+    {
+      "id": "QwgGSwJREiXIEDtoJr8FTs8pGfE3",
+      "nim": "24302016",
+      "nama": "Nailla Istianna",
+      "email": "24302016@polidewa.elk"
+    },
+    {
+      "id": "KWSTmnLWxcONLybPPwxOFO9KGzl1",
+      "nim": "24302017",
+      "nama": "Wirya Rusli Lutra",
+      "email": "24302017@polidewa.elk"
+    },
+    {
+      "id": "wqv3AGQ1j0hyV5rp0oORLdjyQgr2",
+      "nim": "24302018",
+      "nama": "Dandi S. Tandiwara",
+      "email": "24302018@polidewa.elk"
+    },
+    {
+      "id": "CBnCXLiGlAhdahhz8VPmZhqLQDm1",
+      "nim": "24302019",
+      "nama": "Sem Irfan Patabang",
+      "email": "24302019@polidewa.elk"
+    },
+    {
+      "id": "wGuN0N4yPkdOcO75vUdDdrOk87s2",
+      "nim": "24302020",
+      "nama": "Musafira Nur Asyiarah",
+      "email": "24302020@polidewa.elk"
+    },
+    {
+      "id": "rIf9LQW9oVOq3nfeSYZFGeBsu9b2",
+      "nim": "24302021",
+      "nama": "Lalu Muhammad Ikhsan Giwana",
+      "email": "24302021@polidewa.elk"
+    },
+    {
+      "id": "UW03qF55s7SLPTdYxJo25ycqVXx1",
+      "nim": "24302022",
+      "nama": "Musliadi",
+      "email": "24302022@polidewa.elk"
+    },
+    {
+      "id": "hKu9jYxnPUfFP8j2xoA7aQrWE0H3",
+      "nim": "24302023",
+      "nama": "Muhammad Samsul",
+      "email": "24302023@polidewa.elk"
+    },
+    {
+      "id": "MmWGc3nwqDdVCuciBUVYHW7SwZ52",
+      "nim": "24302024",
+      "nama": "Ibra Pagiling ",
+      "email": "24302024@polidewa.elk"
+    },
+    {
+      "id": "aP8pXFs6UKSgJLkQfUheBMfyjSn1",
+      "nim": "24302025",
+      "nama": "Ariyo Tangdiombo",
+      "email": "24302025@polidewa.elk"
+    },
+    {
+      "id": "M8LukEPa1fcWlGuj1VNy7aVcmch1",
+      "nim": "24302026",
+      "nama": "Muh. Akmal Syawal Angkotasan",
+      "email": "24302026@polidewa.elk"
+    },
+    {
+      "id": "9hfWQqi26eYmZ6XWf1odjP261hz2",
+      "nim": "24302027",
+      "nama": "Andri Otniel Satoding",
+      "email": "24302027@polidewa.elk"
+    },
+    {
+      "id": "NgK47px7xkNoIU5bCComm6jh2BT2",
+      "nim": "24302028",
+      "nama": "Ian Adi Putra",
+      "email": "24302028@polidewa.elk"
+    },
+    {
+      "id": "QKRXU2cI3hVSWL8MU5mmlPzTozI2",
+      "nim": "24302029",
+      "nama": "Rofik Gustomi Paida",
+      "email": "24302029@polidewa.elk"
+    },
+    {
+      "id": "9K05d6oeyRRsOLZCC9FrmAkfjSV2",
+      "nim": "24302030",
+      "nama": "Muhammad Akbar Yasir",
+      "email": "24302030@polidewa.elk"
+    },
+    {
+      "id": "yAEVMTOsMATAGuYrvItoWRsm3t53",
+      "nim": "24302031",
+      "nama": "Kisan",
+      "email": "24302031@polidewa.elk"
+    },
+    {
+      "id": "kD7gFCll4ucloPIi3EnI9M0tpcn1",
+      "nim": "25302001",
+      "nama": "Marshall Hansen Paranna",
+      "email": "25302001@polidewa.elk"
+    },
+    {
+      "id": "vu6MpuhK8MbqJK6i9WSqRO81lzY2",
+      "nim": "25302002",
+      "nama": "Nesa Anastasyia",
+      "email": "25302002@polidewa.elk"
+    },
+    {
+      "id": "Zzmmed0Kw4bVFglFRxEFO0uQKIQ2",
+      "nim": "25302003",
+      "nama": "Jihan Sabrina",
+      "email": "25302003@polidewa.elk"
+    },
+    {
+      "id": "3l4wcreSNaWDRinEq7xysifS4d02",
+      "nim": "25302004",
+      "nama": "Muh Musliadi",
+      "email": "25302004@polidewa.elk"
+    },
+    {
+      "id": "Wjnp29cORCPpDyyV4Ts9LOPfO0p2",
+      "nim": "25302005",
+      "nama": "Muh Afridzal",
+      "email": "25302005@polidewa.elk"
+    },
+    {
+      "id": "ogReJ7JKCQPe1vlMoFlpaZRBWQ52",
+      "nim": "25302006",
+      "nama": "Muhammad Nizam Sidik",
+      "email": "25302006@polidewa.elk"
+    },
+    {
+      "id": "JYFCevRCGoas6LqvPpO90qpeRV03",
+      "nim": "25302007",
+      "nama": "Marcel",
+      "email": "25302007@polidewa.elk"
+    },
+    {
+      "id": "3bfXq8IuwEhYiTDI6HBBPOMQ3Ht2",
+      "nim": "25302008",
+      "nama": "Dwi Anggara Prasetyo",
+      "email": "25302008@polidewa.elk"
+    },
+    {
+      "id": "rFcOdciIvmc9Hv4xXH9EzZhRApw2",
+      "nim": "25302009",
+      "nama": "Muh Fahril M",
+      "email": "25302009@polidewa.elk"
+    },
+    {
+      "id": "zpF1vchHRta708T5XZj8oKCb3cr1",
+      "nim": "25302010",
+      "nama": "Muh. Aqild Baim Pratama",
+      "email": "25302010@polidewa.elk"
+    },
+    {
+      "id": "wJC0i4S4NRUjHkSvoyqDF4ybFTT2",
+      "nim": "25302011",
+      "nama": "Rafael Zoe Pratama Zailyn Mangaka",
+      "email": "25302011@polidewa.elk"
+    },
+    {
+      "id": "UfJCXZVwjeWZ8DwheAEDmLiXivo2",
+      "nim": "25302012",
+      "nama": "Nurul Ilmi Jasaman",
+      "email": "25302012@polidewa.elk"
+    },
+    {
+      "id": "rzrrAYl3p2g5K8wZMQs1ixw9Cl03",
+      "nim": "25302013",
+      "nama": "Mey Narsi",
+      "email": "25302013@polidewa.elk"
+    },
+    {
+      "id": "KCzuWXYU4nQbpDHWUnCNVYjCdaq1",
+      "nim": "25302014",
+      "nama": "Whulan Khesya",
+      "email": "25302014@polidewa.elk"
+    },
+    {
+      "id": "oPgJkEU089RD7N78bgcJncuEyhV2",
+      "nim": "25302015",
+      "nama": "Gelvano Herschel Sikota",
+      "email": "25302015@polidewa.elk"
+    },
+    {
+      "id": "XDOXZ7otd4M973iIR8L7aOk6fiK2",
+      "nim": "25302016",
+      "nama": "Muh. Aqram Sulaeman",
+      "email": "25302016@polidewa.elk"
+    },
+    {
+      "id": "0ageHYwGATZSZt7W71ucuDTP7WF2",
+      "nim": "25302017",
+      "nama": "Hans Doalan Glorius Mowisu",
+      "email": "25302017@polidewa.elk"
+    },
+    {
+      "id": "XiLkUp4orwfW6WsSLNhdDc6Uie22",
+      "nim": "25302018",
+      "nama": "Muh. Al Jihad",
+      "email": "25302018@polidewa.elk"
+    },
+    {
+      "id": "AjmBoonUEAPmseoFq6XUXqqiuIj1",
+      "nim": "25302019",
+      "nama": "Rahmat Salopi",
+      "email": "25302019@polidewa.elk"
+    },
+    {
+      "id": "Q9GhXxN9TgSsakeKfTD4OgTlcNf1",
+      "nim": "25302020",
+      "nama": "Aby Al Akhyar K",
+      "email": "25302020@polidewa.elk"
+    },
+    {
+      "id": "7m4LiFUiZ1OEdyrOMPkyw8TbdQu2",
+      "nim": "25302021",
+      "nama": "Muh Aidit Algifari",
+      "email": "25302021@polidewa.elk"
+    },
+    {
+      "id": "vXX5YVA5b0OiX306IdG8I3UFnrA2",
+      "nim": "25302022",
+      "nama": "Nelson Linggi' Masakke",
+      "email": "25302022@polidewa.elk"
+    },
+    {
+      "id": "IJKEqxVz2PPmh982gU4E55tDqYJ2",
+      "nim": "25302023",
+      "nama": "Muh. Zulqivly Rusli",
+      "email": "25302023@polidewa.elk"
+    },
+    {
+      "id": "GtTdX70uH5TFN1tblEASc7dKrtf2",
+      "nim": "25302024",
+      "nama": "Taufik Mubaraq",
+      "email": "25302024@polidewa.elk"
+    },
+    {
+      "id": "xs1lQd2hdtP0TGBMw4pIuDkqNuv1",
+      "nim": "25302025",
+      "nama": "Yosep Saleppang",
+      "email": "25302025@polidewa.elk"
+    },
+    {
+      "id": "4FI4AAfx2IamBu5dajn0tsyxjhs2",
+      "nim": "25302026",
+      "nama": "Muh. Saad",
+      "email": "25302026@polidewa.elk"
+    },
+    {
+      "id": "EHsXAOyZgvNZU56RdMb58JJ6jtw1",
+      "nim": "25302027",
+      "nama": "Assabi Kullail",
+      "email": "25302027@polidewa.elk"
+    },
+    {
+      "id": "1HDwFuGlCHWoxVKw8QFxfRfUq093",
+      "nim": "25302028",
+      "nama": "Natasya Aurelia Lakinende",
+      "email": "25302028@polidewa.elk"
+    },
+    {
+      "id": "zFjFxbwANzYhRSGrd6EvunQeXzL2",
+      "nim": "25302029",
+      "nama": "Intan Rianita",
+      "email": "25302029@polidewa.elk"
+    }
+  ],
+  "dosen": [
+    {
+      "id": "g4dtuUHKbqPliI7xtyUK2kkNF6j1",
+      "nama": "Ariani Amri, S.Pd., M.Pd.",
+      "email": "arianiamri@elektronika.com"
+    },
+    {
+      "id": "4oamoYEbRgQN0lwNjTIOAMZlIaI2",
+      "nama": "Diamonda",
+      "email": "fitra@gmail.com"
+    },
+    {
+      "id": "UtuyVRuhIoWcNoVOyjv99O09hxv1",
+      "nama": "Fajar Ramadhan, S.Pd., M.T",
+      "email": "fajar@elektronika.com"
+    },
+    {
+      "id": "BdwnRGcEZUPq0eiR3v4PdqlZTFA3",
+      "nama": "Gunawan Tari, S.T., M.T",
+      "email": "gunawan@elektronika.com"
+    },
+    {
+      "id": "3F4ogmZOamPE2fr6ltseYGA3n263",
+      "nama": "Miftahul Hairia, S.Pd., M.Pd",
+      "email": "miftahul@elektronika.com"
+    },
+    {
+      "id": "DZAaXXAAodVzILCf0CujXveA4352",
+      "nama": "Rahman Syam",
+      "email": "rahmansyam@elektronika.com"
+    },
+    {
+      "id": "gG5i8oMoxRRzzHCu2IpP4HVuqqe2",
+      "nama": "Suardi, S.Pd., M.Pd",
+      "email": "suardi@elektronika.com"
+    }
+  ],
+  "generatedAt": "2026-04-04T08:50:59.393Z"
+}

@@ -501,6 +501,19 @@
             <h6 class="menu-title">Kelola Mahasiswa</h6>
             <p class="menu-desc">List per angkatan, tagihan</p>
         </a>
+        
+        <!-- ✅ MENU BIMBINGAN MAGANG (BARU) -->
+        <a href="/admin/bimbingan" class="menu-card">
+            <div class="menu-icon" style="color: #8b5cf6; background: rgba(139,92,246,0.1);">
+                <i class="bi bi-person-lines-fill"></i>
+            </div>
+            <h6 class="menu-title">Bimbingan Magang</h6>
+            <p class="menu-desc">Tetapkan dosen pembimbing 1 & 2</p>
+            <% if (stats.bimbinganPending > 0) { %>
+                <span class="badge-new"><%= stats.bimbinganPending %></span>
+            <% } %>
+        </a>
+        
         <a href="/admin/matakuliah" class="menu-card">
             <div class="menu-icon" style="color: #ffc107;"><i class="bi bi-book"></i></div>
             <h6 class="menu-title">Kelola Mata Kuliah</h6>

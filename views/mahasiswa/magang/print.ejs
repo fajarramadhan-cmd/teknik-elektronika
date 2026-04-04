@@ -78,34 +78,23 @@
 
     /* Bagian tanda tangan */
     .tanda-tangan {
-      margin-top: 40px;
+      margin-top: 60px;
     }
-    .tiga-kolom {
+    .dua-kolom {
       display: flex;
       justify-content: space-between;
       text-align: center;
+      margin-bottom: 80px;
     }
     .kolom-tanda {
-      width: 30%;
+      width: 45%;
     }
-    .kolom-tanda p {
-      margin: 5px 0;
+    .area-ttd {
+      height: 80px; /* ruang kosong untuk tanda tangan */
     }
     .kaprodi {
       text-align: center;
-      margin-top: 30px;
-    }
-
-    /* Gaya untuk garis hr */
-    hr {
-      border: none;
-      border-top: 1px solid black;
-      margin: 10px 0;
-    }
-    .hr-kaprodi {
-      width: 200px;
-      margin: 10px auto;
-      border-top: 1px solid black;
+      margin-top: 40px;
     }
 
     /* Gaya cetak */
@@ -217,62 +206,43 @@
       </tfoot>
     </table>
 
-    <!-- Tanda Tangan -->
-
-    <!-- Tanda Tangan -->
-      <style>
-        .tanda-tangan {
-          margin-top: 60px;
-        }
-
-        .tiga-kolom {
-          display: flex;
-          justify-content: space-between;
-          text-align: center;
-          margin-bottom: 80px;
-        }
-
-        .kolom-tanda {
-          width: 30%;
-        }
-
-        .area-ttd {
-          height: 80px; /* ruang kosong untuk tanda tangan */
-        }
-
-        .kaprodi {
-          text-align: center;
-          margin-top: 40px;
-        }
-      </style>
-
-      <div class="tanda-tangan">
-        
-        <div class="tiga-kolom">
-          <div class="kolom-tanda">
-            <p>Dosen Pembimbing 1</p>
-            <div class="area-ttd"></div>
-            <p>(______________________)</p>
-          </div>
-
-          <div class="kolom-tanda">
-            <p>Dosen Pembimbing 2</p>
-            <div class="area-ttd"></div>
-            <p>(______________________)</p>
-          </div>
-
-          <div class="kolom-tanda">
-            <p>Pembimbing Lapangan</p>
-            <div class="area-ttd"></div>
-            <p>(______________________)</p>
-          </div>
-        </div>
-
-        <div class="kaprodi">
-          <p>Ketua Program Studi</p>
+    <!-- Tanda Tangan (hanya Dosen Pembimbing 1, Dosen Pembimbing 2, dan Kaprodi) -->
+    <div class="tanda-tangan">
+      <div class="dua-kolom">
+        <!-- Dosen Pembimbing 1 -->
+        <div class="kolom-tanda">
+          <p>Dosen Pembimbing 1</p>
           <div class="area-ttd"></div>
-          <p><strong>Fajar Ramadhan, S.Pd., M.T</strong></p>
-          <p>NUPTK. 8559777678130153</p>
+          <p>
+            <% if (pembimbing && pembimbing.pembimbing1) { %>
+              <%= pembimbing.pembimbing1.nama %>
+            <% } else { %>
+              (______________________)
+            <% } %>
+          </p>
         </div>
+
+        <!-- Dosen Pembimbing 2 -->
+        <div class="kolom-tanda">
+          <p>Dosen Pembimbing 2</p>
+          <div class="area-ttd"></div>
+          <p>
+            <% if (pembimbing && pembimbing.pembimbing2) { %>
+              <%= pembimbing.pembimbing2.nama %>
+            <% } else { %>
+              (______________________)
+            <% } %>
+          </p>
+        </div>
+      </div>
+
+      <div class="kaprodi">
+        <p>Ketua Program Studi</p>
+        <div class="area-ttd"></div>
+        <p><strong>Fajar Ramadhan, S.Pd., M.T</strong></p>
+        <p>NUPTK. 8559777678130153</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

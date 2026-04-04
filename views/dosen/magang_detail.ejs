@@ -49,6 +49,20 @@
     background-color: #f8fafc;
   }
 
+  /* Alert Messages */
+  .alert-fixed {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
   /* Profile Card */
   .profile-card {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
@@ -107,6 +121,27 @@
     font-size: 0.95rem;
   }
 
+  /* Role Badge */
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  .role-pembimbing2 {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    box-shadow: 0 5px 15px rgba(16,185,129,0.3);
+  }
+  .role-pembimbing1 {
+    background: linear-gradient(135deg, #6c757d, #adb5bd);
+    color: white;
+  }
+
   /* Page Header */
   .page-header {
     background: white;
@@ -116,6 +151,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     border: 1px solid rgba(30,58,138,0.1);
   }
@@ -131,6 +168,7 @@
   .page-header .btn-group {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   .btn-print {
     background: #17a2b8;
@@ -170,6 +208,21 @@
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(30,58,138,0.3);
+  }
+
+  /* Filter Card */
+  .filter-card {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .filter-card .form-select {
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 
   /* Tabel Minimalis */
@@ -254,6 +307,65 @@
     border: 1px solid #fde68a;
   }
 
+  /* Tombol Aksi */
+  .btn-approve {
+    background: #10b981;
+    border: none;
+    color: white;
+    padding: 0.3rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-approve:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(16,185,129,0.3);
+  }
+  .btn-reject {
+    background: #ef4444;
+    border: none;
+    color: white;
+    padding: 0.3rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-reject:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(239,68,68,0.3);
+  }
+
+  /* Modal */
+  .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .modal-header-custom {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+    padding: 1.2rem 1.5rem;
+  }
+  .modal-header-custom .btn-close {
+    background: rgba(255,255,255,0.8);
+    opacity: 0.8;
+  }
+  .modal-header-custom .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+  }
+
   /* Lightbox Modal */
   .lightbox-modal .modal-content {
     border: none;
@@ -297,8 +409,8 @@
     .profile-card h2 { font-size: 1.5rem; }
     .profile-card .avatar-large { width: 60px; height: 60px; }
     .avatar-circle-large { width: 60px; height: 60px; font-size: 2rem; }
-    .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-    .page-header .btn-group { width: 100%; justify-content: space-between; }
+    .page-header { flex-direction: column; align-items: stretch; }
+    .page-header .btn-group { justify-content: center; }
     .logbook-table thead th { font-size: 0.8rem; padding: 0.8rem; }
     .logbook-table tbody td { font-size: 0.9rem; padding: 0.8rem; }
   }
@@ -309,20 +421,27 @@
     .logbook-table thead th { font-size: 0.75rem; padding: 0.6rem; }
     .logbook-table tbody td { font-size: 0.85rem; padding: 0.6rem; }
     .badge-status { font-size: 0.7rem; padding: 0.3rem 0.8rem; }
+    .btn-approve, .btn-reject { padding: 0.2rem 0.8rem; font-size: 0.7rem; }
     .btn-print, .btn-back { padding: 0.4rem 1rem; font-size: 0.8rem; }
-  }
-
-  @media (max-width: 400px) {
-    html { font-size: 13px; }
-    .profile-card h2 { font-size: 1.2rem; }
-  }
-
-  @media (max-width: 340px) {
-    html { font-size: 12px; }
   }
 </style>
 
 <div class="container mt-4">
+  <!-- Alert Messages -->
+  <% if (session && session.success) { %>
+    <div class="alert alert-success alert-dismissible fade show alert-fixed" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i> <%= session.success %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+  
+  <% if (session && session.error) { %>
+    <div class="alert alert-danger alert-dismissible fade show alert-fixed" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= session.error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
   <!-- Profile Card Mahasiswa -->
   <div class="profile-card">
     <div class="d-flex align-items-center flex-wrap">
@@ -347,6 +466,17 @@
     </div>
   </div>
 
+  <!-- Role Badge -->
+  <% if (isPembimbing2) { %>
+    <div class="role-badge role-pembimbing2">
+      <i class="bi bi-check-circle-fill"></i> Anda sebagai Pembimbing 2 - Anda dapat menyetujui/menolak logbook
+    </div>
+  <% } else if (isPembimbing1) { %>
+    <div class="role-badge role-pembimbing1">
+      <i class="bi bi-eye-fill"></i> Anda sebagai Pembimbing 1 - Hanya dapat melihat logbook (Read Only)
+    </div>
+  <% } %>
+
   <!-- Header dengan judul dan tombol -->
   <div class="page-header">
     <h4>
@@ -360,6 +490,23 @@
         <i class="bi bi-arrow-left"></i> Kembali
       </a>
     </div>
+  </div>
+
+  <!-- Filter Semester -->
+  <div class="filter-card">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold"><i class="bi bi-funnel"></i> Filter Semester</label>
+        <select name="semester" class="form-select" onchange="this.form.submit()">
+          <option value="">Semua Semester</option>
+          <% if (semesterList && semesterList.length > 0) { %>
+            <% semesterList.forEach(s => { %>
+              <option value="<%= s %>" <%= selectedSemester === s ? 'selected' : '' %>><%= s %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+    </form>
   </div>
 
   <!-- Tabel Logbook -->
@@ -376,12 +523,15 @@
             <th>Semester</th>
             <th style="text-align: center;">Gambar</th>
             <th style="text-align: center;">Status</th>
+            <% if (isPembimbing2) { %>
+              <th style="text-align: center;">Aksi</th>
+            <% } %>
           </tr>
         </thead>
         <tbody>
           <% if (logbookList.length === 0) { %>
             <tr>
-              <td colspan="8" class="text-center py-5">
+              <td colspan="<%= isPembimbing2 ? 9 : 8 %>" class="text-center py-5">
                 <div class="empty-state">
                   <i class="bi bi-inbox"></i>
                   <p>Mahasiswa ini belum mengisi logbook.</p>
@@ -393,7 +543,7 @@
               <tr>
                 <td style="text-align: center; font-weight: 600;"><%= index + 1 %></td>
                 <td><%= item.tanggalFormatted %></td>
-                <td><%= item.kegiatan %></td>
+                <td style="max-width: 300px;"><%= item.kegiatan %></td>
                 <td style="text-align: center;"><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
                 <td><%= item.lokasi || '-' %></td>
                 <td><%= item.semester || '-' %></td>
@@ -415,13 +565,48 @@
                 </td>
                 <td style="text-align: center;">
                   <% if (item.status === 'approved') { %>
-                    <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                    <span class="badge-status badge-approved">
+                      <i class="bi bi-check-circle"></i> Disetujui
+                    </span>
+                    <% if (item.approvedByNama) { %>
+                      <br><small class="text-muted">oleh: <%= item.approvedByNama %></small>
+                    <% } %>
                   <% } else if (item.status === 'rejected') { %>
-                    <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                    <span class="badge-status badge-rejected">
+                      <i class="bi bi-x-circle"></i> Ditolak
+                    </span>
+                    <% if (item.rejectionReason) { %>
+                      <br><small class="text-muted">Alasan: <%= item.rejectionReason %></small>
+                    <% } %>
+                    <% if (item.rejectedByNama) { %>
+                      <br><small class="text-muted">oleh: <%= item.rejectedByNama %></small>
+                    <% } %>
                   <% } else { %>
-                    <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+                    <span class="badge-status badge-pending">
+                      <i class="bi bi-hourglass-split"></i> Pending
+                    </span>
                   <% } %>
                 </td>
+                <% if (isPembimbing2) { %>
+                  <td style="text-align: center;">
+                    <% if (item.status === 'pending') { %>
+                      <div class="d-flex gap-2 justify-content-center">
+                        <form method="POST" action="/dosen/magang/logbook/<%= item.id %>/approve" style="display: inline;">
+                          <button type="submit" class="btn-approve" onclick="return confirm('Setujui logbook ini?')">
+                            <i class="bi bi-check-circle"></i> Setujui
+                          </button>
+                        </form>
+                        <button type="button" class="btn-reject" data-bs-toggle="modal" data-bs-target="#rejectModal" 
+                                data-logbook-id="<%= item.id %>" 
+                                data-logbook-title="<%= item.kegiatan.substring(0, 50) %>">
+                          <i class="bi bi-x-circle"></i> Tolak
+                        </button>
+                      </div>
+                    <% } else { %>
+                      <span class="text-muted">-</span>
+                    <% } %>
+                  </td>
+                <% } %>
               </tr>
             <% }) %>
           <% } %>
@@ -431,15 +616,49 @@
   </div>
 </div>
 
+<!-- Modal Reject -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header-custom">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Tolak Logbook
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="rejectForm">
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Perhatian!</strong> Penolakan akan memberitahu mahasiswa beserta alasan yang diberikan.
+          </div>
+          <div class="mb-3">
+            <label for="alasan" class="form-label fw-bold">Alasan Penolakan <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="alasan" name="alasan" rows="3" required 
+                      placeholder="Masukkan alasan penolakan logbook..."></textarea>
+            <small class="text-muted">Alasan akan ditampilkan kepada mahasiswa.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-x-circle me-1"></i> Tolak Logbook
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Lightbox Modal -->
 <div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title"><i class="bi bi-images me-2"></i>Dokumentasi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body p-0">
         <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
           <div class="carousel-inner" id="galleryCarouselInner"></div>
           <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
@@ -451,9 +670,9 @@
             <span class="visually-hidden">Next</span>
           </button>
         </div>
-        <div class="text-center mt-2">
-          <small class="text-muted">Jika gambar tidak tampil, <a href="#" id="openInNewTab" target="_blank">klik di sini untuk membuka di tab baru</a>.</small>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <small class="text-muted">Jika gambar tidak tampil, <a href="#" id="openInNewTab" target="_blank">klik di sini untuk membuka di tab baru</a>.</small>
       </div>
     </div>
   </div>
@@ -499,7 +718,7 @@
       alert('Tidak ada gambar untuk ditampilkan.');
       return;
     }
-    currentImageUrls = imageUrls; // simpan untuk tombol buka di tab baru
+    currentImageUrls = imageUrls;
     imageUrls.forEach((url, index) => {
       const activeClass = index === 0 ? 'active' : '';
       const thumbUrl = getThumbUrl(url, 800);
@@ -515,6 +734,7 @@
       `;
       inner.innerHTML += item;
     });
+    
     const modal = new bootstrap.Modal(document.getElementById('galleryModal'));
     modal.show();
 
@@ -528,8 +748,34 @@
       }
     };
     carousel.addEventListener('slid.bs.carousel', updateNewTabLink);
-    setTimeout(updateNewTabLink, 100); // untuk slide pertama
+    setTimeout(updateNewTabLink, 100);
   }
+
+  // Set action form untuk reject modal
+  const rejectModal = document.getElementById('rejectModal');
+  if (rejectModal) {
+    rejectModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const logbookId = button.getAttribute('data-logbook-id');
+      const logbookTitle = button.getAttribute('data-logbook-title');
+      
+      const form = document.getElementById('rejectForm');
+      form.action = `/dosen/magang/logbook/${logbookId}/reject`;
+      
+      const modalTitle = rejectModal.querySelector('.modal-title');
+      modalTitle.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>Tolak Logbook: ${logbookTitle}`;
+    });
+  }
+
+  // Auto hide alert setelah 5 detik
+  setTimeout(() => {
+    const alerts = document.querySelectorAll('.alert-fixed');
+    alerts.forEach(alert => {
+      alert.style.opacity = '0';
+      alert.style.transition = 'opacity 0.5s';
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 5000);
 </script>
 
 <%- include('../partials/footer') %>

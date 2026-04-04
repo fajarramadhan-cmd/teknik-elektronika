@@ -3,6 +3,11 @@
  * Modul ELK‑Magang: logbook, permohonan seminar, upload laporan akhir (3 laporan)
  * Terintegrasi dengan folder Data WEB (ID: 17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0)
  * Dilengkapi kompresi gambar (sharp) dan penyimpanan fileId.
+ * 
+ * REVISI: 
+ * - Pembimbing ditetapkan oleh admin (2 pembimbing: Pembimbing 1 dan Pembimbing 2)
+ * - Mahasiswa tidak bisa memilih pembimbing sendiri
+ * - Logbook & laporan menyimpan kedua pembimbing
  */
 
 const express = require('express');
@@ -67,6 +72,81 @@ function getAngkatanFromNim(nim) {
 function extractTahunAjaran(semesterLabel) {
   const match = semesterLabel.match(/\d{4}\/\d{4}/);
   return match ? match[0] : new Date().getFullYear() + '/' + (new Date().getFullYear() + 1);
+}
+
+// ============================================================================
+// FUNGSI BANTU PEMBIMBING (DUA DOSEN - DARI ADMIN)
+// ============================================================================
+
+/**
+ * Mendapatkan data pembimbing mahasiswa (Pembimbing 1 dan 2) yang ditetapkan admin
+ * @param {string} mahasiswaId - UID mahasiswa
+ * @returns {Promise<Object|null>} data pembimbing atau null jika belum ada
+ */
+async function getPembimbingMahasiswa(mahasiswaId) {
+  try {
+    const snapshot = await db.collection('bimbingan')
+      .where('mahasiswaId', '==', mahasiswaId)
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+    
+    if (snapshot.empty) return null;
+    
+    const bimbingan = snapshot.docs[0].data();
+    
+    // Ambil data dosen untuk pembimbing 1
+    let pembimbing1 = null;
+    if (bimbingan.pembimbing1Id) {
+      const dosenDoc = await db.collection('dosen').doc(bimbingan.pembimbing1Id).get();
+      pembimbing1 = {
+        id: bimbingan.pembimbing1Id,
+        nama: dosenDoc.exists ? dosenDoc.data().nama : bimbingan.pembimbing1Nama || '-',
+        nidn: dosenDoc.exists ? dosenDoc.data().nidn : '-'
+      };
+    }
+    
+    // Ambil data dosen untuk pembimbing 2 (opsional)
+    let pembimbing2 = null;
+    if (bimbingan.pembimbing2Id) {
+      const dosenDoc = await db.collection('dosen').doc(bimbingan.pembimbing2Id).get();
+      pembimbing2 = {
+        id: bimbingan.pembimbing2Id,
+        nama: dosenDoc.exists ? dosenDoc.data().nama : bimbingan.pembimbing2Nama || '-',
+        nidn: dosenDoc.exists ? dosenDoc.data().nidn : '-'
+      };
+    }
+    
+    return {
+      pembimbing1,
+      pembimbing2,
+      bimbinganId: snapshot.docs[0].id,
+      semester: bimbingan.semester,
+      tahunAjaran: bimbingan.tahunAjaran
+    };
+  } catch (error) {
+    console.error('Error getPembimbingMahasiswa:', error);
+    return null;
+  }
+}
+
+/**
+ * Format teks pembimbing untuk ditampilkan
+ * @param {Object} pembimbing - Data dari getPembimbingMahasiswa
+ * @returns {string} Teks pembimbing
+ */
+function formatPembimbingText(pembimbing) {
+  if (!pembimbing) return 'Belum ditetapkan';
+  
+  const parts = [];
+  if (pembimbing.pembimbing1) {
+    parts.push(`Pembimbing 1: ${pembimbing.pembimbing1.nama}`);
+  }
+  if (pembimbing.pembimbing2) {
+    parts.push(`Pembimbing 2: ${pembimbing.pembimbing2.nama}`);
+  }
+  
+  return parts.length > 0 ? parts.join(' | ') : 'Belum ditetapkan';
 }
 
 // ============================================================================
@@ -146,11 +226,26 @@ async function getEnrolledPdkCourses(userId) {
 // ============================================================================
 // HALAMAN UTAMA MAGANG (menu pilihan)
 // ============================================================================
-router.get('/', (req, res) => {
-  res.render('mahasiswa/magang/index', {
-    title: 'ELK-Magang',
-    user: req.user
-  });
+
+router.get('/', async (req, res) => {
+  try {
+    // Ambil data pembimbing mahasiswa yang sedang login
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    
+    res.render('mahasiswa/magang/index', {
+      title: 'ELK-Magang',
+      user: req.user,
+      pembimbing: pembimbing   // <- kirim ke view
+    });
+  } catch (error) {
+    console.error('Gagal memuat halaman magang:', error);
+    // Jika error, tetap render tanpa data pembimbing
+    res.render('mahasiswa/magang/index', {
+      title: 'ELK-Magang',
+      user: req.user,
+      pembimbing: null
+    });
+  }
 });
 
 // ============================================================================
@@ -163,11 +258,24 @@ router.get('/', (req, res) => {
  */
 router.get('/logbook', async (req, res) => {
   try {
+    // Ambil pembimbing yang sudah ditetapkan admin
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    
+    // Ambil daftar logbook
     const snapshot = await db.collection('logbookMagang')
       .where('userId', '==', req.user.id)
       .orderBy('tanggal', 'desc')
       .get();
-    const logbook = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    const logbook = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        pembimbing1Nama: data.pembimbing1Nama || (pembimbing?.pembimbing1?.nama || '-'),
+        pembimbing2Nama: data.pembimbing2Nama || (pembimbing?.pembimbing2?.nama || '-')
+      };
+    });
 
     const pdkCourses = await getEnrolledPdkCourses(req.user.id);
     const currentSemester = getCurrentAcademicSemester().label;
@@ -177,7 +285,8 @@ router.get('/logbook', async (req, res) => {
       user: req.user,
       logbook,
       pdkCourses,
-      currentSemester
+      currentSemester,
+      pembimbing  // ← kirim data pembimbing ke view
     });
   } catch (error) {
     console.error('❌ Error mengambil logbook:', error);
@@ -191,6 +300,7 @@ router.get('/logbook', async (req, res) => {
 /**
  * POST /mahasiswa/magang/logbook
  * Menyimpan logbook baru dengan upload gambar (maks 5) + kompresi
+ * Pembimbing diambil dari data yang ditetapkan admin (tidak bisa dipilih sendiri)
  */
 router.post('/logbook', upload.array('images', 5), async (req, res) => {
   try {
@@ -201,9 +311,16 @@ router.post('/logbook', upload.array('images', 5), async (req, res) => {
       return res.status(400).send('Tanggal, kegiatan, mata kuliah, dan semester wajib diisi.');
     }
 
+    // Validasi PDK
     const isValid = await hasActivePdkEnrollment(req.user.id, courseId, semester);
     if (!isValid) {
       return res.status(403).send('Anda tidak terdaftar di mata kuliah PDK untuk semester ini.');
+    }
+
+    // ✅ Ambil pembimbing yang sudah ditetapkan admin
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    if (!pembimbing || !pembimbing.pembimbing1) {
+      return res.status(400).send('Anda belum memiliki dosen pembimbing 1. Silakan hubungi admin.');
     }
 
     const nim = req.user.nim;
@@ -235,6 +352,7 @@ router.post('/logbook', upload.array('images', 5), async (req, res) => {
       imageFileIds.push(response.data.id);
     }
 
+    // ✅ Simpan logbook dengan kedua pembimbing dari admin
     await db.collection('logbookMagang').add({
       userId: req.user.id,
       tanggal,
@@ -246,7 +364,13 @@ router.post('/logbook', upload.array('images', 5), async (req, res) => {
       imageUrls,
       imageFileIds,
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      // Pembimbing 1 (wajib)
+      pembimbing1Id: pembimbing.pembimbing1.id,
+      pembimbing1Nama: pembimbing.pembimbing1.nama,
+      // Pembimbing 2 (opsional)
+      pembimbing2Id: pembimbing.pembimbing2 ? pembimbing.pembimbing2.id : null,
+      pembimbing2Nama: pembimbing.pembimbing2 ? pembimbing.pembimbing2.nama : null
     });
 
     res.redirect('/mahasiswa/magang/logbook');
@@ -265,6 +389,7 @@ router.get('/logbook/:id', async (req, res) => {
     const doc = await db.collection('logbookMagang').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ error: 'Logbook tidak ditemukan' });
     if (doc.data().userId !== req.user.id) return res.status(403).json({ error: 'Akses ditolak' });
+    
     res.json({ id: doc.id, ...doc.data() });
   } catch (error) {
     console.error(error);
@@ -275,6 +400,7 @@ router.get('/logbook/:id', async (req, res) => {
 /**
  * POST /mahasiswa/magang/logbook/:id
  * Update logbook (hanya teks, gambar tidak bisa diupdate melalui sini)
+ * Pembimbing tetap menggunakan data dari admin (tidak bisa diubah)
  */
 router.post('/logbook/:id', async (req, res) => {
   try {
@@ -284,7 +410,10 @@ router.post('/logbook/:id', async (req, res) => {
     if (!doc.exists) return res.status(404).send('Logbook tidak ditemukan');
     if (doc.data().userId !== req.user.id) return res.status(403).send('Akses ditolak');
 
-    await docRef.update({
+    // Ambil pembimbing terbaru dari admin (jika berubah)
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    
+    const updateData = {
       tanggal,
       kegiatan,
       lokasi: lokasi || '',
@@ -292,7 +421,17 @@ router.post('/logbook/:id', async (req, res) => {
       courseId,
       semester,
       updatedAt: new Date().toISOString()
-    });
+    };
+    
+    // Update pembimbing jika ada perubahan
+    if (pembimbing) {
+      updateData.pembimbing1Id = pembimbing.pembimbing1?.id || null;
+      updateData.pembimbing1Nama = pembimbing.pembimbing1?.nama || null;
+      updateData.pembimbing2Id = pembimbing.pembimbing2?.id || null;
+      updateData.pembimbing2Nama = pembimbing.pembimbing2?.nama || null;
+    }
+
+    await docRef.update(updateData);
     res.redirect('/mahasiswa/magang/logbook');
   } catch (error) {
     console.error('Error update logbook:', error);
@@ -344,7 +483,10 @@ router.get('/logbook-print', async (req, res) => {
 
     const mahasiswaDoc = await db.collection('users').doc(req.user.id).get();
     const mahasiswa = mahasiswaDoc.exists ? mahasiswaDoc.data() : { nama: req.user.nama, nim: req.user.nim };
-
+    
+    // ✅ Ambil data pembimbing mahasiswa
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    
     const totalDurasi = logbook.reduce((sum, item) => sum + (parseFloat(item.durasi) || 0), 0);
 
     res.render('mahasiswa/magang/print', {
@@ -353,7 +495,8 @@ router.get('/logbook-print', async (req, res) => {
       logbook,
       totalDurasi,
       totalEntries: logbook.length,
-      generatedAt: new Date().toLocaleString('id-ID')
+      generatedAt: new Date().toLocaleString('id-ID'),
+      pembimbing  // <- kirim ke view
     });
   } catch (error) {
     console.error('❌ Error print logbook:', error);
@@ -372,20 +515,35 @@ router.get('/logbook-print', async (req, res) => {
 router.get('/laporan', async (req, res) => {
   try {
     const userId = req.user.id;
+    const pembimbing = await getPembimbingMahasiswa(userId);
+    
     const laporanList = [];
     for (let i = 1; i <= 3; i++) {
       const docId = `${userId}_${i}`;
       const doc = await db.collection('laporanMagang').doc(docId).get();
+      
+      let data = null;
+      if (doc.exists) {
+        data = doc.data();
+        // Tambahkan nama pembimbing dari data bimbingan jika belum ada
+        if (pembimbing) {
+          data.pembimbing1Nama = data.pembimbing1Nama || pembimbing.pembimbing1?.nama;
+          data.pembimbing2Nama = data.pembimbing2Nama || pembimbing.pembimbing2?.nama;
+        }
+      }
+      
       laporanList.push({
         ke: i,
         exists: doc.exists,
-        data: doc.exists ? doc.data() : null
+        data
       });
     }
+    
     res.render('mahasiswa/magang/laporan', {
       title: 'Laporan Magang',
       user: req.user,
-      laporanList
+      laporanList,
+      pembimbing  // ← kirim data pembimbing ke view
     });
   } catch (error) {
     console.error('Error muat halaman laporan:', error);
@@ -396,13 +554,26 @@ router.get('/laporan', async (req, res) => {
 /**
  * POST /mahasiswa/magang/laporan/upload
  * Upload file laporan magang ke Google Drive (untuk laporan tertentu)
+ * Pembimbing diambil dari data yang ditetapkan admin
  */
 router.post('/laporan/upload', upload.single('file'), async (req, res) => {
   try {
-    const { laporanKe } = req.body; // 1,2,3
+    const { laporanKe } = req.body;
     const file = req.file;
+    
     if (!laporanKe || !file) {
       return res.status(400).send('Laporan ke dan file wajib diisi');
+    }
+
+    // Validasi file type (hanya PDF)
+    if (file.mimetype !== 'application/pdf') {
+      return res.status(400).send('Laporan magang harus dalam format PDF');
+    }
+
+    // ✅ Ambil pembimbing yang sudah ditetapkan admin
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    if (!pembimbing || !pembimbing.pembimbing1) {
+      return res.status(400).send('Anda belum memiliki dosen pembimbing 1. Silakan hubungi admin.');
     }
 
     const userId = req.user.id;
@@ -430,6 +601,7 @@ router.post('/laporan/upload', upload.single('file'), async (req, res) => {
     const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
     const docId = `${userId}_${laporanKe}`;
 
+    // ✅ Simpan laporan dengan kedua pembimbing
     await db.collection('laporanMagang').doc(docId).set({
       userId,
       nim,
@@ -441,7 +613,13 @@ router.post('/laporan/upload', upload.single('file'), async (req, res) => {
       semester: currentSemester,
       uploadedAt: new Date().toISOString(),
       status: 'submitted',
-      komentar: [] // ← field untuk menyimpan komentar dari admin/dosen
+      komentar: [],
+      // Pembimbing 1 (wajib)
+      pembimbing1Id: pembimbing.pembimbing1.id,
+      pembimbing1Nama: pembimbing.pembimbing1.nama,
+      // Pembimbing 2 (opsional)
+      pembimbing2Id: pembimbing.pembimbing2 ? pembimbing.pembimbing2.id : null,
+      pembimbing2Nama: pembimbing.pembimbing2 ? pembimbing.pembimbing2.nama : null
     });
 
     res.redirect('/mahasiswa/magang/laporan');
@@ -490,9 +668,37 @@ router.post('/laporan/hapus/:laporanKe', async (req, res) => {
 });
 
 // ============================================================================
+// HALAMAN UTAMA MAGANG (menu pilihan)
+// ============================================================================
+
+router.get('/', async (req, res) => {
+  try {
+    // Ambil data pembimbing mahasiswa yang sedang login
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    
+    res.render('mahasiswa/magang/index', {
+      title: 'ELK-Magang',
+      user: req.user,
+      pembimbing: pembimbing   // <- kirim ke view
+    });
+  } catch (error) {
+    console.error('Gagal memuat halaman magang:', error);
+    // Tetap render tanpa data pembimbing
+    res.render('mahasiswa/magang/index', {
+      title: 'ELK-Magang',
+      user: req.user,
+      pembimbing: null
+    });
+  }
+});
+// ============================================================================
 // PERMOHONAN SEMINAR MAGANG
 // ============================================================================
 
+/**
+ * GET /mahasiswa/magang/seminar
+ * Daftar permohonan seminar
+ */
 router.get('/seminar', async (req, res) => {
   try {
     const snapshot = await db.collection('permohonanMagang')
@@ -500,10 +706,13 @@ router.get('/seminar', async (req, res) => {
       .orderBy('createdAt', 'desc')
       .get();
     const permohonan = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    
     res.render('mahasiswa/magang/seminar_list', {
       title: 'Permohonan Seminar Magang',
       user: req.user,
-      permohonan
+      permohonan,
+      pembimbing
     });
   } catch (error) {
     console.error('Error mengambil permohonan:', error);
@@ -511,20 +720,35 @@ router.get('/seminar', async (req, res) => {
   }
 });
 
-router.get('/seminar/baru', (req, res) => {
+/**
+ * GET /mahasiswa/magang/seminar/baru
+ * Form ajukan seminar
+ */
+router.get('/seminar/baru', async (req, res) => {
+  const pembimbing = await getPembimbingMahasiswa(req.user.id);
   res.render('mahasiswa/magang/seminar_form', {
     title: 'Ajukan Seminar Magang',
     user: req.user,
-    seminar: null
+    seminar: null,
+    pembimbing
   });
 });
 
+/**
+ * POST /mahasiswa/magang/seminar
+ * Simpan permohonan seminar baru
+ */
 router.post('/seminar', async (req, res) => {
   try {
     const { judul, tanggal, waktu, tempat, pembimbing1, pembimbing2, penguji } = req.body;
     if (!judul || !tanggal || !waktu || !tempat) {
       return res.status(400).send('Judul, tanggal, waktu, dan tempat wajib diisi');
     }
+
+    // Ambil pembimbing dari admin sebagai default
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
+    const defaultPembimbing1 = pembimbing?.pembimbing1?.nama || '';
+    const defaultPembimbing2 = pembimbing?.pembimbing2?.nama || pembimbing2 || '';
 
     await db.collection('permohonanMagang').add({
       userId: req.user.id,
@@ -534,8 +758,8 @@ router.post('/seminar', async (req, res) => {
       tanggal: new Date(tanggal).toISOString(),
       waktu,
       tempat,
-      pembimbing1: pembimbing1 || '',
-      pembimbing2: pembimbing2 || '',
+      pembimbing1: pembimbing1 || defaultPembimbing1,
+      pembimbing2: defaultPembimbing2,
       penguji: penguji || '',
       status: 'pending',
       createdAt: new Date().toISOString(),
@@ -554,16 +778,23 @@ router.post('/seminar', async (req, res) => {
   }
 });
 
+/**
+ * GET /mahasiswa/magang/seminar/:id
+ * Detail permohonan seminar
+ */
 router.get('/seminar/:id', async (req, res) => {
   try {
     const doc = await db.collection('permohonanMagang').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).send('Data tidak ditemukan');
     const seminar = { id: doc.id, ...doc.data() };
     if (seminar.userId !== req.user.id) return res.status(403).send('Akses ditolak');
+    
+    const pembimbing = await getPembimbingMahasiswa(req.user.id);
     res.render('mahasiswa/magang/seminar_detail', {
       title: 'Detail Seminar',
       user: req.user,
-      seminar
+      seminar,
+      pembimbing
     });
   } catch (error) {
     console.error('Error detail seminar:', error);
@@ -571,6 +802,10 @@ router.get('/seminar/:id', async (req, res) => {
   }
 });
 
+/**
+ * POST /mahasiswa/magang/seminar/:id/batal
+ * Batalkan permohonan seminar
+ */
 router.post('/seminar/:id/batal', async (req, res) => {
   try {
     const docRef = db.collection('permohonanMagang').doc(req.params.id);

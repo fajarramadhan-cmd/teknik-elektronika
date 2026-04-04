@@ -33,7 +33,10 @@ router.use((req, res, next) => {
 // ============================================================================
 // MOUNT SUB‑MODUL ROUTE
 // ============================================================================
+const bimbinganRouter = require('./bimbingan');
 
+// Tambahkan ini di bagian mount sub-modul
+router.use('/bimbingan', bimbinganRouter);
 // Kelola Pengguna (users) – CRUD akun
 router.use('/users', usersRoutes);
 router.use('/dashboard', dashboardRouter);

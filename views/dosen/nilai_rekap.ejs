@@ -3,7 +3,7 @@
 <%
   // Default values to prevent errors
   if (typeof mk === 'undefined') mk = { kode: '', nama: '', sks: '', semester: '' };
-  if (typeof tipeList === 'undefined') tipeList = [];
+  if (typeof tugasList === 'undefined') tugasList = [];
   if (typeof data === 'undefined') data = [];
 %>
 
@@ -94,7 +94,8 @@
   /* Tabel */
   .table-responsive {
     border-radius: 1.5rem;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     border: 1px solid rgba(30,58,138,0.1);
     background: white;
@@ -103,6 +104,7 @@
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 0;
+    min-width: 600px;
   }
   .nilai-table thead th {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
@@ -115,6 +117,9 @@
     padding: 1rem;
     white-space: nowrap;
     text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   .nilai-table tbody td {
     vertical-align: middle;
@@ -136,6 +141,18 @@
     border-radius: 50px;
     font-size: 0.8rem;
     border: 1px solid rgba(30,58,138,0.2);
+    display: inline-block;
+    min-width: 45px;
+  }
+  .badge-nilai-bar {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    display: inline-block;
+    min-width: 45px;
   }
 
   /* Tombol Input Nilai */
@@ -158,6 +175,21 @@
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(30,58,138,0.3);
+  }
+  .btn-edit-nilai {
+    background: transparent;
+    border: 1px solid #f59e0b;
+    color: #f59e0b;
+    border-radius: 50px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    transition: all 0.3s;
+    margin-left: 0.3rem;
+  }
+  .btn-edit-nilai:hover {
+    background: #f59e0b;
+    border-color: transparent;
+    color: white;
   }
 
   /* Modal */
@@ -246,6 +278,15 @@
     font-size: 1.1rem;
   }
 
+  /* Info tambahan */
+  .info-tugas {
+    font-size: 0.7rem;
+    font-weight: normal;
+    display: block;
+    color: rgba(255,255,255,0.8);
+    margin-top: 0.2rem;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
@@ -299,17 +340,26 @@
         <tr>
           <th>No</th>
           <th>NIM</th>
-          <th>Nama</th>
-          <% tipeList.forEach(tipe => { %>
-            <th><%= tipe %></th>
-          <% }) %>
+          <th>Nama Mahasiswa</th>
+          <% if (tugasList && tugasList.length > 0) { %>
+            <% tugasList.forEach(tugas => { %>
+              <th>
+                <%= tugas.judul %>
+                <small class="info-tugas">
+                  Deadline: <%= tugas.deadline ? new Date(tugas.deadline).toLocaleDateString('id-ID') : '-' %>
+                </small>
+              </th>
+            <% }) %>
+          <% } else { %>
+            <th>Belum ada tugas</th>
+          <% } %>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody>
         <% if (data.length === 0) { %>
           <tr>
-            <td colspan="<%= 3 + tipeList.length + 1 %>" class="text-center py-5">
+            <td colspan="<%= 3 + (tugasList ? tugasList.length : 1) + 1 %>" class="text-center py-5">
               <div class="empty-state">
                 <i class="bi bi-inbox"></i>
                 <p class="text-muted">Belum ada mahasiswa terdaftar di MK ini.</p>
@@ -321,21 +371,35 @@
             <tr>
               <td class="text-center fw-bold"><%= index + 1 %></td>
               <td><%= item.mahasiswa.nim %></td>
-              <td><%= item.mahasiswa.nama %></td>
-              <% tipeList.forEach(tipe => { 
-                const nilai = item.nilai[tipe];
-              %>
-                <td>
-                  <% if (nilai) { %>
-                    <span class="badge-primary"><%= nilai.nilai %></span>
-                  <% } else { %>
-                    <span class="text-muted">-</span>
-                  <% } %>
-                </td>
-              <% }) %>
-              <td>
-                <button class="btn-input" onclick="bukaModal('<%= item.mahasiswa.id %>', '<%= mk.id %>')">
-                  <i class="bi bi-pencil"></i> Input Nilai
+              <td class="text-start"><%= item.mahasiswa.nama %></td>
+              <% if (tugasList && tugasList.length > 0) { %>
+                <% tugasList.forEach(tugas => { 
+                  const nilaiData = item.nilai && item.nilai[tugas.id];
+                  const nilai = nilaiData ? nilaiData.nilai : null;
+                  const isRata = tugas.judul && tugas.judul.toLowerCase().includes('rata');
+                %>
+                  <td class="text-center">
+                    <% if (nilai !== null && nilai !== '-') { %>
+                      <span class="<%= isRata ? 'badge-nilai-bar' : 'badge-primary' %>">
+                        <%= typeof nilai === 'number' ? nilai.toFixed(2) : nilai %>
+                      </span>
+                      <button class="btn-edit-nilai" onclick="bukaModalEdit('<%= item.mahasiswa.id %>', '<%= mk.id %>', '<%= tugas.id %>', '<%= tugas.judul %>', <%= nilai %>)">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    <% } else { %>
+                      <span class="badge-primary" style="background:#f1f5f9; color:#64748b;">-</span>
+                      <button class="btn-edit-nilai" onclick="bukaModalEdit('<%= item.mahasiswa.id %>', '<%= mk.id %>', '<%= tugas.id %>', '<%= tugas.judul %>', null)">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    <% } %>
+                  </td>
+                <% }) %>
+              <% } else { %>
+                <td class="text-center text-muted">-</td>
+              <% } %>
+              <td class="text-center">
+                <button class="btn-input" onclick="bukaModalTambah('<%= item.mahasiswa.id %>', '<%= mk.id %>')">
+                  <i class="bi bi-plus-circle"></i> Tambah Nilai
                 </button>
               </td>
             </tr>
@@ -346,12 +410,12 @@
   </div>
 </div>
 
-<!-- Modal Input Nilai -->
+<!-- Modal Input Nilai (untuk menambah nilai baru) -->
 <div class="modal fade" id="nilaiModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Input Nilai</h5>
+        <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Nilai Baru</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="/dosen/nilai/input" id="nilaiForm">
@@ -359,17 +423,20 @@
         <input type="hidden" name="mahasiswaId" id="mahasiswaId">
         <div class="modal-body">
           <div class="mb-3">
-            <label for="tipe" class="form-label">Tipe Nilai</label>
-            <select class="form-select" id="tipe" name="tipe" required>
-              <option value="">Pilih Tipe</option>
-              <% tipeList.forEach(tipe => { %>
-                <option value="<%= tipe %>"><%= tipe %></option>
-              <% }) %>
+            <label for="tugasId" class="form-label">Pilih Tugas</label>
+            <select class="form-select" id="tugasId" name="tugasId" required>
+              <option value="">Pilih Tugas</option>
+              <% if (tugasList && tugasList.length > 0) { %>
+                <% tugasList.forEach(tugas => { %>
+                  <option value="<%= tugas.id %>"><%= tugas.judul %> (Deadline: <%= tugas.deadline ? new Date(tugas.deadline).toLocaleDateString('id-ID') : '-' %>)</option>
+                <% }) %>
+              <% } %>
             </select>
           </div>
           <div class="mb-3">
             <label for="nilai" class="form-label">Nilai (0-100)</label>
             <input type="number" class="form-control" id="nilai" name="nilai" min="0" max="100" step="0.01" required>
+            <small class="text-muted">Masukkan angka antara 0-100</small>
           </div>
         </div>
         <div class="modal-footer">
@@ -381,11 +448,56 @@
   </div>
 </div>
 
+<!-- Modal Edit Nilai (untuk mengedit nilai yang sudah ada) -->
+<div class="modal fade" id="editNilaiModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Nilai</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="/dosen/nilai/input" id="editNilaiForm">
+        <input type="hidden" name="mkId" id="editMkId">
+        <input type="hidden" name="mahasiswaId" id="editMahasiswaId">
+        <input type="hidden" name="tugasId" id="editTugasId">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tugas</label>
+            <p class="fw-bold" id="editTugasJudul"></p>
+          </div>
+          <div class="mb-3">
+            <label for="editNilai" class="form-label">Nilai (0-100)</label>
+            <input type="number" class="form-control" id="editNilai" name="nilai" min="0" max="100" step="0.01" required>
+            <small class="text-muted">Masukkan angka antara 0-100</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-primary">Update Nilai</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
-  function bukaModal(mahasiswaId, mkId) {
+  // Fungsi untuk membuka modal tambah nilai
+  function bukaModalTambah(mahasiswaId, mkId) {
     document.getElementById('mahasiswaId').value = mahasiswaId;
     document.getElementById('mkId').value = mkId;
+    document.getElementById('nilai').value = '';
+    document.getElementById('tugasId').value = '';
     new bootstrap.Modal(document.getElementById('nilaiModal')).show();
+  }
+  
+  // Fungsi untuk membuka modal edit nilai
+  function bukaModalEdit(mahasiswaId, mkId, tugasId, tugasJudul, currentNilai) {
+    document.getElementById('editMahasiswaId').value = mahasiswaId;
+    document.getElementById('editMkId').value = mkId;
+    document.getElementById('editTugasId').value = tugasId;
+    document.getElementById('editTugasJudul').textContent = tugasJudul;
+    document.getElementById('editNilai').value = currentNilai !== null ? currentNilai : '';
+    new bootstrap.Modal(document.getElementById('editNilaiModal')).show();
   }
 </script>
 

@@ -66,6 +66,7 @@ router.get('/', async (req, res) => {
         .where('tugasId', '==', tugas.id)
         .where('status', '==', 'dikumpulkan')
         .get();
+    
       pengumpulanBelumDinilai += pengumpulanSnapshot.size;
     }
 

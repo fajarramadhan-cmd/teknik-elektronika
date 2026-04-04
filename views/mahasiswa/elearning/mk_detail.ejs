@@ -1,7 +1,19 @@
 <%- include('../../partials/header') %>
 
+<%
+  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  const getFileIdFromUrl = (url) => {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  };
+%>
+
 <style>
-  /* ===== VARIABEL WARNA (sesuai navbar) ===== */
+  /* ===== VARIABEL WARNA ===== */
   :root {
     --primary-start: #1e3a8a;
     --primary-end: #3b82f6;
@@ -11,6 +23,8 @@
     --warning-text: #92400e;
     --success-bg: #d1fae5;
     --success-text: #065f46;
+    --info-bg: #dbeafe;
+    --info-text: #1e40af;
     --font-base: 16px;
   }
 
@@ -23,8 +37,8 @@
     background-color: #f8fafc;
   }
 
-  /* ===== HEADER MATA KULIAH ===== */
-  .mk-detail-header {
+  /* ===== HEADER TUGAS ===== */
+  .tugas-header {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-radius: 1.5rem;
     padding: 2rem;
@@ -34,7 +48,7 @@
     position: relative;
     overflow: hidden;
   }
-  .mk-detail-header::before {
+  .tugas-header::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -45,20 +59,20 @@
     border-radius: 50%;
     transform: rotate(25deg);
   }
-  .mk-detail-header h2 {
+  .tugas-header h2 {
     font-weight: 700;
     font-size: 1.8rem;
     margin-bottom: 0.5rem;
     position: relative;
     z-index: 1;
   }
-  .mk-detail-header p {
+  .tugas-header p {
     font-size: 1rem;
     opacity: 0.9;
     position: relative;
     z-index: 1;
   }
-  .mk-detail-header .btn-light {
+  .tugas-header .btn-light {
     background: white;
     border-radius: 50px;
     padding: 0.5rem 1.5rem;
@@ -71,13 +85,13 @@
     text-decoration: none;
     display: inline-block;
   }
-  .mk-detail-header .btn-light:hover {
+  .tugas-header .btn-light:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     color: var(--primary-dark);
   }
 
-  /* ===== CARD UMUM ===== */
+  /* ===== INFO CARD ===== */
   .info-card {
     background: white;
     border-radius: 1.5rem;
@@ -99,98 +113,13 @@
     color: var(--primary-start);
   }
 
-  /* ===== BADGE DOSEN ===== */
-  .dosen-badge {
-    background: var(--primary-light);
-    color: var(--primary-start);
-    padding: 0.4rem 1.2rem;
-    border-radius: 50px;
-    display: inline-block;
-    margin-right: 0.5rem;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    font-size: 0.9rem;
+  /* ===== DEADLINE CARD ===== */
+  .deadline-card {
+    border-left: 5px solid #dc3545;
+    background: #fff5f5;
   }
 
-  /* ===== PROGRESS BAR ===== */
-  .progress-lg {
-    height: 1.2rem;
-    border-radius: 1rem;
-    background-color: #e9ecef;
-  }
-  .progress-bar {
-    background: linear-gradient(90deg, var(--primary-start), var(--primary-end));
-    border-radius: 1rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* ===== TUGAS CARD ===== */
-  .tugas-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .tugas-item {
-    background: #f9fafc;
-    border-radius: 1.2rem;
-    padding: 1.2rem;
-    transition: all 0.3s;
-    border: 1px solid rgba(30,58,138,0.1);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .tugas-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 8px 20px rgba(30,58,138,0.1);
-    border-color: rgba(30,58,138,0.2);
-    background: white;
-  }
-  .tugas-item h6 {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #1e293b;
-    margin-bottom: 0.25rem;
-  }
-  .tugas-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    font-size: 0.85rem;
-    color: #64748b;
-  }
-  .tugas-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin-top: 0.5rem;
-  }
-  .btn-detail {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.4rem 1.2rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    box-shadow: 0 4px 10px rgba(30,58,138,0.2);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-  }
-  .btn-detail:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(30,58,138,0.4);
-    color: white;
-  }
+  /* ===== BADGE STATUS ===== */
   .badge-status {
     padding: 0.3rem 1rem;
     border-radius: 50px;
@@ -204,212 +133,333 @@
     background: var(--warning-bg);
     color: var(--warning-text);
   }
-  .badge-selesai {
+  .badge-dikumpulkan {
     background: var(--success-bg);
     color: var(--success-text);
   }
-
-  /* ===== TABEL MATERI (MINIMALIS) ===== */
-  .table-responsive {
-    border-radius: 1rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-  }
-  .materi-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .materi-table th {
-    background: #f1f5f9;
-    color: #1e293b;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: 1px solid #e2e8f0;
-    padding: 0.7rem 1rem;
-    white-space: nowrap;
-  }
-  .materi-table td {
-    vertical-align: middle;
-    padding: 0.7rem 1rem;
-    border: 1px solid #e2e8f0;
-    font-size: 0.9rem;
-  }
-  .materi-table tbody tr:hover {
-    background-color: #f8fafc;
+  .badge-dinilai {
+    background: var(--info-bg);
+    color: var(--info-text);
   }
 
-  /* ===== TOMBOL UNDUH GRADIEN ===== */
-  .btn-download {
+  /* ===== TOMBOL GRADIEN ===== */
+  .btn-gradient {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 500;
-    padding: 0.3rem 1rem;
+    padding: 0.6rem 2rem;
     border-radius: 50px;
     transition: all 0.3s;
-    box-shadow: 0 4px 8px rgba(30,58,138,0.2);
+    box-shadow: 0 5px 15px rgba(30,58,138,0.2);
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
+    display: inline-block;
+    text-align: center;
+    font-size: 0.95rem;
   }
-  .btn-download:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(30,58,138,0.3);
+  .btn-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(30,58,138,0.4);
     color: white;
+  }
+  .btn-gradient.btn-sm {
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+  }
+
+  .btn-outline-gradient {
+    background: transparent;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
+  }
+  .btn-outline-gradient:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+  }
+
+  .btn-warning {
+    background: #ffc107;
+    border: none;
+    color: #212529;
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
+  }
+  .btn-warning:hover {
+    background: #e0a800;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255,193,7,0.4);
+    color: #212529;
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+  }
+  .btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(220,53,69,0.4);
+    color: white;
+  }
+
+  /* ===== FILE INFO ===== */
+  .file-info {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-top: 1rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* ===== NILAI DISPLAY ===== */
+  .nilai-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-start);
+  }
+
+  /* ===== MODAL ===== */
+  .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+    padding: 1.2rem 1.5rem;
+  }
+  .modal-header .btn-close {
+    background: rgba(255,255,255,0.8);
+    opacity: 0.8;
+    transition: all 0.2s;
+  }
+  .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+  }
+  .modal-body {
+    padding: 1.5rem;
+  }
+  .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1rem 1.5rem;
+  }
+  .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+  .form-control {
+    border-radius: 0.9rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid #cbd5e1;
+    transition: all 0.3s;
+  }
+  .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.2rem rgba(30,58,138,0.25);
   }
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
-    .mk-detail-header { padding: 1.5rem; }
-    .mk-detail-header h2 { font-size: 1.6rem; }
+    .tugas-header { padding: 1.5rem; }
+    .tugas-header h2 { font-size: 1.6rem; }
+    .tugas-header p { font-size: 0.95rem; }
+    .tugas-header .btn-light { padding: 0.4rem 1.2rem; font-size: 0.9rem; }
+    .info-card { padding: 1.2rem; }
+    .info-card h5 { font-size: 1.1rem; }
   }
+
   @media (max-width: 576px) {
     html { font-size: 14px; }
-    .tugas-item { flex-direction: column; align-items: flex-start; }
-    .tugas-actions { align-self: flex-start; }
+    .tugas-header h2 { font-size: 1.4rem; }
+    .btn-gradient, .btn-outline-gradient, .btn-warning, .btn-danger { padding: 0.5rem 1.5rem; }
+  }
+
+  @media (max-width: 400px) {
+    html { font-size: 13px; }
+    .tugas-header h2 { font-size: 1.2rem; }
   }
 </style>
 
 <div class="container mt-4">
-  <!-- Header MK -->
-  <div class="mk-detail-header d-flex flex-wrap justify-content-between align-items-center">
+  <!-- Header Tugas -->
+  <div class="tugas-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
-      <h2><%= mk.kode %> - <%= mk.nama %></h2>
+      <h2><%= tugas.judul %></h2>
       <p class="mb-0">
-        <i class="bi bi-book me-2"></i><%= mk.sks %> SKS |
-        <i class="bi bi-calendar me-2"></i>Semester <%= mk.semester || '-' %> |
-        <i class="bi bi-people me-2"></i><%= jumlahMahasiswa || 0 %> mahasiswa terdaftar
+        <i class="bi bi-book me-2"></i><%= mk.kode %> - <%= mk.nama %> |
+        <i class="bi bi-tag me-2"></i><%= tugas.tipe %>
       </p>
     </div>
-    <a href="/mahasiswa/elearning" class="btn-light mt-2 mt-sm-0">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+    <a href="/mahasiswa/elearning/mk/<%= mk.id %>" class="btn-light mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left me-2"></i>Kembali ke MK
     </a>
   </div>
 
-  <!-- Jadwal & Dosen -->
-  <div class="info-card">
-    <div class="row g-4">
-      <div class="col-md-6">
-        <h5><i class="bi bi-clock"></i> Jadwal Kuliah</h5>
-        <p class="text-muted mb-0"><%= jadwal || 'Belum diatur' %></p>
-      </div>
-      <div class="col-md-6">
-        <h5><i class="bi bi-people"></i> Dosen Pengampu</h5>
-        <% if (dosenList && dosenList.length > 0) { %>
-          <div>
-            <% dosenList.forEach(d => { %>
-              <span class="dosen-badge"><%= d.nama %></span>
-            <% }) %>
+  <div class="row">
+    <!-- Kolom Kiri: Detail Tugas -->
+    <div class="col-lg-8">
+      <div class="info-card">
+        <h5><i class="bi bi-info-circle"></i> Deskripsi Tugas</h5>
+        <p><%= tugas.deskripsi || 'Tidak ada deskripsi.' %></p>
+
+        <% if (tugas.fileUrl) { %>
+          <div class="file-info">
+            <i class="bi bi-file-earmark-text me-2"></i>File Soal: 
+            <a href="<%= tugas.fileUrl %>" target="_blank" class="btn-outline-gradient btn-sm ms-2">
+              <i class="bi bi-download"></i> Unduh
+            </a>
           </div>
-        <% } else { %>
-          <p class="text-muted mb-0">-</p>
         <% } %>
       </div>
     </div>
-  </div>
 
-  <!-- Progress Perkuliahan -->
-  <div class="info-card">
-    <h5><i class="bi bi-bar-chart-steps"></i> Progress Perkuliahan</h5>
-    <%
-      const totalPertemuan = 16;
-      const selesaiCount = materi ? materi.filter(m => m.status === 'selesai').length : 0;
-      const persentase = totalPertemuan > 0 ? (selesaiCount / totalPertemuan * 100) : 0;
-    %>
-    <div class="progress progress-lg mb-2">
-      <div class="progress-bar" role="progressbar" style="width: <%= persentase %>%;" 
-           aria-valuenow="<%= persentase %>" aria-valuemin="0" aria-valuemax="100">
-        <%= Math.round(persentase) %>%
+    <!-- Kolom Kanan: Deadline & Status -->
+    <div class="col-lg-4">
+      <div class="info-card deadline-card">
+        <h5><i class="bi bi-calendar-event"></i> Deadline</h5>
+        <p class="mb-1"><%= new Date(tugas.deadline).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) %></p>
+        <% if (deadlineLewat) { %>
+          <span class="badge-status" style="background:#fee2e2; color:#991b1b;">Deadline telah lewat</span>
+        <% } else { %>
+          <span class="badge-status" style="background:#d1fae5; color:#065f46;">Deadline masih aktif</span>
+        <% } %>
       </div>
-    </div>
-    <p class="text-muted small"><%= selesaiCount %> dari <%= totalPertemuan %> pertemuan telah dilaksanakan.</p>
-  </div>
 
-  <!-- Daftar Tugas -->
-  <div class="info-card">
-    <h5><i class="bi bi-file-earmark-text"></i> Tugas & Deadline</h5>
-    <% if (!tugasList || tugasList.length === 0) { %>
-      <p class="text-muted text-center py-4">Belum ada tugas untuk mata kuliah ini.</p>
-    <% } else { %>
-      <div class="tugas-list">
-        <% tugasList.forEach(t => { %>
-          <div class="tugas-item">
-            <div style="flex:1">
-              <h6><%= t.judul %></h6>
-              <div class="tugas-meta">
-                <span><i class="bi bi-calendar me-1"></i> <%= new Date(t.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
-                <span><i class="bi bi-tag me-1"></i> <%= t.tipe || 'Tugas' %></span>
-              </div>
-            </div>
-            <div class="tugas-actions">
-              <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-detail">
-                <i class="bi bi-eye"></i> Detail
-              </a>
-              <% if (t.pengumpulan) { %>
-                <span class="badge-status badge-selesai">
-                  <i class="bi bi-check-circle"></i> Sudah
-                </span>
-                <% if (t.pengumpulan.nilai) { %>
-                  <span class="badge-status badge-selesai">Nilai: <%= t.pengumpulan.nilai %></span>
-                <% } %>
-              <% } else { %>
-                <span class="badge-status badge-belum">
-                  <i class="bi bi-hourglass"></i> Belum
-                </span>
-              <% } %>
-            </div>
-          </div>
-        <% }) %>
-      </div>
-    <% } %>
-  </div>
-
-  <!-- Materi Perkuliahan (Tabel) -->
-  <div class="info-card">
-    <h5><i class="bi bi-list-task"></i> Materi Perkuliahan</h5>
-    <div class="table-responsive">
-      <table class="table materi-table">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Topik</th>
-            <th>Status</th>
-            <th>Materi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (!materi || materi.length === 0) { %>
-            <tr><td colspan="4" class="text-center py-4">Belum ada materi yang diinput dosen.</td></tr>
-          <% } else { %>
-            <% materi.forEach((m, index) => { %>
-              <tr>
-                <td class="text-center fw-bold"><%= index + 1 %></td>
-                <td><%= m.topik || '-' %></td>
-                <td>
-                  <span class="badge-status <%= m.status === 'selesai' ? 'badge-selesai' : 'badge-belum' %>">
-                    <%= m.status %>
-                  </span>
-                </td>
-                <td>
-                  <% if (m.fileUrl) { %>
-                    <a href="<%= m.fileUrl %>" target="_blank" class="btn-download">
-                      <i class="bi bi-download"></i> Unduh
-                    </a>
-                  <% } else { %>
-                    <span class="text-muted">-</span>
-                  <% } %>
-                </td>
-              </tr>
-            <% }) %>
+      <div class="info-card">
+        <h5><i class="bi bi-check-circle"></i> Status Pengumpulan</h5>
+        <% if (pengumpulan) { %>
+          <span class="badge-status badge-dikumpulkan">
+            <i class="bi bi-check-circle"></i> Sudah dikumpulkan
+          </span>
+          <p class="mt-3 mb-1">
+            <i class="bi bi-clock me-2"></i>
+            <%= new Date(pengumpulan.submittedAt).toLocaleString('id-ID') %>
+          </p>
+          <% if (pengumpulan.revisionCount > 0) { %>
+            <p class="text-muted small">
+              <i class="bi bi-arrow-repeat me-1"></i>
+              Revisi ke-<%= pengumpulan.revisionCount %>
+            </p>
           <% } %>
-        </tbody>
-      </table>
+          <div class="file-info">
+            <i class="bi bi-file-earmark me-2"></i>File Jawaban:
+            <a href="<%= pengumpulan.fileUrl %>" target="_blank" class="btn-outline-gradient btn-sm ms-2">
+              <i class="bi bi-eye"></i> Lihat
+            </a>
+          </div>
+          <% if (pengumpulan.nilai !== null) { %>
+            <hr>
+            <h5 class="fw-bold mb-2">Nilai & Komentar</h5>
+            <div class="nilai-display"><%= pengumpulan.nilai %></div>
+            <% if (pengumpulan.komentar) { %>
+              <p class="mt-2"><i class="bi bi-chat"></i> <%= pengumpulan.komentar %></p>
+            <% } %>
+          <% } %>
+        <% } else { %>
+          <span class="badge-status badge-belum">
+            <i class="bi bi-hourglass"></i> Belum dikumpulkan
+          </span>
+        <% } %>
+      </div>
+
+      <!-- Form Upload (hanya jika belum dikumpul dan deadline belum lewat) -->
+      <% if (!pengumpulan && !deadlineLewat) { %>
+        <div class="info-card">
+          <h5><i class="bi bi-cloud-upload"></i> Kumpulkan Tugas</h5>
+          <form method="POST" action="/mahasiswa/elearning/tugas/<%= tugas.id %>/kumpul" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="file" class="form-label">Pilih file (PDF, DOC, ZIP)</label>
+              <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx,.zip" required>
+              <small class="text-muted">Maksimal 10MB</small>
+            </div>
+            <button type="submit" class="btn-gradient w-100">Upload Tugas</button>
+          </form>
+        </div>
+      <% } %>
+
+      <!-- Tombol Revisi (hanya jika sudah kumpul, belum dinilai, dan deadline belum lewat) -->
+      <% if (pengumpulan && !deadlineLewat && !pengumpulan.nilai) { %>
+        <div class="info-card">
+          <h5><i class="bi bi-arrow-repeat"></i> Revisi Jawaban</h5>
+          <p class="text-muted small">Anda dapat mengganti file jawaban Anda sebelum deadline.</p>
+          <button type="button" class="btn-warning w-100" data-bs-toggle="modal" data-bs-target="#revisiModal">
+            <i class="bi bi-arrow-repeat me-2"></i> Revisi Jawaban
+          </button>
+        </div>
+      <% } %>
+
+      <!-- Tombol Hapus (jika sudah dikumpul, belum dinilai, dan deadline belum lewat) -->
+      <% if (pengumpulan && !deadlineLewat && !pengumpulan.nilai) { %>
+        <div class="info-card">
+          <form method="POST" action="/mahasiswa/elearning/tugas/<%= tugas.id %>/hapus" onsubmit="return confirm('Yakin ingin menghapus pengumpulan? File jawaban akan dihapus.')">
+            <button type="submit" class="btn-danger w-100">
+              <i class="bi bi-trash me-2"></i> Hapus Pengumpulan
+            </button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REVISI TUGAS -->
+<div class="modal fade" id="revisiModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-arrow-repeat me-2"></i>Revisi Jawaban Tugas
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="/mahasiswa/elearning/tugas/<%= tugas.id %>/revisi" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Perhatian!</strong> Revisi akan mengganti file jawaban Anda sebelumnya.
+            File lama akan dihapus dan diganti dengan file baru.
+          </div>
+          <div class="mb-3">
+            <label for="revisiFile" class="form-label">File Jawaban Baru</label>
+            <input type="file" class="form-control" id="revisiFile" name="file" accept=".pdf,.doc,.docx,.zip" required>
+            <small class="text-muted">Maksimal 10MB, format PDF/DOC/ZIP</small>
+          </div>
+          <div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-2"></i>
+            Setelah revisi, nilai Anda (jika sudah ada) akan direset dan perlu dinilai ulang oleh dosen.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-warning">
+            <i class="bi bi-arrow-repeat me-2"></i>Upload Revisi
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

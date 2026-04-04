@@ -14,6 +14,7 @@ const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const { saveNilai } = require('../../helpers/nilaiHelper');
 
 // Import sub‑modul
 const laporanMagangRouter = require('./laporanMagang');
@@ -21,8 +22,7 @@ const seminarRouter = require('./seminar');
 const dashboardRouter = require('./dashboard');
 const magangRouter = require('./magang');
 const biodataRouter = require('./biodata');
-const tugasRouter = require('./tugas');
-const elearningRouter = require('./elearning');
+
 const mkRouter = require('./mk');
 const kurikulumRouter = require('./kurikulum');
 const nilaiRouter = require('./nilai');
@@ -95,8 +95,8 @@ router.use('/laporan-magang', laporanMagangRouter);
 router.use('/seminar', seminarRouter);
 router.use('/magang', magangRouter);
 router.use('/biodata', biodataRouter);
-router.use('/tugas', tugasRouter);
-router.use('/elearning', elearningRouter);
+
+
 router.use('/mk', mkRouter);
 router.use('/kurikulum', kurikulumRouter);
 router.use('/nilai', nilaiRouter);
@@ -238,43 +238,105 @@ router.post('/tugas', upload.single('file'), async (req, res) => {
 router.get('/tugas/:id', async (req, res) => {
   try {
     const tugasDoc = await db.collection('tugas').doc(req.params.id).get();
-    if (!tugasDoc.exists) return res.status(404).send('Tugas tidak ditemukan');
+    if (!tugasDoc.exists) {
+      return res.status(404).render('error', { 
+        title: 'Tidak Ditemukan', 
+        message: 'Tugas tidak ditemukan' 
+      });
+    }
+    
     const tugas = { id: tugasDoc.id, ...tugasDoc.data() };
 
+    // Pastikan tugas ini milik dosen yang login
+    if (tugas.dosenId !== req.dosen.id) {
+      return res.status(403).render('error', { 
+        title: 'Akses Ditolak', 
+        message: 'Anda tidak berhak mengakses tugas ini' 
+      });
+    }
+
+    // Ambil data MK
+    let mkKode = '', mkNama = '';
+    if (tugas.mkId) {
+      const mkDoc = await db.collection('mataKuliah').doc(tugas.mkId).get();
+      if (mkDoc.exists) {
+        mkKode = mkDoc.data().kode;
+        mkNama = mkDoc.data().nama;
+      }
+    }
+    tugas.mkKode = mkKode;
+    tugas.mkNama = mkNama;
+
+    // Ambil daftar mahasiswa yang terdaftar di MK ini
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('mkId', '==', tugas.mkId)
       .where('status', '==', 'active')
       .get();
-
+    
     const mahasiswaIds = enrollmentSnapshot.docs.map(d => d.data().userId);
+
+    // ✅ AMBIL SEMUA NILAI DARI COLLECTION 'nilai' SEKALIGUS
+    const nilaiSnapshot = await db.collection('nilai')
+      .where('mkId', '==', tugas.mkId)
+      .where('tipe', '==', tugas.judul)
+      .get();
+    
+    // Buat map nilai berdasarkan mahasiswaId
+    const nilaiMap = new Map();
+    nilaiSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      nilaiMap.set(data.mahasiswaId, {
+        nilai: data.nilai,
+        komentar: data.komentar || '',
+        updatedAt: data.updatedAt
+      });
+    });
+
     const mahasiswaList = [];
     for (const uid of mahasiswaIds) {
       const userDoc = await db.collection('users').doc(uid).get();
       if (userDoc.exists) {
-        const m = userDoc.data();
+        const userData = userDoc.data();
+        
+        // Cek pengumpulan (file jawaban)
         const pengumpulanSnapshot = await db.collection('pengumpulan')
           .where('tugasId', '==', tugas.id)
           .where('mahasiswaId', '==', uid)
-          .limit(1)
           .get();
-        const pengumpulan = pengumpulanSnapshot.empty ? null : { id: pengumpulanSnapshot.docs[0].id, ...pengumpulanSnapshot.docs[0].data() };
+        
+        const pengumpulan = pengumpulanSnapshot.empty ? null : { 
+          id: pengumpulanSnapshot.docs[0].id, 
+          ...pengumpulanSnapshot.docs[0].data() 
+        };
+        
+        // ✅ AMBIL NILAI DARI nilaiMap (bukan dari pengumpulan)
+        const nilaiData = nilaiMap.get(uid);
+        
         mahasiswaList.push({
           id: uid,
-          nim: m.nim,
-          nama: m.nama,
-          pengumpulan
+          nim: userData.nim,
+          nama: userData.nama,
+          pengumpulan: pengumpulan ? {
+            ...pengumpulan,
+            nilai: nilaiData ? nilaiData.nilai : pengumpulan.nilai, // Prioritaskan dari nilaiMap
+            komentar: nilaiData ? nilaiData.komentar : pengumpulan.komentar
+          } : null,
+          nilai: nilaiData ? nilaiData.nilai : null  // Tambahkan field nilai terpisah
         });
       }
     }
 
     res.render('dosen/tugas_detail', {
-      title: tugas.judul,
+      title: `Tugas: ${tugas.judul}`,
       tugas,
       mahasiswaList
     });
   } catch (error) {
     console.error('Error detail tugas:', error);
-    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat detail tugas' });
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal memuat detail tugas: ' + error.message 
+    });
   }
 });
 
@@ -282,32 +344,77 @@ router.get('/tugas/:id', async (req, res) => {
 router.post('/pengumpulan/nilai', async (req, res) => {
   try {
     const { pengumpulanId, nilai, komentar } = req.body;
-    if (!pengumpulanId) {
-      return res.status(400).send('ID pengumpulan tidak ditemukan');
+    
+    if (!pengumpulanId || nilai === undefined) {
+      return res.status(400).send('Data tidak lengkap');
     }
 
+    // 1. Ambil data pengumpulan
     const pengumpulanDoc = await db.collection('pengumpulan').doc(pengumpulanId).get();
     if (!pengumpulanDoc.exists) {
       return res.status(404).send('Pengumpulan tidak ditemukan');
     }
-    const tugasId = pengumpulanDoc.data().tugasId;
+    
+    const pengumpulan = pengumpulanDoc.data();
+    const { mahasiswaId, tugasId } = pengumpulan;
 
-    await db.collection('pengumpulan').doc(pengumpulanId).update({
+    // 2. Ambil data tugas
+    const tugasDoc = await db.collection('tugas').doc(tugasId).get();
+    if (!tugasDoc.exists) {
+      return res.status(404).send('Tugas tidak ditemukan');
+    }
+    const tugas = tugasDoc.data();
+
+    // 3. UPDATE collection 'pengumpulan'
+    await pengumpulanDoc.ref.update({
       nilai: parseFloat(nilai),
-      komentar,
+      komentar: komentar || '',
       status: 'dinilai',
       dinilaiPada: new Date().toISOString()
     });
 
+    // 4. UPDATE atau CREATE di collection 'nilai'
+    const existingNilai = await db.collection('nilai')
+      .where('mahasiswaId', '==', mahasiswaId)
+      .where('mkId', '==', tugas.mkId)
+      .where('tipe', '==', tugas.judul)
+      .limit(1)
+      .get();
+
+    const nilaiAngka = parseFloat(nilai);
+    const now = new Date().toISOString();
+
+    if (existingNilai.empty) {
+      // Buat baru di collection nilai
+      await db.collection('nilai').add({
+        mahasiswaId,
+        mkId: tugas.mkId,
+        tipe: tugas.judul,
+        nilai: nilaiAngka,
+        komentar: komentar || '',
+        createdAt: now,
+        updatedAt: now
+      });
+    } else {
+      // Update existing di collection nilai
+      await existingNilai.docs[0].ref.update({
+        nilai: nilaiAngka,
+        komentar: komentar || '',
+        updatedAt: now
+      });
+    }
+
+    console.log(`✅ Nilai ${nilai} untuk ${mahasiswaId} pada tugas ${tugasId} berhasil disimpan di kedua collection`);
+
+    // Redirect kembali ke halaman detail tugas
     res.redirect(`/dosen/tugas/${tugasId}`);
+    
   } catch (error) {
     console.error('Error memberi nilai:', error);
-    res.status(500).render('error', {
-      title: 'Error',
-      message: 'Gagal memberi nilai'
-    });
+    res.status(500).send('Gagal memberi nilai: ' + error.message);
   }
 });
+
 // ============================================================================
 // HAPUS TUGAS
 // ============================================================================

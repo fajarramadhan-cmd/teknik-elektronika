@@ -6,7 +6,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const session = require('express-session');
+const session = require('express-session'); // ✅ CUKUP SEKALI
 const { verifyToken } = require('./middleware/auth');
 
 const app = express();
@@ -14,13 +14,16 @@ const app = express();
 // ============================================================================
 // MIDDLEWARE GLOBAL
 // ============================================================================
-// Cookie parser harus sebelum router dan session
+
+// Cookie parser
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Konfigurasi session (untuk keperluan lain, jika diperlukan)
+// ============================================================================
+// SESSION CONFIGURATION (HANYA SEKALI)
+// ============================================================================
 app.use(session({
   secret: process.env.SESSION_SECRET || 'rahasia-super-secret',
   resave: false,
@@ -31,7 +34,15 @@ app.use(session({
   }
 }));
 
-// Set view engine
+// ✅ Make session available in all views (HARUS SETELAH app.use(session(...)))
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+
+// ============================================================================
+// VIEW ENGINE
+// ============================================================================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -39,13 +50,13 @@ app.set('views', path.join(__dirname, 'views'));
 // ROUTES PUBLIK
 // ============================================================================
 const landingRoutes = require('./routes/landing');
-app.use('/', landingRoutes); // Landing page dan halaman publik lainnya
+app.use('/', landingRoutes);
 
 // Auth routes
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
-// API untuk mendapatkan data user yang login (digunakan di form KRS statis)
+// API untuk mendapatkan data user yang login
 app.get('/api/current-user', verifyToken, (req, res) => {
   res.json({
     nama: req.user.nama || '',
@@ -56,40 +67,50 @@ app.get('/api/current-user', verifyToken, (req, res) => {
 // ============================================================================
 // ROUTES MAHASISWA
 // ============================================================================
-const adminLaporanMagangRouter = require('./routes/admin/elkLibrary');
-app.use('/admin/laporan-magang', adminLaporanMagangRouter);
 const mahasiswaRoutes = require('./routes/mahasiswa/index');
 app.use('/mahasiswa', mahasiswaRoutes);
-// Rute dosen untuk upload artikel
-const dosenArtikelRouter = require('./routes/dosen/artikel');
-app.use('/dosen/artikel', dosenArtikelRouter);
-// Rute admin untuk kelola elk library
-const adminElkLibraryRouter = require('./routes/admin/elkLibrary');
-app.use('/admin/elk-library', adminElkLibraryRouter);
-// Route untuk halaman panduan
-app.get('/panduan', (req, res) => {
-  res.render('landing/panduan', { title: 'Panduan Penggunaan' });
-});
-// Rute publik elk library (sudah ada)
-const elkLibraryRouter = require('./routes/elkLibrary');
-app.use('/elk-library', elkLibraryRouter);
-const dosenRouter = require('./routes/dosen');
-app.use('/dosen', dosenRouter);
-const mahasiswaKalenderRouter = require('./routes/mahasiswa/kalender');
-app.use('/mahasiswa/kalender', mahasiswaKalenderRouter);
-const dosenKalenderRouter = require('./routes/dosen/kalender');
-app.use('/dosen/kalender', dosenKalenderRouter);
+
 // ============================================================================
 // ROUTES DOSEN
 // ============================================================================
 const dosenRoutes = require('./routes/dosen/index');
 app.use('/dosen', dosenRoutes);
 
+// Rute dosen untuk upload artikel
+const dosenArtikelRouter = require('./routes/dosen/artikel');
+app.use('/dosen/artikel', dosenArtikelRouter);
+
+// Rute dosen kalender
+const dosenKalenderRouter = require('./routes/dosen/kalender');
+app.use('/dosen/kalender', dosenKalenderRouter);
+
 // ============================================================================
 // ROUTES ADMIN
 // ============================================================================
 const adminRoutes = require('./routes/admin/index');
 app.use('/admin', adminRoutes);
+
+// Admin laporan magang
+const adminLaporanMagangRouter = require('./routes/admin/elkLibrary');
+app.use('/admin/laporan-magang', adminLaporanMagangRouter);
+
+// Admin elk library
+const adminElkLibraryRouter = require('./routes/admin/elkLibrary');
+app.use('/admin/elk-library', adminElkLibraryRouter);
+
+// ============================================================================
+// ROUTES UMUM
+// ============================================================================
+const elkLibraryRouter = require('./routes/elkLibrary');
+app.use('/elk-library', elkLibraryRouter);
+
+const mahasiswaKalenderRouter = require('./routes/mahasiswa/kalender');
+app.use('/mahasiswa/kalender', mahasiswaKalenderRouter);
+
+// Route panduan
+app.get('/panduan', (req, res) => {
+  res.render('landing/panduan', { title: 'Panduan Penggunaan' });
+});
 
 // ============================================================================
 // DASHBOARD REDIRECT (setelah login)
@@ -115,7 +136,7 @@ app.use((req, res) => {
 });
 
 // ============================================================================
-// ERROR HANDLER (untuk menangani error di semua route)
+// ERROR HANDLER
 // ============================================================================
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.stack);

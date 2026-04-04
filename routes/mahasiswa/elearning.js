@@ -1,6 +1,7 @@
 /**
  * routes/mahasiswa/elearning.js
  * Modul ELK‑Learning Mahasiswa: jadwal kuliah, tugas, kumpul tugas
+ * REVISI: Menambah cek duplikasi, validasi deadline, dan fitur revisi
  */
 
 const express = require('express');
@@ -138,16 +139,11 @@ async function getOrCreateSubFolder(parentId, name) {
  * @returns {Promise<string>} ID folder tempat menyimpan jawaban
  */
 async function getOrCreateJawabanFolder(mk, nim, tahunAjaran) {
-  // 1. Folder "Tugas" di dalam Data WEB
   const tugasFolderId = await getOrCreateSubFolder(DATA_WEB_FOLDER_ID, 'Tugas');
-  // 2. Folder tahun ajaran
   const tahunFolder = await getOrCreateSubFolder(tugasFolderId, tahunAjaran);
-  // 3. Folder mata kuliah berdasarkan NAMA (bukan kode) - sanitasi nama
   const sanitizedNamaMK = sanitizeName(mk.nama);
   const mkFolder = await getOrCreateSubFolder(tahunFolder, sanitizedNamaMK);
-  // 4. Folder "Jawaban"
   const jawabanFolder = await getOrCreateSubFolder(mkFolder, 'Jawaban');
-  // 5. Folder NIM mahasiswa
   const nimFolder = await getOrCreateSubFolder(jawabanFolder, nim);
   return nimFolder;
 }
@@ -160,7 +156,6 @@ router.get('/', async (req, res) => {
   try {
     const mkList = await getMataKuliahDiambil(req.user.id);
     
-    // Tambahkan jumlah mahasiswa untuk setiap MK
     for (let mk of mkList) {
       const countSnapshot = await db.collection('enrollment')
         .where('mkId', '==', mk.id)
@@ -188,7 +183,6 @@ router.get('/mk/:id', async (req, res) => {
     if (!mkDoc.exists) return res.status(404).send('Mata kuliah tidak ditemukan');
     const mk = { id: mkId, ...mkDoc.data() };
 
-    // Verifikasi mahasiswa terdaftar di MK ini
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('userId', '==', req.user.id)
       .where('mkId', '==', mkId)
@@ -198,10 +192,7 @@ router.get('/mk/:id', async (req, res) => {
       return res.status(403).send('Anda tidak terdaftar di mata kuliah ini');
     }
 
-    // Jadwal
     const jadwal = mk.jadwal || 'Jadwal belum diatur';
-
-    // Materi pertemuan
     const materi = mk.materi || [];
     const pertemuanList = [];
     for (let i = 1; i <= 16; i++) {
@@ -215,7 +206,6 @@ router.get('/mk/:id', async (req, res) => {
       });
     }
 
-    // Dosen pengampu
     const dosenList = [];
     if (mk.dosenIds && mk.dosenIds.length > 0) {
       for (const dId of mk.dosenIds) {
@@ -226,7 +216,6 @@ router.get('/mk/:id', async (req, res) => {
       }
     }
 
-    // Hitung jumlah mahasiswa terdaftar (aktif)
     const countSnapshot = await db.collection('enrollment')
       .where('mkId', '==', mkId)
       .where('status', '==', 'active')
@@ -234,7 +223,6 @@ router.get('/mk/:id', async (req, res) => {
       .get();
     const jumlahMahasiswa = countSnapshot.data().count;
 
-    // Tugas
     const tugasSnapshot = await db.collection('tugas')
       .where('mkId', '==', mkId)
       .orderBy('deadline', 'asc')
@@ -242,7 +230,6 @@ router.get('/mk/:id', async (req, res) => {
     const tugasList = [];
     for (const doc of tugasSnapshot.docs) {
       const tugas = { id: doc.id, ...doc.data() };
-      // Cek status pengumpulan
       const pengumpulan = await getPengumpulan(tugas.id, req.user.id);
       tugas.pengumpulan = pengumpulan;
       tugasList.push(tugas);
@@ -265,19 +252,14 @@ router.get('/mk/:id', async (req, res) => {
     });
   }
 });
+
 // ============================================================================
-// TUGAS AKTIF (daftar semua tugas yang masih bisa dikerjakan)
+// TUGAS AKTIF
 // ============================================================================
 
-/**
- * GET /mahasiswa/elearning/tugas-aktif
- * Menampilkan daftar tugas aktif dari semua MK yang diambil
- */
 router.get('/tugas-aktif', async (req, res) => {
   try {
     const userId = req.user.id;
-
-    // 1. Ambil semua mata kuliah yang diambil (dari enrollment aktif)
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('userId', '==', userId)
       .where('status', '==', 'active')
@@ -287,7 +269,6 @@ router.get('/tugas-aktif', async (req, res) => {
     const now = new Date().toISOString();
     const tugasList = [];
 
-    // 2. Untuk setiap MK, ambil tugas dengan deadline > sekarang
     for (const mkId of mkIds) {
       const tugasSnapshot = await db.collection('tugas')
         .where('mkId', '==', mkId)
@@ -297,7 +278,6 @@ router.get('/tugas-aktif', async (req, res) => {
 
       for (const doc of tugasSnapshot.docs) {
         const tugas = { id: doc.id, ...doc.data() };
-        // Ambil data MK (kode dan nama)
         const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
         if (mkDoc.exists) {
           tugas.mkKode = mkDoc.data().kode;
@@ -306,14 +286,12 @@ router.get('/tugas-aktif', async (req, res) => {
           tugas.mkKode = '-';
           tugas.mkNama = '-';
         }
-        // Cek status pengumpulan
         const pengumpulan = await getPengumpulan(tugas.id, userId);
         tugas.pengumpulan = pengumpulan;
         tugasList.push(tugas);
       }
     }
 
-    // Urutkan berdasarkan deadline (terdekat dulu)
     tugasList.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
     res.render('mahasiswa/elearning/tugas_aktif', {
@@ -329,8 +307,9 @@ router.get('/tugas-aktif', async (req, res) => {
     });
   }
 });
+
 // ============================================================================
-// DETAIL TUGAS & KUMPUL TUGAS
+// DETAIL TUGAS
 // ============================================================================
 
 router.get('/tugas/:id', async (req, res) => {
@@ -340,7 +319,6 @@ router.get('/tugas/:id', async (req, res) => {
     if (!tugasDoc.exists) return res.status(404).send('Tugas tidak ditemukan');
     const tugas = { id: tugasId, ...tugasDoc.data() };
 
-    // Verifikasi mahasiswa terdaftar
     const enrollmentSnapshot = await db.collection('enrollment')
       .where('userId', '==', req.user.id)
       .where('mkId', '==', tugas.mkId)
@@ -350,13 +328,10 @@ router.get('/tugas/:id', async (req, res) => {
       return res.status(403).send('Anda tidak terdaftar di mata kuliah tugas ini');
     }
 
-    // Ambil data mata kuliah
     const mkDoc = await db.collection('mataKuliah').doc(tugas.mkId).get();
     const mk = mkDoc.exists ? { id: mkDoc.id, ...mkDoc.data() } : { kode: '-', nama: '-' };
 
     const pengumpulan = await getPengumpulan(tugasId, req.user.id);
-
-    // Hitung apakah deadline sudah lewat
     const deadline = new Date(tugas.deadline);
     const sekarang = new Date();
     const deadlineLewat = deadline < sekarang;
@@ -375,67 +350,75 @@ router.get('/tugas/:id', async (req, res) => {
   }
 });
 
-/**
- * POST /mahasiswa/elearning/tugas/:id/kumpul
- * Upload jawaban tugas ke Google Drive dengan struktur folder baru
- */
+// ============================================================================
+// KUMPUL TUGAS (DENGAN CEK DUPLIKAT & DEADLINE)
+// ============================================================================
+
 router.post('/tugas/:id/kumpul', upload.single('file'), async (req, res) => {
   try {
     const tugasId = req.params.id;
+    const mahasiswaId = req.user.id;
     const file = req.file;
+    
     if (!file) return res.status(400).send('Pilih file terlebih dahulu');
 
+    // ========== VALIDASI 1: CEK TUGAS ==========
     const tugasDoc = await db.collection('tugas').doc(tugasId).get();
     if (!tugasDoc.exists) return res.status(404).send('Tugas tidak ditemukan');
     const tugas = tugasDoc.data();
 
-    // Verifikasi mahasiswa terdaftar
+    // ========== VALIDASI 2: CEK DEADLINE ==========
+    const deadline = new Date(tugas.deadline);
+    if (deadline < new Date()) {
+      return res.status(400).send('Deadline sudah lewat, tidak dapat mengumpulkan tugas.');
+    }
+
+    // ========== VALIDASI 3: CEK MAHASISWA TERDAFTAR ==========
     const enrollmentSnapshot = await db.collection('enrollment')
-      .where('userId', '==', req.user.id)
+      .where('userId', '==', mahasiswaId)
       .where('mkId', '==', tugas.mkId)
       .where('status', '==', 'active')
       .get();
+    
     if (enrollmentSnapshot.empty) {
       return res.status(403).send('Anda tidak terdaftar di mata kuliah ini');
     }
 
-    // Cek apakah sudah pernah mengumpul
-    const existing = await getPengumpulan(tugasId, req.user.id);
+    // ========== VALIDASI 4: CEK DUPLIKAT (PENTING!) ==========
+    const existing = await getPengumpulan(tugasId, mahasiswaId);
     if (existing) {
-      return res.status(400).send('Anda sudah mengumpulkan tugas ini. Hapus terlebih dahulu jika ingin mengganti file.');
+      // Jika sudah pernah mengumpul dan sudah dinilai, TOLAK
+      if (existing.nilai) {
+        return res.status(400).send('Tugas sudah dinilai, tidak dapat mengubah jawaban.');
+      }
+      // Jika belum dinilai, beri pesan untuk menggunakan fitur revisi
+      return res.status(400).send('Anda sudah mengumpulkan tugas ini. Gunakan fitur "Revisi Jawaban" jika ingin mengganti file.');
     }
 
-    // Dapatkan data MK untuk nama dan tahun ajaran
+    // ========== PROSES UPLOAD ==========
     const mkDoc = await db.collection('mataKuliah').doc(tugas.mkId).get();
     const mk = mkDoc.data();
-    // Ambil tahun ajaran dari enrollment
     const enrollment = enrollmentSnapshot.docs[0].data();
     const tahunAjaran = enrollment.tahunAjaran || '2025/2026';
-
     const nim = req.user.nim;
     const nama = req.user.nama;
 
-    // Buat folder jawaban (menggunakan struktur Data WEB) - sekarang menggunakan nama MK
     const folderId = await getOrCreateJawabanFolder({ nama: mk.nama }, nim, tahunAjaran);
 
-    // Sanitasi nama mahasiswa dan judul tugas
     const sanitizedNama = sanitizeName(nama);
     const sanitizedJudul = sanitizeName(tugas.judul);
-    
     const ext = file.originalname.split('.').pop();
-    // Format file: nama_nim_judulTugas_timestamp.ekstensi
     const fileName = `${sanitizedNama}_${nim}_${sanitizedJudul}_${Date.now()}.${ext}`;
+    
     const fileMetadata = { name: fileName, parents: [folderId] };
     const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
     const response = await drive.files.create({ resource: fileMetadata, media, fields: 'id, webViewLink' });
 
-    // Beri akses publik agar bisa dilihat dosen (opsional, tergantung kebijakan)
     await drive.permissions.create({
       fileId: response.data.id,
       requestBody: { role: 'reader', type: 'anyone' }
     });
 
-    // Simpan ke collection pengumpulan
     await db.collection('pengumpulan').add({
       tugasId,
       mahasiswaId: req.user.id,
@@ -444,34 +427,141 @@ router.post('/tugas/:id/kumpul', upload.single('file'), async (req, res) => {
       submittedAt: new Date().toISOString(),
       status: 'dikumpulkan',
       nilai: null,
-      komentar: null
+      komentar: null,
+      revisionCount: 0
     });
 
     res.redirect(`/mahasiswa/elearning/tugas/${tugasId}`);
+    
   } catch (error) {
     console.error('Gagal upload tugas:', error);
     res.status(500).send('Upload gagal: ' + error.message);
   }
 });
 
-/**
- * POST /mahasiswa/elearning/tugas/:id/hapus
- * Hapus pengumpulan (jika deadline belum lewat atau diizinkan)
- */
+// ============================================================================
+// REVISI TUGAS (UPDATE, BUKAN CREATE BARU)
+// ============================================================================
+
+router.post('/tugas/:id/revisi', upload.single('file'), async (req, res) => {
+  try {
+    const tugasId = req.params.id;
+    const mahasiswaId = req.user.id;
+    const file = req.file;
+    
+    if (!file) return res.status(400).send('Pilih file terlebih dahulu');
+
+    // ========== VALIDASI 1: CEK TUGAS ==========
+    const tugasDoc = await db.collection('tugas').doc(tugasId).get();
+    if (!tugasDoc.exists) return res.status(404).send('Tugas tidak ditemukan');
+    const tugas = tugasDoc.data();
+
+    // ========== VALIDASI 2: CEK DEADLINE ==========
+    const deadline = new Date(tugas.deadline);
+    if (deadline < new Date()) {
+      return res.status(400).send('Deadline sudah lewat, tidak dapat merevisi tugas.');
+    }
+
+    // ========== VALIDASI 3: CEK MAHASISWA TERDAFTAR ==========
+    const enrollmentSnapshot = await db.collection('enrollment')
+      .where('userId', '==', mahasiswaId)
+      .where('mkId', '==', tugas.mkId)
+      .where('status', '==', 'active')
+      .get();
+    
+    if (enrollmentSnapshot.empty) {
+      return res.status(403).send('Anda tidak terdaftar di mata kuliah ini');
+    }
+
+    // ========== VALIDASI 4: CEK APAKAH SUDAH PERNAH MENGUMPUL ==========
+    const existingSnapshot = await db.collection('pengumpulan')
+      .where('tugasId', '==', tugasId)
+      .where('mahasiswaId', '==', mahasiswaId)
+      .get();
+    
+    if (existingSnapshot.empty) {
+      return res.status(400).send('Belum ada pengumpulan. Gunakan tombol "Kumpul Tugas".');
+    }
+
+    const existingDoc = existingSnapshot.docs[0];
+    const existingData = existingDoc.data();
+
+    // ========== VALIDASI 5: CEK APAKAH SUDAH DINILAI ==========
+    if (existingData.nilai) {
+      return res.status(400).send('Tugas sudah dinilai, tidak dapat direvisi.');
+    }
+
+    // ========== HAPUS FILE LAMA ==========
+    if (existingData.fileId) {
+      try {
+        await drive.files.delete({ fileId: existingData.fileId });
+        console.log('File lama dihapus:', existingData.fileId);
+      } catch (err) {
+        console.error('Gagal hapus file lama:', err.message);
+      }
+    }
+
+    // ========== UPLOAD FILE BARU ==========
+    const mkDoc = await db.collection('mataKuliah').doc(tugas.mkId).get();
+    const mk = mkDoc.data();
+    const enrollment = enrollmentSnapshot.docs[0].data();
+    const tahunAjaran = enrollment.tahunAjaran || '2025/2026';
+    const nim = req.user.nim;
+    const nama = req.user.nama;
+
+    const folderId = await getOrCreateJawabanFolder({ nama: mk.nama }, nim, tahunAjaran);
+
+    const sanitizedNama = sanitizeName(nama);
+    const sanitizedJudul = sanitizeName(tugas.judul);
+    const ext = file.originalname.split('.').pop();
+    const fileName = `Revisi_${sanitizedNama}_${nim}_${sanitizedJudul}_${Date.now()}.${ext}`;
+    
+    const fileMetadata = { name: fileName, parents: [folderId] };
+    const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+    const response = await drive.files.create({ resource: fileMetadata, media, fields: 'id, webViewLink' });
+
+    await drive.permissions.create({
+      fileId: response.data.id,
+      requestBody: { role: 'reader', type: 'anyone' }
+    });
+
+    // ========== UPDATE (BUKAN CREATE BARU) ==========
+    await existingDoc.ref.update({
+      fileUrl: response.data.webViewLink,
+      fileId: response.data.id,
+      revisedAt: new Date().toISOString(),
+      revisionCount: (existingData.revisionCount || 0) + 1,
+      status: 'dikumpulkan'
+    });
+
+    res.redirect(`/mahasiswa/elearning/tugas/${tugasId}`);
+    
+  } catch (error) {
+    console.error('Revisi gagal:', error);
+    res.status(500).send('Revisi gagal: ' + error.message);
+  }
+});
+
+// ============================================================================
+// HAPUS PENGUMPULAN
+// ============================================================================
+
 router.post('/tugas/:id/hapus', async (req, res) => {
   try {
     const tugasId = req.params.id;
     const pengumpulan = await getPengumpulan(tugasId, req.user.id);
     if (!pengumpulan) return res.status(404).send('Tidak ada pengumpulan untuk dihapus');
 
-    // Opsional: cek deadline
     const tugasDoc = await db.collection('tugas').doc(tugasId).get();
     const deadline = new Date(tugasDoc.data().deadline);
     if (deadline < new Date()) {
       return res.status(400).send('Tidak dapat menghapus karena deadline telah lewat');
     }
 
-    // Hapus file dari Drive
+    if (pengumpulan.nilai) {
+      return res.status(400).send('Tugas sudah dinilai, tidak dapat dihapus');
+    }
+
     if (pengumpulan.fileId) {
       try {
         await drive.files.delete({ fileId: pengumpulan.fileId });
@@ -480,9 +570,7 @@ router.post('/tugas/:id/hapus', async (req, res) => {
       }
     }
 
-    // Hapus dari Firestore
     await db.collection('pengumpulan').doc(pengumpulan.id).delete();
-
     res.redirect(`/mahasiswa/elearning/tugas/${tugasId}`);
   } catch (error) {
     console.error('Gagal hapus pengumpulan:', error);
