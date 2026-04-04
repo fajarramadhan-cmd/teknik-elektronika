@@ -365,13 +365,60 @@ router.get('/:mkId/tugas/:tugasId', async (req, res) => {
  */
 router.post('/pengumpulan/:id/nilai', async (req, res) => {
   try {
+    const { id } = req.params;
     const { nilai, komentar } = req.body;
-    await db.collection('pengumpulan').doc(req.params.id).update({
+
+    // 1. Ambil data pengumpulan
+    const pengumpulanDoc = await db.collection('pengumpulan').doc(id).get();
+    if (!pengumpulanDoc.exists) {
+      return res.status(404).send('Pengumpulan tidak ditemukan');
+    }
+    const pengumpulan = pengumpulanDoc.data();
+    const { mahasiswaId, tugasId } = pengumpulan;
+
+    // 2. Ambil data tugas
+    const tugasDoc = await db.collection('tugas').doc(tugasId).get();
+    if (!tugasDoc.exists) {
+      return res.status(404).send('Tugas tidak ditemukan');
+    }
+    const tugas = tugasDoc.data();
+    const { mkId, judul } = tugas;
+
+    // 3. Update dokumen pengumpulan
+    await pengumpulanDoc.ref.update({
       nilai: parseFloat(nilai),
-      komentar,
+      komentar: komentar || '',
       status: 'dinilai',
       dinilaiPada: new Date().toISOString()
     });
+
+    // 4. Sinkronisasi ke koleksi 'nilai'
+const tipeNilai = judul; // ✅ gunakan judul asli tugas
+
+// Cek existing nilai
+const existingNilai = await db.collection('nilai')
+  .where('mahasiswaId', '==', mahasiswaId)
+  .where('mkId', '==', mkId)
+  .where('tipe', '==', tipeNilai)
+  .limit(1)
+  .get();
+
+if (existingNilai.empty) {
+  await db.collection('nilai').add({
+    mahasiswaId,
+    mkId,
+    tipe: tipeNilai,
+    nilai: parseFloat(nilai),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+} else {
+  await existingNilai.docs[0].ref.update({
+    nilai: parseFloat(nilai),
+    updatedAt: new Date().toISOString()
+  });
+}
+
     res.redirect('back');
   } catch (error) {
     console.error('Error memberi nilai:', error);

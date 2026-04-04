@@ -1,5 +1,11 @@
 <%- include('../partials/header') %>
 
+<%
+  // Hitung jumlah mahasiswa yang sudah dan belum mengumpulkan
+  const sudahCount = mahasiswaList.filter(m => m.pengumpulan).length;
+  const belumCount = mahasiswaList.length - sudahCount;
+%>
+
 <style>
   /* ===== VARIABEL WARNA (sesuai navbar) ===== */
   :root {
@@ -92,6 +98,32 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+  .info-card h5 i {
+    color: var(--primary-start);
+  }
+
+  /* ===== RINGKASAN CARD (KECIL) ===== */
+  .summary-card {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    border: 1px solid rgba(30,58,138,0.1);
+    height: 100%;
+  }
+  .summary-card h6 {
+    color: #64748b;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+  }
+  .summary-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
   }
 
   /* ===== TABEL MAHASISWA (minimalis) ===== */
@@ -189,6 +221,64 @@
     box-shadow: 0 5px 10px rgba(255,193,7,0.3);
   }
 
+  /* ===== MODAL ===== */
+  .modal-content {
+    border: none;
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+    padding: 1.2rem 1.5rem;
+  }
+  .modal-header .btn-close {
+    background: rgba(255,255,255,0.8);
+    opacity: 0.8;
+    transition: all 0.2s;
+  }
+  .modal-header .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+  }
+  .modal-body {
+    padding: 1.5rem;
+  }
+  .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1rem 1.5rem;
+  }
+  .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+  .form-control {
+    border-radius: 0.9rem;
+    border: 1px solid #cbd5e1;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .form-control:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.2rem rgba(30,58,138,0.25);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(30,58,138,0.3);
+    color: white;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
@@ -196,6 +286,7 @@
     .detail-header .btn-light { padding: 0.4rem 1.2rem; font-size: 0.9rem; }
     .mahasiswa-table th { font-size: 0.8rem; padding: 0.5rem; }
     .mahasiswa-table td { font-size: 0.9rem; padding: 0.5rem; }
+    .summary-number { font-size: 1.8rem; }
   }
 
   @media (max-width: 576px) {
@@ -204,6 +295,7 @@
     .detail-header .btn-light { width: 100%; justify-content: center; }
     .detail-header .d-flex { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
     .btn-outline-info, .btn-warning { padding: 0.2rem 0.8rem; font-size: 0.8rem; }
+    .summary-number { font-size: 1.6rem; }
   }
 
   @media (max-width: 400px) {
@@ -244,6 +336,28 @@
         <i class="bi bi-download"></i> Unduh Soal
       </a>
     <% } %>
+  </div>
+
+  <!-- Ringkasan Pengumpulan -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="summary-card">
+        <h6>Total Mahasiswa</h6>
+        <span class="summary-number" style="color: var(--primary-start);"><%= mahasiswaList.length %></span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="summary-card">
+        <h6>Sudah Mengumpulkan</h6>
+        <span class="summary-number text-success"><%= sudahCount %></span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="summary-card">
+        <h6>Belum Mengumpulkan</h6>
+        <span class="summary-number text-danger"><%= belumCount %></span>
+      </div>
+    </div>
   </div>
 
   <!-- Daftar Mahasiswa dan Pengumpulan -->
