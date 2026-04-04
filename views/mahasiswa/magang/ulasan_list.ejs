@@ -1,0 +1,502 @@
+<%- include('../../partials/header') %>
+
+<%
+  // Default values untuk mencegah error
+  if (typeof periods === 'undefined') periods = [];
+  if (typeof success === 'undefined') success = null;
+  
+  // Helper format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+  
+  // Hitung rating dalam bentuk bintang
+  const renderStars = (rating) => {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      stars += `<i class="bi bi-star-fill ${i <= rating ? 'text-warning' : 'text-secondary'}" style="font-size: 0.9rem;"></i>`;
+    }
+    return stars;
+  };
+%>
+
+<style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.1);
+    --primary-dark: #0f2b5c;
+    --success-bg: #d1fae5;
+    --success-text: #065f46;
+    --warning-bg: #fef3c7;
+    --warning-text: #92400e;
+    --info-bg: #dbeafe;
+    --info-text: #1e40af;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
+  }
+
+  /* ===== HEADER ===== */
+  .ulasan-header {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(245,158,11,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .ulasan-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .ulasan-header h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .ulasan-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-back {
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: #f59e0b;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: #d97706;
+  }
+
+  /* ===== CARD PERIODE ===== */
+  .period-card {
+    background: white;
+    border-radius: 1.2rem;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .period-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  }
+  .period-card-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .period-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .period-card-header .badge-status {
+    background: var(--success-bg);
+    color: var(--success-text);
+    padding: 0.3rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .period-card-body {
+    padding: 1.5rem;
+  }
+  .period-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .period-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+  .period-info-item i {
+    color: var(--primary-start);
+    font-size: 1rem;
+  }
+  .nilai-ringkasan {
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .nilai-label {
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+  .nilai-angka {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--primary-start);
+  }
+  .nilai-huruf {
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--primary-start);
+    color: white;
+  }
+
+  /* ===== ULASAN CARD (jika sudah diisi) ===== */
+  .ulasan-card {
+    background: var(--primary-light);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-left: 4px solid var(--primary-start);
+  }
+  .ulasan-card .rating {
+    margin-bottom: 0.5rem;
+  }
+  .ulasan-card .ulasan-text {
+    font-size: 0.85rem;
+    color: #334155;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  .ulasan-card .btn-edit {
+    background: transparent;
+    border: 1px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.2rem 0.8rem;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .ulasan-card .btn-edit:hover {
+    background: var(--primary-start);
+    color: white;
+  }
+
+  /* ===== TOMBOL ===== */
+  .btn-ulasan {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-ulasan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245,158,11,0.4);
+    color: white;
+  }
+  .btn-lihat-ulasan {
+    background: transparent;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    border-radius: 50px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-lihat-ulasan:hover {
+    background: #6c757d;
+    color: white;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+  }
+  .empty-state h4 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ===== ALERT ===== */
+  .alert-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: none;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    html { font-size: 15px; }
+    .ulasan-header h2 { font-size: 1.5rem; }
+    .period-card-header { flex-direction: column; align-items: flex-start; }
+    .period-info { flex-direction: column; gap: 0.5rem; }
+  }
+
+  @media (max-width: 576px) {
+    html { font-size: 14px; }
+    .period-card-body { padding: 1rem; }
+    .nilai-ringkasan { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="ulasan-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2>
+        <i class="bi bi-star-fill"></i> 
+        Ulasan Perusahaan Magang
+      </h2>
+      <p class="mb-0">
+        Berikan ulasan dan rating untuk perusahaan tempat Anda magang.
+        Pengalaman Anda akan membantu adik tingkat dalam memilih tempat magang.
+      </p>
+    </div>
+    <div class="mt-2 mt-sm-0">
+      <a href="/mahasiswa/magang" class="btn-back">
+        <i class="bi bi-arrow-left me-2"></i>Kembali
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert Sukses -->
+  <% if (success) { %>
+    <div class="alert-success">
+      <i class="bi bi-check-circle-fill fs-5"></i>
+      <span><%= success %></span>
+    </div>
+  <% } %>
+
+  <!-- Daftar Periode Magang Selesai -->
+  <% if (periods.length === 0) { %>
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <h4>Belum Ada Magang Selesai</h4>
+      <p>Anda belum memiliki periode magang yang telah selesai.</p>
+      <p class="small text-muted">Ulasan perusahaan hanya dapat diberikan setelah magang selesai dan dinilai oleh dosen pembimbing.</p>
+      <a href="/mahasiswa/magang" class="btn-back mt-3">
+        <i class="bi bi-arrow-left"></i> Kembali ke Dashboard Magang
+      </a>
+    </div>
+  <% } else { %>
+    <div class="row">
+      <% periods.forEach(period => { %>
+        <div class="col-12">
+          <div class="period-card">
+            <div class="period-card-header">
+              <div>
+                <h5><%= period.pdkKode %> - <%= period.pdkNama %></h5>
+                <div class="period-info">
+                  <span class="period-info-item">
+                    <i class="bi bi-building"></i>
+                    <%= (period.perusahaan && period.perusahaan.nama) ? period.perusahaan.nama : 'Perusahaan tidak diisi' %>
+                  </span>
+                  <span class="period-info-item">
+                    <i class="bi bi-calendar"></i>
+                    <%= formatTanggal(period.tanggalMulai) %> 
+                    s/d 
+                    <%= formatTanggal(period.tanggalSelesai) || 'Berlangsung' %>
+                  </span>
+                </div>
+              </div>
+              <span class="badge-status">
+                <i class="bi bi-check-circle-fill"></i> Selesai
+              </span>
+            </div>
+            <div class="period-card-body">
+              <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                  <div class="nilai-ringkasan">
+                    <div>
+                      <div class="nilai-label">Nilai Akhir</div>
+                      <div class="nilai-angka">
+                        <%= (period.nilai && period.nilai.angka) ? period.nilai.angka : '-' %>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="nilai-label">Huruf</div>
+                      <div class="nilai-huruf">
+                        <%= (period.nilai && period.nilai.huruf) ? period.nilai.huruf : '-' %>
+                      </div>
+                    </div>
+                    <% if (period.nilai && period.nilai.komentar) { %>
+                      <div>
+                        <div class="nilai-label">Komentar Dosen</div>
+                        <div class="small"><%= period.nilai.komentar %></div>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <div>
+                  <% if (period.hasUlasan) { %>
+                    <a href="/mahasiswa/magang/ulasan/<%= period.id %>" class="btn-lihat-ulasan">
+                      <i class="bi bi-pencil-square"></i> Edit Ulasan
+                    </a>
+                  <% } else { %>
+                    <a href="/mahasiswa/magang/ulasan/<%= period.id %>" class="btn-ulasan">
+                      <i class="bi bi-star-fill"></i> Beri Ulasan & Rating
+                    </a>
+                  <% } %>
+                </div>
+              </div>
+              
+              <!-- Tampilkan ringkasan ulasan jika sudah diisi -->
+              <% if (period.hasUlasan && period.ulasanData) { %>
+                <div class="ulasan-card">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="rating">
+                      <% for (let i = 1; i <= 5; i++) { %>
+                        <i class="bi bi-star-fill <%= i <= (period.ulasanData.rating || 0) ? 'text-warning' : 'text-secondary' %>"></i>
+                      <% } %>
+                      <span class="ms-2 small text-muted">
+                        Diisi: <%= formatTanggal(period.ulasanData.diisiPada) %>
+                      </span>
+                    </div>
+                    <a href="/mahasiswa/magang/ulasan/<%= period.id %>" class="btn-edit">
+                      <i class="bi bi-pencil"></i> Edit
+                    </a>
+                  </div>
+                  <% if (period.ulasanData.saranUntukJunior) { %>
+                    <div class="ulasan-text">
+                      <i class="bi bi-quote"></i> 
+                      "<%= period.ulasanData.saranUntukJunior.substring(0, 100) %><%= period.ulasanData.saranUntukJunior.length > 100 ? '...' : '' %>"
+                    </div>
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- Informasi Panduan -->
+  <div class="info-card mt-4" style="background: white; border-radius: 1.2rem; padding: 1.5rem; border: 1px solid rgba(0,0,0,0.1);">
+    <h5 class="fw-bold mb-3" style="color: var(--primary-start);">
+      <i class="bi bi-question-circle-fill me-2"></i>Panduan Memberi Ulasan
+    </h5>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+            <i class="bi bi-building fs-4 text-warning"></i>
+          </div>
+          <div>
+            <strong>Deskripsi Perusahaan</strong><br>
+            <small class="text-muted">Jelaskan bidang usaha, skala perusahaan, dll.</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+            <i class="bi bi-laptop fs-4 text-info"></i>
+          </div>
+          <div>
+            <strong>Fasilitas Magang</strong><br>
+            <small class="text-muted">Ruang kerja, peralatan, akses internet, dll.</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+            <i class="bi bi-chat-dots fs-4 text-success"></i>
+          </div>
+          <div>
+            <strong>Saran untuk Junior</strong><br>
+            <small class="text-muted">Tips untuk mahasiswa yang akan magang</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-light mt-2 mb-0 small">
+      <i class="bi bi-info-circle me-2"></i>
+      Ulasan Anda akan menjadi referensi berharga bagi mahasiswa lain yang akan memilih tempat magang.
+      Ulasan akan diverifikasi oleh admin sebelum dipublikasikan.
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>

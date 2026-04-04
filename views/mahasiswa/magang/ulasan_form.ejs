@@ -1,0 +1,486 @@
+<%- include('../../partials/header') %>
+
+<%
+  // Default values untuk mencegah error
+  if (typeof period === 'undefined') period = null;
+  if (typeof review === 'undefined') review = null;
+  if (typeof isEdit === 'undefined') isEdit = false;
+  
+  // Helper format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+  
+  // Data untuk form (existing review atau default)
+  const formData = review || {};
+  const ratingValue = formData.rating || 0;
+%>
+
+<style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.1);
+    --primary-dark: #0f2b5c;
+    --warning-bg: #fef3c7;
+    --warning-text: #92400e;
+    --success-bg: #d1fae5;
+    --success-text: #065f46;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
+  }
+
+  /* ===== HEADER ===== */
+  .ulasan-header {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(245,158,11,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .ulasan-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .ulasan-header h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .ulasan-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-back {
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: #f59e0b;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: #d97706;
+  }
+
+  /* ===== FORM CARD ===== */
+  .form-card {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+  .form-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    padding: 1rem 1.5rem;
+    color: white;
+  }
+  .form-header h5 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .form-body {
+    padding: 2rem;
+  }
+
+  /* ===== INFO PERIODE ===== */
+  .info-period {
+    background: var(--primary-light);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-start);
+  }
+  .info-period p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .info-period .label {
+    font-weight: 600;
+    color: var(--primary-start);
+  }
+
+  /* ===== RATING STARS ===== */
+  .rating-container {
+    text-align: center;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .rating-star {
+    font-size: 3rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #cbd5e1;
+  }
+  .rating-star:hover,
+  .rating-star.active {
+    color: #fbbf24;
+    transform: scale(1.1);
+  }
+  .rating-text {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  /* ===== FORM ELEMENTS ===== */
+  .form-label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+  .form-label .required {
+    color: #dc3545;
+    margin-left: 0.25rem;
+  }
+  .form-control, .form-select {
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    padding: 0.7rem 1rem;
+    transition: all 0.2s;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 0.2rem rgba(30,58,138,0.25);
+  }
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  /* ===== TOMBOL ===== */
+  .btn-submit {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245,158,11,0.4);
+    color: white;
+  }
+  .btn-cancel {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    color: #64748b;
+    font-weight: 500;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #1e293b;
+  }
+
+  /* ===== ALERT ===== */
+  .alert-info-custom {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary-start);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .alert-info-custom i {
+    color: var(--primary-start);
+    font-size: 1.2rem;
+  }
+  .alert-info-custom small {
+    color: #475569;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    html { font-size: 15px; }
+    .ulasan-header h2 { font-size: 1.5rem; }
+    .form-body { padding: 1.5rem; }
+    .rating-star { font-size: 2.5rem; }
+    .rating-stars { gap: 0.5rem; }
+  }
+
+  @media (max-width: 576px) {
+    html { font-size: 14px; }
+    .rating-star { font-size: 2rem; }
+    .btn-submit, .btn-cancel { padding: 0.6rem 1.5rem; }
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="ulasan-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2>
+        <i class="bi bi-star-fill"></i> 
+        <%= isEdit ? 'Edit Ulasan Perusahaan' : 'Beri Ulasan Perusahaan' %>
+      </h2>
+      <p class="mb-0">
+        Bagikan pengalaman magang Anda untuk membantu mahasiswa lain
+      </p>
+    </div>
+    <div class="mt-2 mt-sm-0">
+      <a href="/mahasiswa/magang/ulasan" class="btn-back">
+        <i class="bi bi-arrow-left me-2"></i>Kembali
+      </a>
+    </div>
+  </div>
+
+  <% if (period) { %>
+    <div class="form-card">
+      <div class="form-header">
+        <h5>
+          <i class="bi bi-building"></i> 
+          <%= period.pdkKode %> - <%= period.pdkNama %>
+        </h5>
+      </div>
+      <div class="form-body">
+        <!-- Info Periode Magang -->
+        <div class="info-period">
+          <div class="row">
+            <div class="col-md-6">
+              <p><span class="label">Periode Magang:</span> <%= formatTanggal(period.tanggalMulai) %> s/d <%= formatTanggal(period.tanggalSelesai) || 'Berlangsung' %></p>
+            </div>
+            <div class="col-md-6">
+              <p><span class="label">Perusahaan:</span> <%= (period.perusahaan && period.perusahaan.nama) ? period.perusahaan.nama : '-' %></p>
+            </div>
+            <div class="col-md-6">
+              <p><span class="label">Nilai Akhir:</span> <%= (period.nilai && period.nilai.huruf) ? period.nilai.huruf : '-' %> (<%= (period.nilai && period.nilai.angka) ? period.nilai.angka : '-' %>)</p>
+            </div>
+            <div class="col-md-6">
+              <p><span class="label">Pembimbing Lapangan:</span> <%= (period.perusahaan && period.perusahaan.pembimbingLapangan) ? period.perusahaan.pembimbingLapangan : '-' %></p>
+            </div>
+          </div>
+        </div>
+
+        <form method="POST" action="/mahasiswa/magang/ulasan/<%= period.id %>">
+          <!-- Rating -->
+          <div class="rating-container">
+            <div class="rating-stars" id="ratingStars">
+              <% for (let i = 1; i <= 5; i++) { %>
+                <i class="bi bi-star-fill rating-star <%= ratingValue >= i ? 'active' : '' %>" data-rating="<%= i %>"></i>
+              <% } %>
+            </div>
+            <div class="rating-text" id="ratingText">
+              <%= ratingValue === 0 ? 'Klik bintang untuk memberi rating' : 
+                  ratingValue === 1 ? '★☆☆☆☆ - Sangat Kurang' :
+                  ratingValue === 2 ? '★★☆☆☆ - Kurang' :
+                  ratingValue === 3 ? '★★★☆☆ - Cukup' :
+                  ratingValue === 4 ? '★★★★☆ - Baik' :
+                  '★★★★★ - Sangat Baik' %>
+            </div>
+            <input type="hidden" name="rating" id="ratingValue" value="<%= ratingValue %>" required>
+          </div>
+
+          <!-- Deskripsi Perusahaan -->
+          <div class="mb-4">
+            <label class="form-label">
+              Deskripsi Perusahaan <span class="required">*</span>
+            </label>
+            <textarea class="form-control" name="deskripsiPerusahaan" rows="3" required 
+                      placeholder="Jelaskan tentang perusahaan tempat Anda magang (bidang usaha, skala perusahaan, visi misi, dll.)"><%= formData.deskripsiPerusahaan || '' %></textarea>
+            <small class="text-muted">Contoh: PT. Teknologi Nusantara adalah perusahaan yang bergerak di bidang pengembangan perangkat lunak...</small>
+          </div>
+
+          <!-- Fasilitas Magang -->
+          <div class="mb-4">
+            <label class="form-label">
+              Fasilitas Magang <span class="required">*</span>
+            </label>
+            <textarea class="form-control" name="fasilitasMagang" rows="3" required
+                      placeholder="Fasilitas apa saja yang diberikan perusahaan selama magang?"><%= formData.fasilitasMagang || '' %></textarea>
+            <small class="text-muted">Contoh: Ruang kerja AC, laptop, akses internet, konsumsi, uang saku, dll.</small>
+          </div>
+
+          <!-- Kontak HP Perusahaan -->
+          <div class="mb-4">
+            <label class="form-label">Kontak HP Perusahaan</label>
+            <input type="tel" class="form-control" name="kontakHpPerusahaan" 
+                   value="<%= formData.kontakHpPerusahaan || '' %>"
+                   placeholder="Nomor telepon/WA yang bisa dihubungi">
+            <small class="text-muted">Nomor ini akan membantu mahasiswa lain yang ingin melamar magang</small>
+          </div>
+
+          <!-- Saran untuk Junior -->
+          <div class="mb-4">
+            <label class="form-label">Saran untuk Junior</label>
+            <textarea class="form-control" name="saranUntukJunior" rows="3"
+                      placeholder="Tips dan saran untuk mahasiswa yang akan magang di tempat ini"><%= formData.saranUntukJunior || '' %></textarea>
+            <small class="text-muted">Contoh: Siapkan portofolio yang matang, pelajari teknologi yang digunakan, dll.</small>
+          </div>
+
+          <!-- Pengalaman Kerja -->
+          <div class="mb-4">
+            <label class="form-label">Pengalaman Kerja</label>
+            <textarea class="form-control" name="pengalamanKerja" rows="3"
+                      placeholder="Ceritakan pengalaman Anda selama magang (proyek yang dikerjakan, tantangan, pencapaian)"><%= formData.pengalamanKerja || '' %></textarea>
+            <small class="text-muted">Ceritakan secara singkat tentang pekerjaan yang Anda lakukan selama magang</small>
+          </div>
+
+          <!-- Tombol Aksi -->
+          <div class="d-flex gap-3 justify-content-end mt-4">
+            <a href="/mahasiswa/magang/ulasan" class="btn-cancel">
+              <i class="bi bi-x-lg"></i> Batal
+            </a>
+            <button type="submit" class="btn-submit">
+              <i class="bi bi-save"></i> <%= isEdit ? 'Update Ulasan' : 'Simpan Ulasan' %>
+            </button>
+          </div>
+        </form>
+
+        <!-- Info Penting -->
+        <div class="alert-info-custom">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            <strong>Informasi Penting</strong><br>
+            <small>
+              • Ulasan Anda akan membantu adik tingkat dalam memilih tempat magang.<br>
+              • Ulasan akan diverifikasi oleh admin sebelum dipublikasikan.<br>
+              • Ulasan yang sudah disubmit dapat diedit kapan saja.<br>
+              • Berikan ulasan yang jujur dan membangun.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="form-card">
+      <div class="form-body text-center py-5">
+        <i class="bi bi-exclamation-triangle-fill fs-1 text-warning mb-3 d-block"></i>
+        <h5>Periode Magang Tidak Ditemukan</h5>
+        <p class="text-muted">Data periode magang yang Anda cari tidak tersedia.</p>
+        <a href="/mahasiswa/magang/ulasan" class="btn-back mt-3">
+          <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<script>
+  // Rating Stars Logic
+  const stars = document.querySelectorAll('.rating-star');
+  const ratingInput = document.getElementById('ratingValue');
+  const ratingText = document.getElementById('ratingText');
+  
+  const ratingMessages = {
+    0: 'Klik bintang untuk memberi rating',
+    1: '★☆☆☆☆ - Sangat Kurang',
+    2: '★★☆☆☆ - Kurang',
+    3: '★★★☆☆ - Cukup',
+    4: '★★★★☆ - Baik',
+    5: '★★★★★ - Sangat Baik'
+  };
+  
+  function setRating(rating) {
+    ratingInput.value = rating;
+    stars.forEach(star => {
+      const starRating = parseInt(star.getAttribute('data-rating'));
+      if (starRating <= rating) {
+        star.classList.add('active');
+      } else {
+        star.classList.remove('active');
+      }
+    });
+    ratingText.textContent = ratingMessages[rating] || ratingMessages[0];
+  }
+  
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      const rating = parseInt(star.getAttribute('data-rating'));
+      setRating(rating);
+    });
+    
+    star.addEventListener('mouseenter', () => {
+      const rating = parseInt(star.getAttribute('data-rating'));
+      stars.forEach(s => {
+        const starRating = parseInt(s.getAttribute('data-rating'));
+        if (starRating <= rating) {
+          s.style.color = '#fbbf24';
+        } else {
+          s.style.color = '#cbd5e1';
+        }
+      });
+    });
+    
+    star.addEventListener('mouseleave', () => {
+      const currentRating = parseInt(ratingInput.value) || 0;
+      stars.forEach(s => {
+        const starRating = parseInt(s.getAttribute('data-rating'));
+        if (starRating <= currentRating) {
+          s.style.color = '#fbbf24';
+        } else {
+          s.style.color = '#cbd5e1';
+        }
+      });
+    });
+  });
+  
+  // Set initial rating jika ada
+  <% if (ratingValue > 0) { %>
+    setRating(<%= ratingValue %>);
+  <% } %>
+</script>
+
+<%- include('../../partials/footer') %>

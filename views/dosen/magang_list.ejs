@@ -1,6 +1,10 @@
 <%- include('../partials/header') %>
 
 <%
+  // ========== DEFAULT VALUES ==========
+  if (typeof mahasiswaList === 'undefined') mahasiswaList = [];
+  if (typeof message === 'undefined') message = null;
+  
   // Fungsi untuk mendapatkan URL gambar dari Google Drive
   const getImageUrl = (url) => {
     if (!url) return null;
@@ -10,10 +14,17 @@
     if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100-h100`;
     return url;
   };
+  
+  // Ekstrak angkatan dari NIM
+  const getAngkatan = (nim) => {
+    if (!nim || nim.length < 2) return '';
+    const duaDigit = nim.substring(0, 2);
+    return `20${duaDigit}`;
+  };
 %>
 
 <style>
-  /* ===== VARIABEL WARNA (sesuai navbar) ===== */
+  /* ===== VARIABEL WARNA ===== */
   :root {
     --primary-start: #1e3a8a;
     --primary-end: #3b82f6;
@@ -21,13 +32,17 @@
     --primary-dark: #0f2b5c;
     --warning-bg: #fef3c7;
     --warning-text: #92400e;
+    --success-bg: #d1fae5;
+    --success-text: #065f46;
+    --danger-bg: #fee2e2;
+    --danger-text: #991b1b;
+    --info-bg: #dbeafe;
+    --info-text: #1e40af;
+    --gray-border: #e2e8f0;
     --font-base: 16px;
   }
 
-  html {
-    font-size: 16px;
-  }
-
+  html { font-size: 16px; }
   body {
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     background-color: #f8fafc;
@@ -98,7 +113,7 @@
     padding: 1.2rem 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    border: 1px solid rgba(30,58,138,0.1);
+    border: 1px solid var(--gray-border);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -140,13 +155,37 @@
     transform: translateY(-2px);
   }
 
+  /* Statistik Ringkasan */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--gray-border);
+  }
+  .stat-card .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-start);
+  }
+  .stat-card .stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
   /* Tabel Container */
   .table-container {
     background: white;
     border-radius: 1.5rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     overflow: hidden;
-    border: 1px solid rgba(30,58,138,0.1);
+    border: 1px solid var(--gray-border);
     padding: 0;
   }
   .table-responsive {
@@ -154,7 +193,7 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Tabel minimalis (seperti sebelumnya) */
+  /* Tabel minimalis */
   .magang-table {
     width: 100%;
     border-collapse: collapse;
@@ -183,6 +222,29 @@
   }
   .magang-table tbody tr:hover {
     background-color: #f2f2f2;
+  }
+
+  /* Role Badge di Tabel */
+  .role-badge-table {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .role-pembimbing1-table {
+    background: var(--info-bg);
+    color: var(--info-text);
+  }
+  .role-pembimbing2-table {
+    background: var(--success-bg);
+    color: var(--success-text);
+  }
+  .role-both-table {
+    background: linear-gradient(135deg, var(--info-bg), var(--success-bg));
+    color: var(--primary-start);
   }
 
   /* Avatar dan Foto */
@@ -245,6 +307,14 @@
     background: var(--warning-bg);
     color: var(--warning-text);
   }
+  .badge-approved {
+    background: var(--success-bg);
+    color: var(--success-text);
+  }
+  .badge-rejected {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+  }
   .badge-zero {
     background: #e9ecef;
     color: #6c757d;
@@ -275,6 +345,23 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 15px rgba(30,58,138,0.3);
   }
+  .btn-manage {
+    border-color: #10b981;
+    color: #10b981;
+  }
+  .btn-manage:hover {
+    background: #10b981;
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(16,185,129,0.3);
+  }
+  .btn-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 
   /* Alert styling */
   .custom-alert {
@@ -284,7 +371,7 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     padding: 1rem 1.5rem;
     margin-bottom: 2rem;
-    border: 1px solid rgba(30,58,138,0.1);
+    border: 1px solid var(--gray-border);
     color: var(--primary-dark);
   }
 
@@ -305,7 +392,7 @@
     font-size: 1.1rem;
   }
 
-  /* Filter no results message */
+  /* No results message */
   .no-results {
     text-align: center;
     padding: 2rem;
@@ -313,7 +400,7 @@
     font-style: italic;
   }
 
-  /* ===== RESPONSIVE (mobile menjadi card) ===== */
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
@@ -324,8 +411,11 @@
     .filter-section .form-select,
     .filter-section .btn-filter,
     .filter-section .btn-reset { width: 100%; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .btn-actions { flex-direction: column; align-items: stretch; }
+    .btn-action { justify-content: center; }
 
-    /* Sembunyikan header tabel, tampilkan sebagai card */
+    /* Card view untuk mobile */
     .magang-table thead {
       display: none;
     }
@@ -363,11 +453,7 @@
   @media (max-width: 576px) {
     html { font-size: 14px; }
     .page-header h2 { font-size: 1.4rem; }
-  }
-
-  @media (max-width: 400px) {
-    html { font-size: 13px; }
-    .page-header h2 { font-size: 1.2rem; }
+    .stats-row { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -378,10 +464,33 @@
       <i class="bi bi-journal-bookmark-fill"></i> Monitoring Magang
     </h2>
     <a href="/dosen/dashboard" class="btn-back">
-      <i class="bi bi-arrow-left"></i> Kembali
+      <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
     </a>
   </div>
 
+  <!-- Statistik Ringkasan -->
+  <% if (mahasiswaList.length > 0) { 
+    const totalMahasiswa = mahasiswaList.length;
+    const totalLogbook = mahasiswaList.reduce((sum, m) => sum + (m.totalLogbook || 0), 0);
+    const totalPending = mahasiswaList.reduce((sum, m) => sum + (m.pendingCount || 0), 0);
+  %>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value"><%= totalMahasiswa %></div>
+        <div class="stat-label">Mahasiswa Bimbingan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= totalLogbook %></div>
+        <div class="stat-label">Total Logbook</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= totalPending %></div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Custom Alert Message -->
   <% if (message) { %>
     <div class="custom-alert">
       <i class="bi bi-info-circle-fill me-2" style="color: var(--primary-start);"></i>
@@ -391,15 +500,19 @@
 
   <!-- Filter Section -->
   <div class="filter-section">
-    <input type="text" id="searchInput" class="form-control" placeholder="Cari nama atau NIM...">
+    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Cari nama atau NIM...">
     <select id="angkatanFilter" class="form-select">
-      <option value="">Semua Angkatan</option>
-      <!-- Options akan diisi dengan JavaScript -->
+      <option value="">📅 Semua Angkatan</option>
     </select>
-    <button class="btn-filter" id="applyFilter">Terapkan Filter</button>
-    <button class="btn-reset" id="resetFilter">Reset</button>
+    <button class="btn-filter" id="applyFilter">
+      <i class="bi bi-funnel"></i> Terapkan
+    </button>
+    <button class="btn-reset" id="resetFilter">
+      <i class="bi bi-arrow-repeat"></i> Reset
+    </button>
   </div>
 
+  <!-- Tabel Mahasiswa -->
   <div class="table-container">
     <div class="table-responsive">
       <table class="table magang-table" id="magangTable">
@@ -407,28 +520,52 @@
           <tr>
             <th style="text-align: center;">No</th>
             <th>Mahasiswa</th>
-            <th style="text-align: center;">Total Logbook</th>
+            <th style="text-align: center;">Role Anda</th>
+            <th style="text-align: center;">Total</th>
             <th style="text-align: center;">Pending</th>
+            <th style="text-align: center;">Disetujui</th>
+            <th style="text-align: center;">Ditolak</th>
             <th style="text-align: center;">Aksi</th>
           </tr>
         </thead>
         <tbody>
           <% if (mahasiswaList.length === 0) { %>
             <tr>
-              <td colspan="5" class="text-center py-5">
+              <td colspan="8" class="text-center py-5">
                 <div class="empty-state">
                   <i class="bi bi-inbox"></i>
-                  <p>Tidak ada mahasiswa yang terdaftar di PDK yang Anda ampu.</p>
+                  <p>Anda belum memiliki mahasiswa bimbingan.</p>
+                  <p class="small text-muted mt-2">Silakan hubungi admin untuk menetapkan bimbingan.</p>
                 </div>
               </td>
             </tr>
           <% } else { %>
             <% mahasiswaList.forEach((m, index) => { 
               const fotoUrl = m.foto ? getImageUrl(m.foto) : null;
-              // Ekstrak angkatan dari NIM (misal 2020 dari NIM 20201234)
-              const angkatan = m.nim ? '20' + m.nim.substring(0,2) : '';
+              const angkatan = getAngkatan(m.nim);
+              
+              // Tentukan role badge untuk ditampilkan
+              let roleBadgeClass = '';
+              let roleText = '';
+              if (m.role === 'pembimbing1') {
+                roleBadgeClass = 'role-pembimbing1-table';
+                roleText = 'Pembimbing 1';
+              } else if (m.role === 'pembimbing2') {
+                roleBadgeClass = 'role-pembimbing2-table';
+                roleText = 'Pembimbing 2';
+              } else if (m.role === 'pembimbing1_dan_2') {
+                roleBadgeClass = 'role-both-table';
+                roleText = 'Pembimbing 1 & 2';
+              } else {
+                roleBadgeClass = 'role-pembimbing1-table';
+                roleText = '-';
+              }
             %>
-            <tr data-nama="<%= m.nama.toLowerCase() %>" data-nim="<%= m.nim %>" data-angkatan="<%= angkatan %>">
+            <tr data-nama="<%= (m.nama || '').toLowerCase() %>" 
+                data-nim="<%= m.nim || '' %>" 
+                data-angkatan="<%= angkatan %>"
+                data-total="<%= m.totalLogbook || 0 %>"
+                data-pending="<%= m.pendingCount || 0 %>">
               <td data-label="No" style="text-align: center; font-weight: 600;"><%= index + 1 %></td>
               <td data-label="Mahasiswa">
                 <div class="mahasiswa-info">
@@ -441,31 +578,60 @@
                   <div>
                     <div class="nama"><%= m.nama %></div>
                     <div class="nim"><%= m.nim || '-' %></div>
+                    <% if (angkatan) { %>
+                      <div class="small text-muted">Angkatan <%= angkatan %></div>
+                    <% } %>
                   </div>
                 </div>
               </td>
-              <td data-label="Total Logbook" style="text-align: center;">
-                <span class="badge-stat badge-total"><%= m.totalLogbook %></span>
+              <td data-label="Role Anda" style="text-align: center;">
+                <span class="role-badge-table <%= roleBadgeClass %>">
+                  <i class="bi <%= m.role === 'pembimbing2' ? 'bi-check-circle' : (m.role === 'pembimbing1' ? 'bi-eye' : 'bi-star') %>"></i>
+                  <%= roleText %>
+                </span>
+              </td>
+              <td data-label="Total" style="text-align: center;">
+                <span class="badge-stat badge-total"><%= m.totalLogbook || 0 %></span>
               </td>
               <td data-label="Pending" style="text-align: center;">
-                <% if (m.pendingCount > 0) { %>
+                <% if ((m.pendingCount || 0) > 0) { %>
                   <span class="badge-stat badge-pending"><%= m.pendingCount %></span>
                 <% } else { %>
                   <span class="badge-stat badge-zero">0</span>
                 <% } %>
               </td>
+              <td data-label="Disetujui" style="text-align: center;">
+                <% if ((m.approvedCount || 0) > 0) { %>
+                  <span class="badge-stat badge-approved"><%= m.approvedCount %></span>
+                <% } else { %>
+                  <span class="badge-stat badge-zero">0</span>
+                <% } %>
+              </td>
+              <td data-label="Ditolak" style="text-align: center;">
+                <% if ((m.rejectedCount || 0) > 0) { %>
+                  <span class="badge-stat badge-rejected"><%= m.rejectedCount %></span>
+                <% } else { %>
+                  <span class="badge-stat badge-zero">0</span>
+                <% } %>
+              </td>
               <td data-label="Aksi" style="text-align: center;">
-                <a href="/dosen/magang/<%= m.id %>" class="btn-action btn-view">
-                  <i class="bi bi-eye"></i> Lihat Logbook
-                </a>
+                <div class="btn-actions">
+                  <a href="/dosen/magang/<%= m.id %>" class="btn-action btn-view" title="Lihat Logbook">
+                    <i class="bi bi-eye"></i> Logbook
+                  </a>
+                  <a href="/dosen/magang-period/<%= m.id %>" class="btn-action btn-manage" title="Kelola Magang">
+                    <i class="bi bi-gear-fill"></i> Kelola
+                  </a>
+                </div>
               </td>
             </tr>
             <% }) %>
           <% } %>
         </tbody>
       </table>
-      <!-- Tempat pesan tidak ada hasil filter -->
-      <div id="noFilterResult" class="no-results" style="display: none;">Tidak ada mahasiswa yang cocok dengan filter.</div>
+      <div id="noFilterResult" class="no-results" style="display: none;">
+        <i class="bi bi-search"></i> Tidak ada mahasiswa yang cocok dengan filter.
+      </div>
     </div>
   </div>
 </div>
@@ -478,9 +644,9 @@
       const angkatanSet = new Set();
       rows.forEach(row => {
         const angkatan = row.getAttribute('data-angkatan');
-        if (angkatan) angkatanSet.add(angkatan);
+        if (angkatan && angkatan !== '') angkatanSet.add(angkatan);
       });
-      return Array.from(angkatanSet).sort();
+      return Array.from(angkatanSet).sort().reverse();
     }
 
     // Isi dropdown angkatan
@@ -523,7 +689,6 @@
         }
       });
 
-      // Tampilkan pesan jika tidak ada hasil
       const noResultDiv = document.getElementById('noFilterResult');
       if (visibleCount === 0) {
         noResultDiv.style.display = 'block';
@@ -544,7 +709,6 @@
     // Event listeners
     document.getElementById('applyFilter').addEventListener('click', filterTable);
     document.getElementById('resetFilter').addEventListener('click', resetFilter);
-    // Optional: filter on input change
     document.getElementById('searchInput').addEventListener('keyup', filterTable);
     document.getElementById('angkatanFilter').addEventListener('change', filterTable);
   })();

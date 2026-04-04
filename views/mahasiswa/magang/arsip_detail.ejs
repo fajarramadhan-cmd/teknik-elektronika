@@ -1,0 +1,637 @@
+<%- include('../../partials/header') %>
+
+<%
+  // Default values untuk mencegah error
+  if (typeof period === 'undefined') period = null;
+  if (typeof logbookList === 'undefined') logbookList = [];
+  if (typeof pembimbing === 'undefined') pembimbing = null;
+  
+  // Helper format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+  
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+%>
+
+<style>
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.1);
+    --primary-dark: #0f2b5c;
+    --success-bg: #d1fae5;
+    --success-text: #065f46;
+    --warning-bg: #fef3c7;
+    --warning-text: #92400e;
+    --danger-bg: #fee2e2;
+    --danger-text: #991b1b;
+    --info-bg: #dbeafe;
+    --info-text: #1e40af;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
+  }
+
+  /* ===== HEADER ARSIP ===== */
+  .arsip-header {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .arsip-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .arsip-header h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .arsip-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .arsip-header .badge-arsip {
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+  }
+  .btn-back {
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: #6c757d;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    color: #495057;
+  }
+
+  /* ===== INFO CARD ===== */
+  .info-card {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .info-card h5 {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e9ecef;
+  }
+  .info-card h5 i {
+    color: #6c757d;
+  }
+
+  /* ===== RINGKASAN NILAI ===== */
+  .nilai-ringkasan {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 1rem;
+    padding: 1rem;
+    text-align: center;
+  }
+  .nilai-angka {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-start);
+  }
+  .nilai-huruf {
+    font-size: 2rem;
+    font-weight: 700;
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--primary-start);
+    color: white;
+  }
+  .nilai-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+  }
+
+  /* ===== INFO DETAIL ===== */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .info-item {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+  .info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 0.3rem;
+  }
+  .info-value {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+  }
+
+  /* ===== TABEL LOGBOOK ===== */
+  .table-container {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .logbook-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0;
+  }
+  .logbook-table th {
+    background: #f8f9fa;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .logbook-table td {
+    vertical-align: middle;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    font-size: 0.9rem;
+  }
+  .logbook-table tbody tr:hover {
+    background-color: #f8fafc;
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+  .badge-approved {
+    background: var(--success-bg);
+    color: var(--success-text);
+  }
+  .badge-rejected {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+  }
+  .badge-pending {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+  }
+
+  /* ===== GALLERY THUMBNAIL ===== */
+  .gallery-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .gallery-thumb:hover {
+    transform: scale(1.05);
+    border-color: var(--primary-start);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: #f8fafc;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    color: #6c757d;
+  }
+
+  /* ===== TOMBOL CETAK ===== */
+  .print-btn {
+    background: #10b981;
+    border: none;
+    color: white;
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .print-btn:hover {
+    background: #059669;
+    transform: translateY(-3px);
+    color: white;
+    box-shadow: 0 5px 15px rgba(16,185,129,0.3);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    html { font-size: 15px; }
+    .arsip-header h2 { font-size: 1.5rem; }
+    .info-grid { grid-template-columns: 1fr; }
+    .nilai-ringkasan { margin-top: 1rem; }
+    .logbook-table th { font-size: 0.75rem; padding: 0.5rem; }
+    .logbook-table td { font-size: 0.85rem; padding: 0.5rem; }
+  }
+
+  @media (max-width: 576px) {
+    html { font-size: 14px; }
+    .gallery-thumb { width: 50px; height: 50px; }
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header Arsip -->
+  <div class="arsip-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2>
+        <i class="bi bi-archive-fill"></i> 
+        Arsip Logbook Magang
+      </h2>
+      <p class="mb-0">
+        <i class="bi bi-book me-2"></i>
+        <%= period ? `${period.pdkKode} - ${period.pdkNama}` : 'Periode Magang' %>
+      </p>
+      <div class="mt-2">
+        <span class="badge-arsip">
+          <i class="bi bi-check-circle-fill me-1"></i> Selesai & Tersimpan
+        </span>
+      </div>
+    </div>
+    <div class="mt-2 mt-sm-0">
+      <a href="/mahasiswa/magang" class="btn-back">
+        <i class="bi bi-arrow-left me-2"></i>Kembali
+      </a>
+    </div>
+  </div>
+
+  <% if (period) { %>
+    <!-- Informasi Periode Magang -->
+    <div class="info-card">
+      <h5><i class="bi bi-info-circle-fill"></i> Informasi Periode Magang</h5>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Periode Magang</div>
+              <div class="info-value">
+                <i class="bi bi-calendar3 me-1"></i>
+                <%= formatTanggal(period.tanggalMulai) %> 
+                s/d 
+                <%= formatTanggal(period.tanggalSelesai) || 'Berlangsung' %>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Perusahaan</div>
+              <div class="info-value">
+                <i class="bi bi-building me-1"></i>
+                <%= (period.perusahaan && period.perusahaan.nama) ? period.perusahaan.nama : '-' %>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Pembimbing Lapangan</div>
+              <div class="info-value">
+                <i class="bi bi-person-badge me-1"></i>
+                <%= (period.perusahaan && period.perusahaan.pembimbingLapangan) ? period.perusahaan.pembimbingLapangan : '-' %>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Tanggal Selesai</div>
+              <div class="info-value">
+                <i class="bi bi-check-circle me-1"></i>
+                <%= period.completedAt ? formatDateTime(period.completedAt) : '-' %>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="nilai-ringkasan">
+            <% if (period.nilai && period.nilai.angka) { %>
+              <div class="nilai-huruf"><%= period.nilai.huruf || '-' %></div>
+              <div class="nilai-angka"><%= period.nilai.angka %></div>
+              <div class="nilai-label">Nilai Akhir</div>
+              <% if (period.nilai.komentar) { %>
+                <div class="small text-muted mt-2">
+                  <i class="bi bi-chat"></i> <%= period.nilai.komentar %>
+                </div>
+              <% } %>
+            <% } else { %>
+              <div class="nilai-huruf" style="background: #adb5bd;">-</div>
+              <div class="nilai-angka" style="font-size: 1.2rem;">Belum dinilai</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dosen Pembimbing -->
+    <div class="info-card">
+      <h5><i class="bi bi-people-fill"></i> Dosen Pembimbing</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="info-item">
+            <div class="info-label">Pembimbing 1</div>
+            <div class="info-value">
+              <i class="bi bi-person-check-fill text-success me-1"></i>
+              <%= period.pembimbing1Nama || '-' %>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="info-item">
+            <div class="info-label">Pembimbing 2</div>
+            <div class="info-value">
+              <i class="bi bi-person-plus-fill text-info me-1"></i>
+              <%= period.pembimbing2Nama || '-' %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ulasan Perusahaan -->
+    <% if (period.ulasan && period.ulasan.isFilled) { %>
+      <div class="info-card">
+        <h5><i class="bi bi-star-fill text-warning"></i> Ulasan Perusahaan</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="info-item">
+              <div class="info-label">Deskripsi Perusahaan</div>
+              <div class="info-value"><%= period.ulasan.deskripsiPerusahaan || '-' %></div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Fasilitas Magang</div>
+              <div class="info-value"><%= period.ulasan.fasilitasMagang || '-' %></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-item">
+              <div class="info-label">Saran untuk Junior</div>
+              <div class="info-value"><%= period.ulasan.saranUntukJunior || '-' %></div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Rating</div>
+              <div class="info-value">
+                <% if (period.ulasan.rating) { %>
+                  <% for (let i = 1; i <= 5; i++) { %>
+                    <i class="bi bi-star-fill <%= i <= period.ulasan.rating ? 'text-warning' : 'text-secondary' %>"></i>
+                  <% } %>
+                  <span class="ms-2">(<%= period.ulasan.rating %>/5)</span>
+                <% } else { %>
+                  -
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Tabel Logbook -->
+    <div class="table-container">
+      <div class="table-responsive">
+        <table class="table logbook-table">
+          <thead>
+            <tr>
+              <th style="text-align: center;">No</th>
+              <th>Tanggal</th>
+              <th>Kegiatan</th>
+              <th style="text-align: center;">Durasi</th>
+              <th>Lokasi</th>
+              <th style="text-align: center;">Dokumentasi</th>
+              <th style="text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (logbookList.length === 0) { %>
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p>Belum ada logbook untuk periode magang ini.</p>
+                  </div>
+                </td>
+              </tr>
+            <% } else { %>
+              <% logbookList.forEach((item, index) => { %>
+                <tr>
+                  <td style="text-align: center; font-weight: 600;"><%= index + 1 %></td>
+                  <td><%= formatTanggal(item.tanggal) %></td>
+                  <td style="max-width: 300px;"><%= item.kegiatan %></td>
+                  <td style="text-align: center;"><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
+                  <td><%= item.lokasi || '-' %></td>
+                  <td style="text-align: center;">
+                    <% if (item.imageUrls && item.imageUrls.length > 0) { 
+                      const firstUrl = item.imageUrls[0];
+                      const fileIdMatch = firstUrl.match(/[?&]id=([^&]+)/);
+                      const fileId = fileIdMatch ? fileIdMatch[1] : (firstUrl.match(/\/d\/([^\/]+)/) || [])[1];
+                      const thumbUrl = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w100` : firstUrl;
+                    %>
+                      <img src="<%= thumbUrl %>" 
+                           class="gallery-thumb" 
+                           alt="dokumentasi"
+                           onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
+                           onerror="this.onerror=null; this.src='<%= firstUrl %>';">
+                    <% } else { %>
+                      <span class="text-muted">-</span>
+                    <% } %>
+                  </td>
+                  <td style="text-align: center;">
+                    <% if (item.status === 'approved') { %>
+                      <span class="badge-status badge-approved">
+                        <i class="bi bi-check-circle"></i> Disetujui
+                      </span>
+                    <% } else if (item.status === 'rejected') { %>
+                      <span class="badge-status badge-rejected">
+                        <i class="bi bi-x-circle"></i> Ditolak
+                      </span>
+                    <% } else { %>
+                      <span class="badge-status badge-pending">
+                        <i class="bi bi-hourglass-split"></i> Pending
+                      </span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Tombol Cetak -->
+      <% if (logbookList.length > 0) { %>
+        <div class="mt-4 text-end">
+          <a href="/mahasiswa/magang/logbook-print?periodId=<%= period.id %>" class="print-btn" target="_blank">
+            <i class="bi bi-printer"></i> Cetak Logbook
+          </a>
+        </div>
+      <% } %>
+    </div>
+
+  <% } else { %>
+    <!-- Jika periode tidak ditemukan -->
+    <div class="info-card">
+      <div class="empty-state">
+        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+        <h5>Periode Magang Tidak Ditemukan</h5>
+        <p>Data periode magang yang Anda cari tidak tersedia.</p>
+        <a href="/mahasiswa/magang" class="btn-back">
+          <i class="bi bi-arrow-left"></i> Kembali ke Dashboard Magang
+        </a>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- MODAL LIGHTBOX GAMBAR -->
+<div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white;">
+        <h5 class="modal-title"><i class="bi bi-images me-2"></i>Dokumentasi Kegiatan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
+          <div class="carousel-inner" id="galleryCarouselInner"></div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getFileId(url) {
+    if (!url) return null;
+    let match = url.match(/[?&]id=([^&]+)/);
+    if (match) return match[1];
+    match = url.match(/\/d\/([^\/]+)/);
+    if (match) return match[1];
+    return null;
+  }
+
+  function lihatGambar(imageUrls) {
+    const inner = document.getElementById('galleryCarouselInner');
+    inner.innerHTML = '';
+    if (!imageUrls || imageUrls.length === 0) {
+      alert('Tidak ada gambar untuk ditampilkan.');
+      return;
+    }
+    
+    imageUrls.forEach((url, index) => {
+      const fileId = getFileId(url);
+      const thumbUrl = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800` : url;
+      const directUrl = fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+      const activeClass = index === 0 ? ' active' : '';
+      
+      const item = `
+        <div class="carousel-item${activeClass}">
+          <img src="${thumbUrl}" 
+               class="d-block w-100" 
+               alt="Dokumentasi"
+               data-direct-url="${directUrl}"
+               onerror="this.onerror=null; this.src=this.getAttribute('data-direct-url'); this.onerror=function(){ this.outerHTML='<div class=\\'text-center p-5\\'><i class=\\'bi bi-exclamation-triangle\\'></i> Gambar tidak dapat ditampilkan. <a href=\\'${url}\\' target=\\'_blank\\'>Buka di tab baru</a></div>'; };">
+        </div>
+      `;
+      inner.innerHTML += item;
+    });
+    
+    new bootstrap.Modal(document.getElementById('galleryModal')).show();
+  }
+</script>
+
+<%- include('../../partials/footer') %>

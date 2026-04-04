@@ -27,7 +27,7 @@ const mkRouter = require('./mk');
 const kurikulumRouter = require('./kurikulum');
 const nilaiRouter = require('./nilai');
 const mahasiswaRouter = require('./mahasiswa');
-
+const magangPeriodRouter = require('./magangPeriod');
 // ============================================================================
 // KONSTANTA FOLDER UTAMA (Data WEB)
 // ============================================================================
@@ -95,7 +95,7 @@ router.use('/laporan-magang', laporanMagangRouter);
 router.use('/seminar', seminarRouter);
 router.use('/magang', magangRouter);
 router.use('/biodata', biodataRouter);
-
+router.use('/magang-period', magangPeriodRouter);
 
 router.use('/mk', mkRouter);
 router.use('/kurikulum', kurikulumRouter);

@@ -1,6 +1,18 @@
 <%- include('../partials/header') %>
 
 <%
+  // ========== DEFAULT VALUES ==========
+  if (typeof mahasiswa === 'undefined') mahasiswa = { nama: '-', nim: '-', email: '-', noHp: '-', foto: null };
+  if (typeof logbookList === 'undefined') logbookList = [];
+  if (typeof semesterList === 'undefined') semesterList = [];
+  if (typeof allPeriods === 'undefined') allPeriods = [];
+  if (typeof selectedPeriod === 'undefined') selectedPeriod = null;
+  if (typeof pdkStats === 'undefined') pdkStats = [];
+  if (typeof selectedSemester === 'undefined') selectedSemester = '';
+  if (typeof role === 'undefined') role = null;
+  if (typeof isPembimbing1 === 'undefined') isPembimbing1 = false;
+  if (typeof isPembimbing2 === 'undefined') isPembimbing2 = false;
+  
   // Fungsi untuk mendapatkan URL gambar dari Google Drive
   const getImageUrl = (url, size = 200) => {
     if (!url) return null;
@@ -11,7 +23,7 @@
     return url;
   };
 
-  // Fungsi untuk mendapatkan fileId dari URL (untuk thumbnail dokumentasi)
+  // Fungsi untuk mendapatkan fileId dari URL
   const getFileId = (url) => {
     if (!url) return null;
     let match = url.match(/[?&]id=([^&]+)/);
@@ -22,10 +34,21 @@
     if (match) return match[1];
     return null;
   };
+  
+  // Format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 %>
 
 <style>
-  /* ===== VARIABEL WARNA (sesuai navbar) ===== */
+  /* ===== VARIABEL WARNA ===== */
   :root {
     --primary-start: #1e3a8a;
     --primary-end: #3b82f6;
@@ -37,13 +60,12 @@
     --success-text: #065f46;
     --danger-bg: #fee2e2;
     --danger-text: #991b1b;
-    --font-base: 16px;
+    --info-bg: #dbeafe;
+    --info-text: #1e40af;
+    --gray-border: #e2e8f0;
   }
 
-  html {
-    font-size: 16px;
-  }
-
+  html { font-size: 16px; }
   body {
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     background-color: #f8fafc;
@@ -142,6 +164,78 @@
     color: white;
   }
 
+  /* Filter Cards */
+  .filter-card {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid var(--gray-border);
+  }
+  .filter-card .form-select, .filter-card .form-control {
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* PDK Stats Cards */
+  .pdk-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--gray-border);
+    transition: all 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .stat-card.active {
+    border: 2px solid var(--primary-start);
+    background: var(--primary-light);
+  }
+  .stat-card .pdk-kode {
+    font-weight: 700;
+    color: var(--primary-start);
+    font-size: 0.8rem;
+  }
+  .stat-card .pdk-nama {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  .stat-card .stat-numbers {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .stat-card .stat-item {
+    text-align: center;
+  }
+  .stat-card .stat-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  .stat-card .stat-label {
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+  .stat-card.pending .stat-value { color: #f59e0b; }
+  .stat-card.approved .stat-value { color: #10b981; }
+  .stat-card.rejected .stat-value { color: #ef4444; }
+
   /* Page Header */
   .page-header {
     background: white;
@@ -154,7 +248,7 @@
     flex-wrap: wrap;
     gap: 1rem;
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    border: 1px solid rgba(30,58,138,0.1);
+    border: 1px solid var(--gray-border);
   }
   .page-header h4 {
     font-weight: 700;
@@ -210,28 +304,13 @@
     box-shadow: 0 5px 10px rgba(30,58,138,0.3);
   }
 
-  /* Filter Card */
-  .filter-card {
-    background: white;
-    border-radius: 1.2rem;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    border: 1px solid rgba(30,58,138,0.1);
-  }
-  .filter-card .form-select {
-    border-radius: 50px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  /* Tabel Minimalis */
+  /* Tabel */
   .table-container {
     background: white;
     border-radius: 1.5rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     overflow: hidden;
-    border: 1px solid rgba(30,58,138,0.1);
+    border: 1px solid var(--gray-border);
     padding: 0;
   }
   .table-responsive {
@@ -403,6 +482,15 @@
     font-size: 1.1rem;
   }
 
+  /* Info Period */
+  .info-period {
+    background: var(--info-bg);
+    border-left: 4px solid var(--primary-start);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
@@ -411,6 +499,7 @@
     .avatar-circle-large { width: 60px; height: 60px; font-size: 2rem; }
     .page-header { flex-direction: column; align-items: stretch; }
     .page-header .btn-group { justify-content: center; }
+    .pdk-stats { grid-template-columns: repeat(2, 1fr); }
     .logbook-table thead th { font-size: 0.8rem; padding: 0.8rem; }
     .logbook-table tbody td { font-size: 0.9rem; padding: 0.8rem; }
   }
@@ -418,6 +507,7 @@
   @media (max-width: 576px) {
     html { font-size: 14px; }
     .profile-card h2 { font-size: 1.3rem; }
+    .pdk-stats { grid-template-columns: 1fr; }
     .logbook-table thead th { font-size: 0.75rem; padding: 0.6rem; }
     .logbook-table tbody td { font-size: 0.85rem; padding: 0.6rem; }
     .badge-status { font-size: 0.7rem; padding: 0.3rem 0.8rem; }
@@ -483,7 +573,7 @@
       <i class="bi bi-journal-bookmark-fill" style="color: var(--primary-start);"></i> Logbook Magang
     </h4>
     <div class="btn-group">
-      <a href="/dosen/magang/print/<%= mahasiswa.id %>" class="btn-print" target="_blank">
+      <a href="/dosen/magang/print/<%= mahasiswa.id %><%= selectedPeriod ? `?periodId=${selectedPeriod.id}` : '' %>" class="btn-print" target="_blank">
         <i class="bi bi-printer"></i> Print
       </a>
       <a href="/dosen/magang" class="btn-back">
@@ -491,6 +581,71 @@
       </a>
     </div>
   </div>
+
+  <!-- PDK Stats Cards (Filter Periode) -->
+  <% if (allPeriods && allPeriods.length > 0) { %>
+    <div class="pdk-stats">
+      <a href="/dosen/magang/<%= mahasiswa.id %>" class="stat-card <%= !selectedPeriod ? 'active' : '' %>">
+        <div class="pdk-kode">SEMUA</div>
+        <div class="pdk-nama">Semua Periode</div>
+        <div class="stat-numbers">
+          <div class="stat-item pending">
+            <div class="stat-value"><%= pdkStats.reduce((sum, s) => sum + s.pendingCount, 0) %></div>
+            <div class="stat-label">Pending</div>
+          </div>
+          <div class="stat-item approved">
+            <div class="stat-value"><%= pdkStats.reduce((sum, s) => sum + s.approvedCount, 0) %></div>
+            <div class="stat-label">Approved</div>
+          </div>
+          <div class="stat-item rejected">
+            <div class="stat-value"><%= pdkStats.reduce((sum, s) => sum + s.rejectedCount, 0) %></div>
+            <div class="stat-label">Rejected</div>
+          </div>
+        </div>
+      </a>
+      <% allPeriods.forEach(period => { 
+        const stats = pdkStats.find(s => s.id === period.id) || { pendingCount: 0, approvedCount: 0, rejectedCount: 0 };
+      %>
+        <a href="/dosen/magang/<%= mahasiswa.id %>?periodId=<%= period.id %>" class="stat-card <%= selectedPeriod && selectedPeriod.id === period.id ? 'active' : '' %>">
+          <div class="pdk-kode"><%= period.pdkKode %></div>
+          <div class="pdk-nama"><%= period.pdkNama %></div>
+          <div class="stat-numbers">
+            <div class="stat-item pending">
+              <div class="stat-value"><%= stats.pendingCount %></div>
+              <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-item approved">
+              <div class="stat-value"><%= stats.approvedCount %></div>
+              <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-item rejected">
+              <div class="stat-value"><%= stats.rejectedCount %></div>
+              <div class="stat-label">Rejected</div>
+            </div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- Info Periode Aktif -->
+  <% if (selectedPeriod) { %>
+    <div class="info-period">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <strong><i class="bi bi-info-circle"></i> Periode Magang:</strong> 
+          <%= selectedPeriod.pdkKode %> - <%= selectedPeriod.pdkNama %>
+          (<%= formatTanggal(selectedPeriod.tanggalMulai) %> 
+          <%= selectedPeriod.tanggalSelesai ? `s/d ${formatTanggal(selectedPeriod.tanggalSelesai)}` : 'Berlangsung' %>)
+        </div>
+        <% if (selectedPeriod.perusahaan && selectedPeriod.perusahaan.nama) { %>
+          <div class="mt-1 mt-sm-0">
+            <i class="bi bi-building"></i> <%= selectedPeriod.perusahaan.nama %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
 
   <!-- Filter Semester -->
   <div class="filter-card">
@@ -506,6 +661,9 @@
           <% } %>
         </select>
       </div>
+      <% if (selectedPeriod) { %>
+        <input type="hidden" name="periodId" value="<%= selectedPeriod.id %>">
+      <% } %>
     </form>
   </div>
 
@@ -534,7 +692,7 @@
               <td colspan="<%= isPembimbing2 ? 9 : 8 %>" class="text-center py-5">
                 <div class="empty-state">
                   <i class="bi bi-inbox"></i>
-                  <p>Mahasiswa ini belum mengisi logbook.</p>
+                  <p>Belum ada logbook untuk periode ini.</p>
                 </div>
               </td>
             </tr>

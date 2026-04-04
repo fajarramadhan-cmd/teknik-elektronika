@@ -7,6 +7,7 @@
  * - Dosen hanya bisa melihat mahasiswa yang ditetapkan sebagai bimbingannya oleh admin
  * - Mendukung 2 pembimbing per mahasiswa
  * - PEMBIMBING 2 yang bisa Approve/Reject, PEMBIMBING 1 Read Only
+ * - Mendukung filter periode magang (PDK 1,2,3)
  */
 
 const express = require('express');
@@ -122,6 +123,19 @@ async function getMahasiswaBimbingan(dosenId) {
       const mahasiswa = await getMahasiswa(mahasiswaId);
       
       if (mahasiswa && mahasiswa.nama !== 'Unknown') {
+        // Ambil periode magang aktif untuk mahasiswa ini
+        const periodSnapshot = await db.collection('magangPeriod')
+          .where('mahasiswaId', '==', mahasiswaId)
+          .where('status', '==', 'active')
+          .get();
+        
+        const activePeriods = periodSnapshot.docs.map(doc => ({
+          id: doc.id,
+          pdkKode: doc.data().pdkKode,
+          pdkNama: doc.data().pdkNama,
+          status: doc.data().status
+        }));
+        
         mahasiswaList.push({
           ...mahasiswa,
           bimbinganId: bimbingan.bimbinganId,
@@ -131,7 +145,8 @@ async function getMahasiswaBimbingan(dosenId) {
           pembimbing1Id: bimbingan.pembimbing1Id,
           pembimbing1Nama: bimbingan.pembimbing1Nama,
           pembimbing2Id: bimbingan.pembimbing2Id,
-          pembimbing2Nama: bimbingan.pembimbing2Nama
+          pembimbing2Nama: bimbingan.pembimbing2Nama,
+          activePeriods // periode magang aktif
         });
       }
     }
@@ -148,37 +163,47 @@ async function getMahasiswaBimbingan(dosenId) {
  * @param {string} mahasiswaId - ID mahasiswa
  * @returns {Promise<Object>} statistik logbook
  */
-async function getLogbookStatistik(mahasiswaId) {
+async function getLogbookStatistik(mahasiswaId, pdkId = null) {
   try {
-    const logbookSnapshot = await db.collection('logbookMagang')
-      .where('userId', '==', mahasiswaId)
-      .get();
+    let query = db.collection('logbookMagang')
+      .where('userId', '==', mahasiswaId);
     
+    if (pdkId) {
+      query = query.where('pdkId', '==', pdkId);
+    }
+    
+    const logbookSnapshot = await query.get();
     const totalLogbook = logbookSnapshot.size;
     
     const pendingSnapshot = await db.collection('logbookMagang')
       .where('userId', '==', mahasiswaId)
-      .where('status', '==', 'pending')
-      .get();
-    const pendingCount = pendingSnapshot.size;
+      .where('status', '==', 'pending');
     
     const approvedSnapshot = await db.collection('logbookMagang')
       .where('userId', '==', mahasiswaId)
-      .where('status', '==', 'approved')
-      .get();
-    const approvedCount = approvedSnapshot.size;
+      .where('status', '==', 'approved');
     
     const rejectedSnapshot = await db.collection('logbookMagang')
       .where('userId', '==', mahasiswaId)
-      .where('status', '==', 'rejected')
-      .get();
-    const rejectedCount = rejectedSnapshot.size;
+      .where('status', '==', 'rejected');
+    
+    if (pdkId) {
+      pendingSnapshot.where('pdkId', '==', pdkId);
+      approvedSnapshot.where('pdkId', '==', pdkId);
+      rejectedSnapshot.where('pdkId', '==', pdkId);
+    }
+    
+    const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
+      pendingSnapshot.get(),
+      approvedSnapshot.get(),
+      rejectedSnapshot.get()
+    ]);
     
     return {
       totalLogbook,
-      pendingCount,
-      approvedCount,
-      rejectedCount
+      pendingCount: pendingRes.size,
+      approvedCount: approvedRes.size,
+      rejectedCount: rejectedRes.size
     };
   } catch (error) {
     console.error('Error getLogbookStatistik:', error);
@@ -227,7 +252,48 @@ async function isMahasiswaBimbingan(dosenId, mahasiswaId) {
  */
 async function canApprove(dosenId, mahasiswaId) {
   const { role } = await isMahasiswaBimbingan(dosenId, mahasiswaId);
-  return role === 'pembimbing2'; // ✅ HANYA PEMBIMBING 2 YANG BISA APPROVE
+  return role === 'pembimbing2';
+}
+
+/**
+ * Cek apakah periode magang masih aktif
+ * @param {string} mahasiswaId - ID mahasiswa
+ * @param {string} pdkId - ID PDK
+ * @returns {Promise<boolean>}
+ */
+async function isMagangPeriodActive(mahasiswaId, pdkId) {
+  try {
+    const snapshot = await db.collection('magangPeriod')
+      .where('mahasiswaId', '==', mahasiswaId)
+      .where('pdkId', '==', pdkId)
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+    
+    return !snapshot.empty;
+  } catch (error) {
+    console.error('Error isMagangPeriodActive:', error);
+    return false;
+  }
+}
+
+/**
+ * Mendapatkan periode magang aktif mahasiswa
+ * @param {string} mahasiswaId - ID mahasiswa
+ * @returns {Promise<Array>}
+ */
+async function getActiveMagangPeriods(mahasiswaId) {
+  try {
+    const snapshot = await db.collection('magangPeriod')
+      .where('mahasiswaId', '==', mahasiswaId)
+      .where('status', '==', 'active')
+      .get();
+    
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getActiveMagangPeriods:', error);
+    return [];
+  }
 }
 
 // ============================================================================
@@ -260,7 +326,8 @@ router.get('/', async (req, res) => {
     res.render('dosen/magang_list', {
       title: 'Monitoring Magang',
       mahasiswaList,
-      message: null
+      message: null,
+      user: req.user
     });
   } catch (error) {
     console.error('Error ambil daftar mahasiswa bimbingan:', error);
@@ -278,7 +345,7 @@ router.get('/', async (req, res) => {
 router.get('/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { semester } = req.query; // ✅ Ambil parameter semester dari query string
+    const { periodId, semester } = req.query;
     
     // Validasi akses
     const { isBimbingan, role } = await isMahasiswaBimbingan(req.dosen.id, userId);
@@ -297,12 +364,26 @@ router.get('/:userId', async (req, res) => {
       });
     }
     
-    // Ambil semua logbook
+    // Ambil semua periode magang mahasiswa (untuk dropdown filter)
+    const allPeriods = await getActiveMagangPeriods(userId);
+    
+    // Tentukan periode yang dipilih
+    let selectedPeriod = null;
+    if (periodId) {
+      selectedPeriod = allPeriods.find(p => p.id === periodId);
+    } else if (allPeriods.length > 0) {
+      selectedPeriod = allPeriods[0];
+    }
+    
+    // Ambil logbook
     let logbookQuery = db.collection('logbookMagang')
       .where('userId', '==', userId)
       .orderBy('tanggal', 'desc');
     
-    // ✅ Filter berdasarkan semester jika ada
+    if (selectedPeriod) {
+      logbookQuery = logbookQuery.where('pdkId', '==', selectedPeriod.pdkId);
+    }
+    
     if (semester) {
       logbookQuery = logbookQuery.where('semester', '==', semester);
     }
@@ -332,24 +413,85 @@ router.get('/:userId', async (req, res) => {
     });
     const semesterList = Array.from(semesterSet).sort();
     
+    // Statistik per PDK
+    const pdkStats = [];
+    for (const period of allPeriods) {
+      const stats = await getLogbookStatistik(userId, period.pdkId);
+      pdkStats.push({
+        ...period,
+        ...stats
+      });
+    }
+    
     res.render('dosen/magang_detail', {
       title: `Logbook - ${mahasiswa.nama}`,
       mahasiswa,
       logbookList,
       semesterList,
-      selectedSemester: semester || '', // ✅ KIRIMKAN selectedSemester KE VIEW
+      selectedSemester: semester || '',
+      allPeriods,
+      selectedPeriod,
+      pdkStats,
       role,
       canApprove: role === 'pembimbing2',
       isPembimbing1: role === 'pembimbing1',
       isPembimbing2: role === 'pembimbing2',
       pembimbing1Nama: mahasiswa.pembimbing1Nama,
-      pembimbing2Nama: mahasiswa.pembimbing2Nama
+      pembimbing2Nama: mahasiswa.pembimbing2Nama,
+      user: req.user
     });
   } catch (error) {
     console.error('Error ambil logbook mahasiswa:', error);
     res.status(500).render('error', { 
       title: 'Error', 
       message: 'Gagal memuat logbook mahasiswa' 
+    });
+  }
+});
+
+// ============================================================================
+// DETAIL SATU LOGBOOK
+// ============================================================================
+
+router.get('/logbook/:id', async (req, res) => {
+  try {
+    const logbookId = req.params.id;
+    
+    const logbookDoc = await db.collection('logbookMagang').doc(logbookId).get();
+    if (!logbookDoc.exists) {
+      return res.status(404).render('error', {
+        title: 'Tidak Ditemukan',
+        message: 'Logbook tidak ditemukan'
+      });
+    }
+    
+    const logbook = logbookDoc.data();
+    const mahasiswa = await getMahasiswa(logbook.userId);
+    
+    // Validasi akses
+    const { isBimbingan, role } = await isMahasiswaBimbingan(req.dosen.id, logbook.userId);
+    if (!isBimbingan) {
+      return res.status(403).render('error', {
+        title: 'Akses Ditolak',
+        message: 'Anda tidak memiliki akses ke logbook ini.'
+      });
+    }
+    
+    res.render('dosen/magang_logbook_detail', {
+      title: 'Detail Logbook',
+      logbook,
+      mahasiswa,
+      tanggalFormatted: formatDate(logbook.tanggal),
+      tanggalWaktuFormatted: formatDateTime(logbook.tanggal),
+      role,
+      canApprove: role === 'pembimbing2' && logbook.status === 'pending',
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      message: 'Gagal memuat detail logbook'
     });
   }
 });
@@ -371,11 +513,19 @@ router.post('/logbook/:id/approve', async (req, res) => {
     
     const logbook = logbookDoc.data();
     const mahasiswaId = logbook.userId;
+    const pdkId = logbook.pdkId;
     
-    // ✅ Validasi: Hanya Pembimbing 2 yang bisa approve
+    // Validasi: Hanya Pembimbing 2 yang bisa approve
     const canApproveFlag = await canApprove(req.dosen.id, mahasiswaId);
     if (!canApproveFlag) {
       req.session.error = 'Hanya Pembimbing 2 yang dapat menyetujui logbook';
+      return res.redirect('back');
+    }
+    
+    // Validasi: Periode magang masih aktif
+    const isActive = await isMagangPeriodActive(mahasiswaId, pdkId);
+    if (!isActive) {
+      req.session.error = 'Periode magang sudah berakhir, tidak dapat menyetujui logbook';
       return res.redirect('back');
     }
     
@@ -415,11 +565,19 @@ router.post('/logbook/:id/reject', async (req, res) => {
     
     const logbook = logbookDoc.data();
     const mahasiswaId = logbook.userId;
+    const pdkId = logbook.pdkId;
     
-    // ✅ Validasi: Hanya Pembimbing 2 yang bisa reject
+    // Validasi: Hanya Pembimbing 2 yang bisa reject
     const canApproveFlag = await canApprove(req.dosen.id, mahasiswaId);
     if (!canApproveFlag) {
       req.session.error = 'Hanya Pembimbing 2 yang dapat menolak logbook';
+      return res.redirect('back');
+    }
+    
+    // Validasi: Periode magang masih aktif
+    const isActive = await isMagangPeriodActive(mahasiswaId, pdkId);
+    if (!isActive) {
+      req.session.error = 'Periode magang sudah berakhir, tidak dapat menolak logbook';
       return res.redirect('back');
     }
     
@@ -450,8 +608,9 @@ router.post('/logbook/:id/reject', async (req, res) => {
 router.get('/print/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { semester } = req.query;
+    const { periodId, semester } = req.query;
     
+    // Validasi akses
     const { isBimbingan } = await isMahasiswaBimbingan(req.dosen.id, userId);
     if (!isBimbingan) {
       return res.status(403).send('Anda tidak memiliki akses ke logbook mahasiswa ini.');
@@ -462,6 +621,14 @@ router.get('/print/:userId', async (req, res) => {
     let query = db.collection('logbookMagang')
       .where('userId', '==', userId)
       .orderBy('tanggal', 'asc');
+    
+    if (periodId) {
+      const periodDoc = await db.collection('magangPeriod').doc(periodId).get();
+      if (periodDoc.exists) {
+        const period = periodDoc.data();
+        query = query.where('pdkId', '==', period.pdkId);
+      }
+    }
     
     if (semester) {
       query = query.where('semester', '==', semester);
@@ -477,16 +644,31 @@ router.get('/print/:userId', async (req, res) => {
     });
     
     const totalDurasi = logbookList.reduce((sum, item) => sum + (parseFloat(item.durasi) || 0), 0);
-    const filterInfo = semester ? `Semester: ${semester}` : 'Semua Semester';
+    const filterInfo = [];
+    if (periodId) filterInfo.push(`Periode: ${periodId}`);
+    if (semester) filterInfo.push(`Semester: ${semester}`);
+    const filterText = filterInfo.length > 0 ? filterInfo.join(' | ') : 'Semua Data';
+    
+    // Ambil informasi PDK
+    let pdkInfo = null;
+    if (periodId) {
+      const periodDoc = await db.collection('magangPeriod').doc(periodId).get();
+      if (periodDoc.exists) {
+        pdkInfo = periodDoc.data();
+      }
+    }
     
     res.render('dosen/magang_print', {
       title: `Cetak Logbook - ${mahasiswa.nama}`,
       mahasiswa,
       logbookList,
       totalDurasi,
-      filterInfo,
-      selectedSemester: semester || '', // ✅ KIRIMKAN JUGA KE PRINT VIEW
-      generatedAt: formatDateTime(new Date().toISOString())
+      totalEntries: logbookList.length,
+      filterInfo: filterText,
+      pdkInfo,
+      selectedSemester: semester || '',
+      generatedAt: formatDateTime(new Date().toISOString()),
+      user: req.user
     });
   } catch (error) {
     console.error('Error print logbook dosen:', error);
@@ -498,6 +680,10 @@ router.get('/print/:userId', async (req, res) => {
 // API ENDPOINT (untuk AJAX)
 // ============================================================================
 
+/**
+ * GET /dosen/magang/api/bimbingan
+ * Mengembalikan daftar mahasiswa bimbingan dalam format JSON
+ */
 router.get('/api/bimbingan', async (req, res) => {
   try {
     const mahasiswaList = await getMahasiswaBimbingan(req.dosen.id);
@@ -507,7 +693,46 @@ router.get('/api/bimbingan', async (req, res) => {
   }
 });
 
+/**
+ * GET /dosen/magang/api/logbook/:userId
+ * Mengembalikan daftar logbook mahasiswa dalam format JSON
+ */
 router.get('/api/logbook/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { periodId } = req.query;
+    
+    const { isBimbingan } = await isMahasiswaBimbingan(req.dosen.id, userId);
+    if (!isBimbingan) {
+      return res.status(403).json({ success: false, error: 'Akses ditolak' });
+    }
+    
+    let query = db.collection('logbookMagang')
+      .where('userId', '==', userId)
+      .orderBy('tanggal', 'desc');
+    
+    if (periodId) {
+      query = query.where('pdkId', '==', periodId);
+    }
+    
+    const snapshot = await query.get();
+    const logbookList = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      tanggalFormatted: formatDate(doc.data().tanggal)
+    }));
+    
+    res.json({ success: true, data: logbookList });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /dosen/magang/api/periods/:userId
+ * Mengembalikan daftar periode magang mahasiswa dalam format JSON
+ */
+router.get('/api/periods/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
@@ -516,18 +741,8 @@ router.get('/api/logbook/:userId', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Akses ditolak' });
     }
     
-    const snapshot = await db.collection('logbookMagang')
-      .where('userId', '==', userId)
-      .orderBy('tanggal', 'desc')
-      .get();
-    
-    const logbookList = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      tanggalFormatted: formatDate(doc.data().tanggal)
-    }));
-    
-    res.json({ success: true, data: logbookList });
+    const periods = await getActiveMagangPeriods(userId);
+    res.json({ success: true, data: periods });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

@@ -52,6 +52,22 @@
       color: #6c757d;
     }
 
+    /* Informasi PDK */
+    .info-pdk {
+      background: #f0f9ff;
+      border-left: 4px solid #0d6efd;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .info-pdk p {
+      margin: 0;
+      font-size: 10pt;
+    }
+    .info-pdk strong {
+      color: #0d6efd;
+    }
+
     /* Thumbnail gambar dokumentasi */
     .thumbnail {
       width: 120px;
@@ -118,6 +134,11 @@
       .kop-surat {
         border-bottom: 2px solid #0d6efd;
       }
+      .info-pdk {
+        background: #f0f9ff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
       .table th {
         background-color: #f2f2f2 !important;
         -webkit-print-color-adjust: exact;
@@ -145,6 +166,27 @@
 
     <h4 class="text-center">LOGBOOK MAGANG</h4>
     <p class="text-center"><strong><%= mahasiswa.nama %></strong> (NIM: <%= mahasiswa.nim %>)</p>
+    
+    <!-- ========== INFO PDK YANG DIPILIH ========== -->
+    <% if (pdkInfo) { %>
+      <div class="info-pdk">
+        <p><strong><i class="bi bi-book"></i> Mata Kuliah:</strong> <%= pdkInfo.kode %> - <%= pdkInfo.nama %></p>
+        <% if (pdkInfo.perusahaan && pdkInfo.perusahaan.nama) { %>
+          <p><strong><i class="bi bi-building"></i> Perusahaan:</strong> <%= pdkInfo.perusahaan.nama %></p>
+        <% } %>
+        <% if (pdkInfo.tanggalMulai) { %>
+          <p><strong><i class="bi bi-calendar"></i> Periode Magang:</strong> <%= pdkInfo.tanggalMulai %> s/d <%= pdkInfo.tanggalSelesai || 'Berlangsung' %></p>
+        <% } %>
+        <% if (pdkInfo.nilai && pdkInfo.nilai.angka) { %>
+          <p><strong><i class="bi bi-star-fill"></i> Nilai Akhir:</strong> <%= pdkInfo.nilai.huruf %> (<%= pdkInfo.nilai.angka %>)</p>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="info-pdk">
+        <p><strong><i class="bi bi-info-circle"></i> Info:</strong> Logbook untuk semua periode magang (tanpa filter PDK)</p>
+      </div>
+    <% } %>
+
     <p class="text-center"><small>Dicetak: <%= generatedAt %></small></p>
 
     <!-- Tabel Logbook -->
@@ -161,7 +203,7 @@
       </thead>
       <tbody>
         <% if (logbook.length === 0) { %>
-          <tr><td colspan="6" class="text-center">Belum ada entri logbook.</td></tr>
+          <tr><td colspan="6" class="text-center">Belum ada entri logbook.</td></td>
         <% } %>
         <% logbook.forEach((item, index) => { %>
           <tr>
@@ -206,7 +248,7 @@
       </tfoot>
     </table>
 
-    <!-- Tanda Tangan (hanya Dosen Pembimbing 1, Dosen Pembimbing 2, dan Kaprodi) -->
+    <!-- Tanda Tangan (Dosen Pembimbing 1, Dosen Pembimbing 2, dan Kaprodi) -->
     <div class="tanda-tangan">
       <div class="dua-kolom">
         <!-- Dosen Pembimbing 1 -->

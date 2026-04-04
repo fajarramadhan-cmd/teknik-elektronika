@@ -1,0 +1,60 @@
+{
+  "indexes": [
+    {
+      "collectionId": "magangPeriod",
+      "fields": [
+        {
+          "fieldPath": "mahasiswaId",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "mode": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionId": "magangPeriod",
+      "fields": [
+        {
+          "fieldPath": "mahasiswaId",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "pdkId",
+          "mode": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionId": "magangPeriod",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "pdkKode",
+          "mode": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionId": "logbookMagang",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "pdkId",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "tanggal",
+          "mode": "DESCENDING"
+        }
+      ]
+    }
+  ]
+}

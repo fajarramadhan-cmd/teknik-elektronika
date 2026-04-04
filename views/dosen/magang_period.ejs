@@ -1,0 +1,796 @@
+<%- include('../partials/header') %>
+
+<%
+  // Helper format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+  
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+%>
+
+<style>
+  /* ===== VARIABEL WARNA (konsisten dengan navbar) ===== */
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+    --primary-dark: #0f2b5c;
+    --gray-light: #f8fafc;
+    --gray-border: #e2e8f0;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0dcaf0;
+    --font-base: 16px;
+  }
+
+  html {
+    font-size: var(--font-base);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(145deg, #f1f5f9 0%, #f8fafc 100%);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER MODERN ===== */
+  .page-header {
+    background: linear-gradient(125deg, var(--primary-start), var(--primary-end));
+    border-radius: 2rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 35px -10px rgba(30,58,138,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -5%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(30px);
+  }
+  .page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 220px;
+    height: 220px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  .page-header h2 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-back {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.2s;
+  }
+  .btn-back:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  /* ===== CARD PERIODE MAGANG ===== */
+  .period-card {
+    background: white;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 6px -2px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 1px solid var(--gray-border);
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .period-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -12px rgba(30,58,138,0.15);
+    border-color: transparent;
+  }
+  .period-card-header {
+    padding: 1rem 1.5rem;
+    background: var(--gray-light);
+    border-bottom: 1px solid var(--gray-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .period-card-body {
+    padding: 1.5rem;
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-active { background: var(--success); color: white; }
+  .badge-locked { background: var(--warning); color: white; }
+  .badge-completed { background: #6c757d; color: white; }
+  .badge {
+    font-weight: 500;
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+  }
+
+  /* ===== TOMBOL (PILL) ===== */
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+    color: white;
+  }
+  .btn-warning-custom {
+    background: var(--warning);
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-warning-custom:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+    color: white;
+  }
+  .btn-danger-custom {
+    background: var(--danger);
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-success-custom {
+    background: var(--success);
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-success-custom:hover {
+    background: #059669;
+    transform: translateY(-2px);
+  }
+  .btn-outline-custom {
+    background: transparent;
+    border: 1px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-outline-custom:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+  }
+  .btn-sm {
+    padding: 0.35rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  /* ===== INFO GRID ===== */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .info-item {
+    background: var(--gray-light);
+    border-radius: 1rem;
+    padding: 0.85rem 1rem;
+    transition: all 0.2s;
+  }
+  .info-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .info-value {
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-header-custom {
+    background: linear-gradient(125deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+  }
+  .modal-header-custom .btn-close {
+    filter: brightness(0) invert(1);
+  }
+  .modal-content {
+    border-radius: 1.25rem;
+    border: none;
+    overflow: hidden;
+  }
+  .form-label {
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+  .form-control, .form-select {
+    border-radius: 0.8rem;
+    border: 1px solid var(--gray-border);
+    padding: 0.5rem 0.85rem;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-end);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .page-header {
+      padding: 1.2rem;
+    }
+    .period-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .btn-group-responsive {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header dengan efek gradien -->
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+      <h2><i class="bi bi-briefcase-fill me-2"></i>Kelola Magang</h2>
+      <p class="mb-0"><%= mahasiswa.nama %> (NIM: <%= mahasiswa.nim %>)</p>
+    </div>
+    <a href="/dosen/magang" class="btn btn-back mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+  </div>
+  
+  <!-- Tombol Mulai Periode Baru -->
+  <div class="mb-4">
+    <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#startPeriodModal">
+      <i class="bi bi-plus-circle"></i> Mulai Periode Magang Baru
+    </button>
+  </div>
+  
+  <!-- Daftar Periode Magang -->
+  <% if (periods.length === 0) { %>
+    <div class="alert alert-info border-0 rounded-3 shadow-sm">
+      <i class="bi bi-info-circle-fill me-2"></i> Belum ada periode magang. Klik tombol di atas untuk memulai.
+    </div>
+  <% } else { %>
+    <% periods.forEach(period => { %>
+      <div class="period-card">
+        <div class="period-card-header">
+          <div>
+            <strong class="fs-6"><%= period.pdkKode %> - <%= period.pdkNama %></strong>
+            <span class="badge <%= period.status === 'active' ? 'badge-active' : (period.status === 'locked' ? 'badge-locked' : 'badge-completed') %> ms-2">
+              <%= period.status === 'active' ? 'AKTIF' : (period.status === 'locked' ? 'DIKUNCI' : 'SELESAI') %>
+            </span>
+          </div>
+          <div class="text-muted small">
+            <i class="bi bi-calendar3 me-1"></i>
+            <%= formatTanggal(period.tanggalMulai) %> 
+            <%= period.tanggalSelesai ? `s/d ${formatTanggal(period.tanggalSelesai)}` : '(Berlangsung)' %>
+          </div>
+        </div>
+        <div class="period-card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="info-item">
+                <div class="info-label"><i class="bi bi-building me-1"></i> Perusahaan</div>
+                <div class="info-value"><%= period.perusahaan?.nama || '-' %></div>
+                <div class="small text-muted mt-2">
+                  <i class="bi bi-geo-alt"></i> <%= period.perusahaan?.alamat || '-' %><br>
+                  <i class="bi bi-telephone"></i> <%= period.perusahaan?.kontak || '-' %>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <div class="info-label"><i class="bi bi-person-badge me-1"></i> Pembimbing Lapangan</div>
+                <div class="info-value"><%= period.perusahaan?.pembimbingLapangan || '-' %></div>
+                <% if (period.nilai?.angka) { %>
+                  <hr class="my-2">
+                  <div class="info-label"><i class="bi bi-star-fill text-warning"></i> Nilai Akhir</div>
+                  <div class="info-value"><strong><%= period.nilai.huruf %></strong> (<%= period.nilai.angka %>)</div>
+                  <div class="small text-muted"><%= period.nilai.komentar || '' %></div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tombol Aksi (responsive) -->
+          <div class="mt-4 d-flex flex-wrap gap-2">
+            <button class="btn-outline-custom btn-sm" data-bs-toggle="modal" data-bs-target="#editPerusahaanModal" 
+                    data-period-id="<%= period.id %>"
+                    data-nama="<%= period.perusahaan?.nama %>"
+                    data-alamat="<%= period.perusahaan?.alamat %>"
+                    data-kontak="<%= period.perusahaan?.kontak %>"
+                    data-kontakhp="<%= period.perusahaan?.kontakHp %>"
+                    data-pembimbing="<%= period.perusahaan?.pembimbingLapangan %>">
+              <i class="bi bi-pencil"></i> Edit Perusahaan
+            </button>
+            
+            <% if (period.status === 'active') { %>
+              <button class="btn-warning-custom btn-sm" data-bs-toggle="modal" data-bs-target="#lockModal" 
+                      data-period-id="<%= period.id %>" data-period-name="<%= period.pdkNama %>">
+                <i class="bi bi-lock"></i> Lock
+              </button>
+              <button class="btn-success-custom btn-sm" data-bs-toggle="modal" data-bs-target="#extendModal" 
+                      data-period-id="<%= period.id %>" data-period-name="<%= period.pdkNama %>"
+                      data-current-end="<%= period.tanggalSelesai || '' %>">
+                <i class="bi bi-calendar-plus"></i> Perpanjang
+              </button>
+              <button class="btn-success-custom btn-sm" data-bs-toggle="modal" data-bs-target="#completeModal" 
+                      data-period-id="<%= period.id %>" data-period-name="<%= period.pdkNama %>">
+                <i class="bi bi-check-circle"></i> Selesai & Nilai
+              </button>
+            <% } else if (period.status === 'locked') { %>
+              <button class="btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#unlockModal" 
+                      data-period-id="<%= period.id %>" data-period-name="<%= period.pdkNama %>">
+                <i class="bi bi-unlock"></i> Unlock
+              </button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<!-- Modal Mulai Periode -->
+<div class="modal fade" id="startPeriodModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-play-fill me-2"></i> Mulai Periode Magang</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="/dosen/magang-period/start">
+        <input type="hidden" name="mahasiswaId" value="<%= mahasiswa.id %>">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Pilih PDK <span class="text-danger">*</span></label>
+              <select class="form-select" name="pdkId" required>
+                <option value="">-- Pilih PDK --</option>
+                <% pdkList.forEach(pdk => { %>
+                  <option value="<%= pdk.id %>"><%= pdk.kode %> - <%= pdk.nama %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" name="tanggalMulai" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tanggal Selesai (Opsional)</label>
+              <input type="date" class="form-control" name="tanggalSelesai">
+            </div>
+          </div>
+          <hr>
+          <h6 class="fw-bold mb-3">Informasi Perusahaan</h6>
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label class="form-label">Nama Perusahaan <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="namaPerusahaan" required>
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">Alamat Perusahaan</label>
+              <textarea class="form-control" name="alamatPerusahaan" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Kontak Telepon</label>
+              <input type="text" class="form-control" name="kontakPerusahaan">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Kontak HP</label>
+              <input type="text" class="form-control" name="kontakHpPerusahaan">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email Perusahaan</label>
+              <input type="email" class="form-control" name="emailPerusahaan">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Website</label>
+              <input type="text" class="form-control" name="websitePerusahaan">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Pembimbing Lapangan</label>
+              <input type="text" class="form-control" name="pembimbingLapangan">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Jabatan Pembimbing Lapangan</label>
+              <input type="text" class="form-control" name="jabatanPembimbingLapangan">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-primary-custom">Mulai Magang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Perusahaan -->
+<div class="modal fade" id="editPerusahaanModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-building me-2"></i> Edit Perusahaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="editPerusahaanForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nama Perusahaan</label>
+            <input type="text" class="form-control" name="namaPerusahaan" id="editNama" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Alamat</label>
+            <textarea class="form-control" name="alamatPerusahaan" id="editAlamat" rows="2"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Kontak Telepon</label>
+              <input type="text" class="form-control" name="kontakPerusahaan" id="editKontak">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Kontak HP</label>
+              <input type="text" class="form-control" name="kontakHpPerusahaan" id="editKontakHp">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="emailPerusahaan" id="editEmail">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Website</label>
+              <input type="text" class="form-control" name="websitePerusahaan" id="editWebsite">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Pembimbing Lapangan</label>
+              <input type="text" class="form-control" name="pembimbingLapangan" id="editPembimbing">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Jabatan</label>
+              <input type="text" class="form-control" name="jabatanPembimbingLapangan" id="editJabatan">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-primary-custom">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Lock -->
+<div class="modal fade" id="lockModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-white">
+        <h5 class="modal-title"><i class="bi bi-lock me-2"></i> Kunci Periode Magang</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="lockForm">
+        <div class="modal-body">
+          <p>Yakin ingin mengunci periode magang <strong id="lockPeriodName"></strong>?</p>
+          <p class="text-muted small">Mahasiswa tidak akan bisa mengisi logbook selama periode dikunci.</p>
+          <div class="mb-3">
+            <label class="form-label">Alasan</label>
+            <textarea class="form-control" name="reason" rows="2" placeholder="Masukkan alasan penguncian..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-warning-custom">Kunci</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Unlock -->
+<div class="modal fade" id="unlockModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-unlock me-2"></i> Buka Kunci Periode Magang</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="unlockForm">
+        <div class="modal-body">
+          <p>Yakin ingin membuka kunci periode magang <strong id="unlockPeriodName"></strong>?</p>
+          <p class="text-muted small">Mahasiswa akan bisa mengisi logbook kembali.</p>
+          <div class="mb-3">
+            <label class="form-label">Alasan</label>
+            <textarea class="form-control" name="reason" rows="2" placeholder="Masukkan alasan pembukaan kunci..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-success-custom">Buka Kunci</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Extend -->
+<div class="modal fade" id="extendModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i> Perpanjang Periode Magang</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="extendForm">
+        <div class="modal-body">
+          <p>Perpanjang periode magang <strong id="extendPeriodName"></strong></p>
+          <div class="mb-3">
+            <label class="form-label">Tanggal Selesai Baru</label>
+            <input type="date" class="form-control" name="tanggalSelesaiBaru" id="extendDate" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Catatan</label>
+            <textarea class="form-control" name="catatan" rows="2" placeholder="Alasan perpanjangan..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-primary-custom">Perpanjang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Complete & Nilai -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i> Selesaikan & Beri Nilai</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="completeForm">
+        <div class="modal-body">
+          <p>Selesaikan periode magang <strong id="completePeriodName"></strong> dan berikan nilai akhir.</p>
+          <hr>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nilai Angka (0-100) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" name="nilaiAngka" min="0" max="100" step="0.01" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nilai Huruf</label>
+              <input type="text" class="form-control" id="nilaiHurufDisplay" readonly disabled>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Komentar</label>
+            <textarea class="form-control" name="komentarNilai" rows="2" placeholder="Komentar tentang magang mahasiswa..."></textarea>
+          </div>
+          <hr>
+          <h6 class="fw-bold mb-3">Komponen Nilai (Opsional)</h6>
+          <div class="row">
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Kehadiran</label>
+              <input type="number" class="form-control" name="nilaiKehadiran" min="0" max="100" step="0.01">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Logbook</label>
+              <input type="number" class="form-control" name="nilaiLogbook" min="0" max="100" step="0.01">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Laporan</label>
+              <input type="number" class="form-control" name="nilaiLaporan" min="0" max="100" step="0.01">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Sikap</label>
+              <input type="number" class="form-control" name="nilaiSikap" min="0" max="100" step="0.01">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Presentasi</label>
+              <input type="number" class="form-control" name="nilaiPresentasi" min="0" max="100" step="0.01">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-success-custom">Selesaikan & Beri Nilai</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Edit Perusahaan Modal
+  const editPerusahaanModal = document.getElementById('editPerusahaanModal');
+  if (editPerusahaanModal) {
+    editPerusahaanModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const nama = button.getAttribute('data-nama');
+      const alamat = button.getAttribute('data-alamat');
+      const kontak = button.getAttribute('data-kontak');
+      const kontakHp = button.getAttribute('data-kontakhp');
+      const pembimbing = button.getAttribute('data-pembimbing');
+      
+      const form = document.getElementById('editPerusahaanForm');
+      form.action = `/dosen/magang-period/${periodId}/update-perusahaan`;
+      
+      document.getElementById('editNama').value = nama || '';
+      document.getElementById('editAlamat').value = alamat || '';
+      document.getElementById('editKontak').value = kontak || '';
+      document.getElementById('editKontakHp').value = kontakHp || '';
+      document.getElementById('editPembimbing').value = pembimbing || '';
+    });
+  }
+  
+  // Lock Modal
+  const lockModal = document.getElementById('lockModal');
+  if (lockModal) {
+    lockModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      
+      const form = document.getElementById('lockForm');
+      form.action = `/dosen/magang-period/${periodId}/lock`;
+      document.getElementById('lockPeriodName').textContent = periodName;
+    });
+  }
+  
+  // Unlock Modal
+  const unlockModal = document.getElementById('unlockModal');
+  if (unlockModal) {
+    unlockModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      
+      const form = document.getElementById('unlockForm');
+      form.action = `/dosen/magang-period/${periodId}/unlock`;
+      document.getElementById('unlockPeriodName').textContent = periodName;
+    });
+  }
+  
+  // Extend Modal
+  const extendModal = document.getElementById('extendModal');
+  if (extendModal) {
+    extendModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      const currentEnd = button.getAttribute('data-current-end');
+      
+      const form = document.getElementById('extendForm');
+      form.action = `/dosen/magang-period/${periodId}/extend`;
+      document.getElementById('extendPeriodName').textContent = periodName;
+      document.getElementById('extendDate').value = currentEnd || '';
+    });
+  }
+  
+  // Complete Modal - auto update nilai huruf
+  const completeModal = document.getElementById('completeModal');
+  if (completeModal) {
+    completeModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      
+      const form = document.getElementById('completeForm');
+      form.action = `/dosen/magang-period/${periodId}/complete`;
+      document.getElementById('completePeriodName').textContent = periodName;
+    });
+    
+    const nilaiInput = document.querySelector('#completeModal input[name="nilaiAngka"]');
+    const nilaiHurufDisplay = document.getElementById('nilaiHurufDisplay');
+    
+    if (nilaiInput) {
+      nilaiInput.addEventListener('input', function() {
+        const nilai = parseFloat(this.value);
+        let huruf = 'E';
+        if (nilai >= 85) huruf = 'A';
+        else if (nilai >= 75) huruf = 'B';
+        else if (nilai >= 65) huruf = 'C';
+        else if (nilai >= 50) huruf = 'D';
+        nilaiHurufDisplay.value = huruf;
+      });
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>
