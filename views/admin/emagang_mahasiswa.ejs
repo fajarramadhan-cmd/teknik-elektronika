@@ -1,7 +1,30 @@
 <%- include('../partials/header') %>
 
 <%
-  // Fungsi untuk mengekstrak ID file dari URL Google Drive
+  // Helper untuk format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+  
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
+  // Fungsi untuk mengekstrak fileId dari URL Google Drive
   const getFileIdFromUrl = (url) => {
     if (!url) return null;
     let match = url.match(/[?&]id=([^&]+)/);
@@ -13,7 +36,6 @@
 %>
 
 <style>
-  /* ===== VARIABEL WARNA (sesuai navbar) ===== */
   :root {
     --primary-start: #1e3a8a;
     --primary-end: #3b82f6;
@@ -25,19 +47,11 @@
     --success-text: #065f46;
     --danger-bg: #fee2e2;
     --danger-text: #991b1b;
-    --font-base: 16px;
+    --info-bg: #dbeafe;
+    --info-text: #1e40af;
+    --gray-border: #e2e8f0;
   }
 
-  html {
-    font-size: 16px;
-  }
-
-  body {
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background-color: #f8fafc;
-  }
-
-  /* ===== PROFILE CARD ===== */
   .profile-card {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-radius: 1.5rem;
@@ -47,17 +61,6 @@
     box-shadow: 0 15px 30px rgba(30,58,138,0.3);
     position: relative;
     overflow: hidden;
-  }
-  .profile-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    transform: rotate(25deg);
   }
   .avatar-large {
     width: 80px;
@@ -81,166 +84,95 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   }
 
-  /* ===== FILTER CARD ===== */
+  .pdk-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--gray-border);
+    transition: all 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .stat-card.active {
+    border: 2px solid var(--primary-start);
+    background: var(--primary-light);
+  }
+  .stat-card .pdk-kode {
+    font-weight: 700;
+    color: var(--primary-start);
+    font-size: 0.8rem;
+  }
+  .stat-card .pdk-nama {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  .stat-numbers {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-weight: 700; font-size: 1.2rem; }
+  .stat-label { font-size: 0.7rem; color: #64748b; }
+  .stat-card.pending .stat-value { color: #f59e0b; }
+  .stat-card.approved .stat-value { color: #10b981; }
+  .stat-card.rejected .stat-value { color: #ef4444; }
+
+  .info-period {
+    background: var(--info-bg);
+    border-left: 4px solid var(--primary-start);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
   .filter-card {
     background: white;
     border-radius: 1.2rem;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    border: 1px solid rgba(30,58,138,0.1);
-  }
-  .filter-card .form-label {
-    font-weight: 600;
-    color: #1e293b;
-    font-size: 0.9rem;
-  }
-  .filter-card .form-select,
-  .filter-card .form-control {
-    border-radius: 50px;
-    border: 1px solid #dee2e6;
-    padding: 0.6rem 1rem;
-    transition: all 0.2s;
-    font-size: 0.95rem;
-  }
-  .filter-card .form-select:focus,
-  .filter-card .form-control:focus {
-    border-color: var(--primary-start);
-    box-shadow: 0 0 0 0.25rem rgba(30,58,138,0.25);
-  }
-  .btn-filter {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.6rem 1.5rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(30,58,138,0.2);
-    width: 100%;
-  }
-  .btn-filter:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(30,58,138,0.4);
-    color: white;
-  }
-  .btn-reset {
-    background: transparent;
-    border: 1.5px solid var(--primary-start);
-    color: var(--primary-start);
-    font-weight: 500;
-    padding: 0.6rem 1.5rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    width: 100%;
-    text-align: center;
-    display: inline-block;
-    text-decoration: none;
-  }
-  .btn-reset:hover {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-color: transparent;
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(30,58,138,0.3);
+    border: 1px solid var(--gray-border);
   }
 
-  /* ===== TOMBOL KEMBALI & PRINT ===== */
-  .btn-back {
-    background: white;
-    color: var(--primary-start);
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    border: none;
-  }
-  .btn-back:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    color: var(--primary-dark);
-  }
-  .btn-print {
-    background: #17a2b8;
-    border: none;
-    color: white;
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(23,162,184,0.2);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-  }
-  .btn-print:hover {
-    background: #138496;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(23,162,184,0.3);
-  }
-
-  /* ===== TABEL MINIMALIS ===== */
   .table-container {
     background: white;
     border-radius: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid rgba(30,58,138,0.1);
+    overflow: hidden;
+    border: 1px solid var(--gray-border);
   }
-  .table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .logbook-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 0;
-  }
-  .logbook-table thead th {
+  .logbook-table th {
     background: #f8f9fa;
-    color: #1e293b;
     font-weight: 600;
-    text-transform: uppercase;
     font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border: 1px solid #dee2e6;
     padding: 0.75rem;
     white-space: nowrap;
-    text-align: center;
   }
-  .logbook-table tbody td {
+  .logbook-table td {
     vertical-align: middle;
     padding: 0.75rem;
-    border: 1px solid #dee2e6;
-    font-size: 0.95rem;
   }
-  .logbook-table tbody tr:hover {
-    background-color: #f2f2f2;
-  }
-
-  /* ===== THUMBNAIL ===== */
   .thumbnail {
     width: 50px;
     height: 50px;
     object-fit: cover;
     border-radius: 8px;
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  .thumbnail:hover {
-    border-color: var(--primary-start);
-    transform: scale(1.05);
   }
 
-  /* ===== BADGE STATUS ===== */
   .badge-status {
     display: inline-flex;
     align-items: center;
@@ -248,116 +180,35 @@
     padding: 0.3rem 1rem;
     border-radius: 50px;
     font-weight: 500;
-    font-size: 0.8rem;
-    border: 1px solid transparent;
+    font-size: 0.75rem;
   }
-  .badge-pending {
-    background: var(--warning-bg);
-    color: var(--warning-text);
-    border-color: #fde68a;
-  }
-  .badge-approved {
-    background: var(--success-bg);
-    color: var(--success-text);
-    border-color: #a7f3d0;
-  }
-  .badge-rejected {
-    background: var(--danger-bg);
-    color: var(--danger-text);
-    border-color: #fecaca;
-  }
+  .badge-pending { background: var(--warning-bg); color: var(--warning-text); }
+  .badge-approved { background: var(--success-bg); color: var(--success-text); }
+  .badge-rejected { background: var(--danger-bg); color: var(--danger-text); }
 
-  /* ===== TOMBOL AKSI (APPROVE/REJECT) ===== */
-  .btn-icon-sm {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    transition: all 0.2s;
+  .btn-approve { background: #10b981; color: white; border: none; border-radius: 50px; padding: 0.3rem 1rem; font-size: 0.75rem; }
+  .btn-reject { background: #ef4444; color: white; border: none; border-radius: 50px; padding: 0.3rem 1rem; font-size: 0.75rem; }
+  .btn-manage { background: #8b5cf6; color: white; border: none; border-radius: 50px; padding: 0.3rem 1rem; font-size: 0.75rem; }
+  .btn-print { background: #17a2b8; color: white; border: none; border-radius: 50px; padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+  .btn-back { background: transparent; border: 1px solid var(--primary-start); color: var(--primary-start); border-radius: 50px; padding: 0.5rem 1.2rem; }
+
+  .modal-header-custom {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
-    margin: 0 2px;
-    background: transparent;
-    border: none;
-  }
-  .btn-icon-sm i {
-    font-size: 1rem;
-  }
-  .btn-approve {
-    background: #10b981;
-  }
-  .btn-approve:hover {
-    background: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(16,185,129,0.3);
-  }
-  .btn-reject {
-    background: #ef4444;
-  }
-  .btn-reject:hover {
-    background: #dc2626;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(239,68,68,0.3);
-  }
-
-  /* ===== EMPTY STATE ===== */
-  .empty-state {
-    padding: 4rem 2rem;
-    text-align: center;
-    background: #f8f9fa;
-    border-radius: 1.5rem;
-  }
-  .empty-state i {
-    font-size: 4rem;
-    color: #adb5bd;
-    margin-bottom: 1rem;
-  }
-  .empty-state h4 {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
-  }
-  .empty-state p {
-    color: #6c757d;
-    font-size: 1rem;
-  }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 768px) {
-    html { font-size: 15px; }
-    .profile-card { padding: 1.5rem; }
-    .avatar-large { width: 60px; height: 60px; }
-    .avatar-circle-large { width: 60px; height: 60px; font-size: 2rem; }
-    .logbook-table thead th { font-size: 0.8rem; padding: 0.5rem; }
-    .logbook-table tbody td { font-size: 0.9rem; padding: 0.5rem; }
-  }
-  @media (max-width: 576px) {
-    html { font-size: 14px; }
-    .badge-status { font-size: 0.7rem; padding: 0.2rem 0.6rem; }
-    .btn-print, .btn-back { padding: 0.4rem 1rem; font-size: 0.85rem; }
   }
 </style>
 
 <div class="container mt-4">
-  <!-- Profil Mahasiswa -->
+  <!-- Profile Card -->
   <div class="profile-card">
     <div class="d-flex align-items-center flex-wrap">
       <div class="flex-shrink-0 me-4">
         <% if (mahasiswa.foto) { 
           const fileId = getFileIdFromUrl(mahasiswa.foto);
           if (fileId) { %>
-            <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" 
-                 alt="foto" 
-                 class="avatar-large"
-                 onerror="this.onerror=null; this.src='<%= mahasiswa.foto %>';">
+            <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w200" class="avatar-large" onerror="this.onerror=null; this.src='<%= mahasiswa.foto %>';">
           <% } else { %>
-            <img src="<%= mahasiswa.foto %>" 
-                 alt="foto" 
-                 class="avatar-large"
-                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(mahasiswa.nama || '') %>&background=1e3a8a&color=fff&size=80';">
+            <img src="<%= mahasiswa.foto %>" class="avatar-large" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(mahasiswa.nama || '') %>&background=1e3a8a&color=fff&size=80';">
           <% } %>
         <% } else { %>
           <div class="avatar-circle-large"><%= (mahasiswa.nama || '?').charAt(0).toUpperCase() %></div>
@@ -372,11 +223,14 @@
     </div>
   </div>
 
-  <!-- Header dengan judul dan tombol aksi -->
+  <!-- Tombol Aksi -->
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold"><i class="bi bi-journal-bookmark-fill me-2" style="color: var(--primary-start);"></i>Logbook Magang</h4>
+    <h4 class="fw-bold"><i class="bi bi-journal-bookmark-fill me-2"></i>Logbook Magang</h4>
     <div class="d-flex gap-2">
-      <a href="/admin/emagang/print?userId=<%= mahasiswa.id %>&semester=<%= selectedSemester %>" class="btn-print" target="_blank">
+      <button class="btn-manage" data-bs-toggle="modal" data-bs-target="#startPeriodModal">
+        <i class="bi bi-plus-circle"></i> Mulai Periode Baru
+      </button>
+      <a href="/admin/emagang/print?userId=<%= mahasiswa.id %>" class="btn-print" target="_blank">
         <i class="bi bi-printer"></i> Print
       </a>
       <a href="/admin/emagang" class="btn-back">
@@ -385,32 +239,96 @@
     </div>
   </div>
 
+  <!-- PDK Stats Cards -->
+  <% if (pdkStats && pdkStats.length > 0) { %>
+    <div class="pdk-stats">
+      <a href="/admin/emagang/mahasiswa/<%= mahasiswa.id %>" class="stat-card <%= !selectedPeriod ? 'active' : '' %>">
+        <div class="pdk-kode">SEMUA</div>
+        <div class="pdk-nama">Semua Periode</div>
+        <div class="stat-numbers">
+          <div class="stat-item pending"><div class="stat-value"><%= pdkStats.reduce(function(s, p) { return s + p.pendingCount; }, 0) %></div><div class="stat-label">Pending</div></div>
+          <div class="stat-item approved"><div class="stat-value"><%= pdkStats.reduce(function(s, p) { return s + p.approvedCount; }, 0) %></div><div class="stat-label">Approved</div></div>
+          <div class="stat-item rejected"><div class="stat-value"><%= pdkStats.reduce(function(s, p) { return s + p.rejectedCount; }, 0) %></div><div class="stat-label">Rejected</div></div>
+        </div>
+      </a>
+      <% pdkStats.forEach(function(period) { %>
+        <a href="/admin/emagang/mahasiswa/<%= mahasiswa.id %>?periodId=<%= period.id %>" class="stat-card <%= (selectedPeriod && selectedPeriod.id === period.id) ? 'active' : '' %>">
+          <div class="pdk-kode"><%= period.pdkKode %></div>
+          <div class="pdk-nama"><%= period.pdkNama %></div>
+          <div class="stat-numbers">
+            <div class="stat-item pending"><div class="stat-value"><%= period.pendingCount %></div><div class="stat-label">Pending</div></div>
+            <div class="stat-item approved"><div class="stat-value"><%= period.approvedCount %></div><div class="stat-label">Approved</div></div>
+            <div class="stat-item rejected"><div class="stat-value"><%= period.rejectedCount %></div><div class="stat-label">Rejected</div></div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <!-- Info Periode Aktif -->
+  <% if (selectedPeriod) { %>
+    <div class="info-period">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <strong><i class="bi bi-info-circle"></i> Periode Magang:</strong> 
+          <%= selectedPeriod.pdkKode %> - <%= selectedPeriod.pdkNama %>
+          (<%= formatTanggal(selectedPeriod.tanggalMulai) %> 
+          <%= selectedPeriod.tanggalSelesai ? 's/d ' + formatTanggal(selectedPeriod.tanggalSelesai) : 'Berlangsung' %>)
+        </div>
+        <div class="mt-1 mt-sm-0">
+          <button class="btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editPerusahaanModal" 
+                  data-period-id="<%= selectedPeriod.id %>"
+                  data-nama="<%= selectedPeriod.perusahaan ? selectedPeriod.perusahaan.nama : '' %>"
+                  data-alamat="<%= selectedPeriod.perusahaan ? selectedPeriod.perusahaan.alamat : '' %>"
+                  data-kontak="<%= selectedPeriod.perusahaan ? selectedPeriod.perusahaan.kontak : '' %>"
+                  data-kontakhp="<%= selectedPeriod.perusahaan ? selectedPeriod.perusahaan.kontakHp : '' %>"
+                  data-pembimbing="<%= selectedPeriod.perusahaan ? selectedPeriod.perusahaan.pembimbingLapangan : '' %>">
+            <i class="bi bi-pencil"></i> Edit Perusahaan
+          </button>
+          <% if (selectedPeriod.status === 'active') { %>
+            <button class="btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#lockModal" 
+                    data-period-id="<%= selectedPeriod.id %>" data-period-name="<%= selectedPeriod.pdkNama %>">
+              <i class="bi bi-lock"></i> Lock
+            </button>
+            <button class="btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#extendModal" 
+                    data-period-id="<%= selectedPeriod.id %>" data-period-name="<%= selectedPeriod.pdkNama %>"
+                    data-current-end="<%= selectedPeriod.tanggalSelesai || '' %>">
+              <i class="bi bi-calendar-plus"></i> Perpanjang
+            </button>
+            <button class="btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#completeModal" 
+                    data-period-id="<%= selectedPeriod.id %>" data-period-name="<%= selectedPeriod.pdkNama %>">
+              <i class="bi bi-check-circle"></i> Selesai & Nilai
+            </button>
+          <% } else if (selectedPeriod.status === 'locked') { %>
+            <button class="btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#unlockModal" 
+                    data-period-id="<%= selectedPeriod.id %>" data-period-name="<%= selectedPeriod.pdkNama %>">
+              <i class="bi bi-unlock"></i> Unlock
+            </button>
+          <% } %>
+        </div>
+      </div>
+      <div class="mt-2">
+        <strong><i class="bi bi-building"></i> Perusahaan:</strong> <%= (selectedPeriod.perusahaan && selectedPeriod.perusahaan.nama) ? selectedPeriod.perusahaan.nama : 'Belum diisi' %>
+      </div>
+    </div>
+  <% } %>
+
   <!-- Filter Semester -->
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
       <div class="col-md-4">
-        <label for="semester" class="form-label fw-semibold"><i class="bi bi-calendar3 me-1"></i>Filter Semester</label>
-        <select class="form-select" id="semester" name="semester">
+        <label class="form-label fw-semibold"><i class="bi bi-funnel"></i> Filter Semester</label>
+        <select name="semester" class="form-select" onchange="this.form.submit()">
           <option value="">Semua Semester</option>
-          <% if (semesterList && semesterList.length > 0) { %>
-            <% semesterList.forEach(s => { %>
-              <option value="<%= s %>" <%= s === selectedSemester ? 'selected' : '' %>><%= s %></option>
-            <% }) %>
-          <% } %>
+          <% semesterList.forEach(function(s) { %>
+            <option value="<%= s %>" <%= (selectedSemester === s) ? 'selected' : '' %>><%= s %></option>
+          <% }); %>
         </select>
       </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Terapkan</button>
-      </div>
-      <div class="col-md-2">
-        <a href="/admin/emagang/mahasiswa/<%= mahasiswa.id %>" class="btn-reset"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
-      </div>
+      <% if (selectedPeriod) { %>
+        <input type="hidden" name="periodId" value="<%= selectedPeriod.id %>">
+      <% } %>
     </form>
-  </div>
-
-  <!-- Info jumlah -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <p class="mb-0 fw-semibold"><i class="bi bi-files me-1" style="color: var(--primary-start);"></i> Menampilkan <strong><%= logbookList.length %></strong> entri logbook</p>
   </div>
 
   <!-- Tabel Logbook -->
@@ -418,52 +336,27 @@
     <div class="table-responsive">
       <table class="table logbook-table">
         <thead>
-          <tr>
-            <th>No</th>
-            <th>Tanggal</th>
-            <th>Kegiatan</th>
-            <th>Durasi</th>
-            <th>Lokasi</th>
-            <th>Semester</th>
-            <th>Gambar</th>
-            <th>Status</th>
-            <th>Aksi</th>
-            <th>Waktu Input</th>
-          </tr>
+          <tr><th>No</th><th>Tanggal</th><th>Kegiatan</th><th>Durasi</th><th>Lokasi</th><th>Semester</th><th>Gambar</th><th>Status</th><th>Aksi</th></tr>
         </thead>
         <tbody>
           <% if (logbookList.length === 0) { %>
-            <tr>
-              <td colspan="10" class="text-center py-5">
-                <div class="empty-state">
-                  <i class="bi bi-inbox"></i>
-                  <h4>Belum Ada Data</h4>
-                  <p class="text-muted">Tidak ada logbook untuk ditampilkan.</p>
-                </div>
-              </td>
-            </tr>
+            <tr><td colspan="9" class="text-center py-5">Belum ada logbook untuk periode ini.</td></tr>
           <% } else { %>
-            <% logbookList.forEach((item, index) => { %>
+            <% logbookList.forEach(function(item, idx) { %>
               <tr>
-                <td class="fw-bold text-center"><%= index + 1 %></td>
-                <td><%= item.tanggalFormatted %></td>
-                <td><%= item.kegiatan.length > 50 ? item.kegiatan.substring(0,50)+'...' : item.kegiatan %></td>
+                <td class="fw-bold text-center"><%= idx+1 %></td>
+                <td><%= formatTanggal(item.tanggal) %></td>
+                <td><%= item.kegiatan %></td>
                 <td class="text-center"><%= item.durasi ? item.durasi + ' jam' : '-' %></td>
                 <td><%= item.lokasi || '-' %></td>
-                <td class="text-center"><%= item.semester || '-' %></td>
+                <td><%= item.semester || '-' %></td>
                 <td class="text-center">
                   <% if (item.imageUrls && item.imageUrls.length > 0) { 
-                    const firstUrl = item.imageUrls[0];
-                    const fileId = getFileIdFromUrl(firstUrl);
+                    var firstUrl = item.imageUrls[0];
+                    var fileId = getFileIdFromUrl(firstUrl);
                   %>
-                    <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w100" 
-                         class="thumbnail" 
-                         alt="dokumentasi"
-                         onclick='lihatGambar(<%= JSON.stringify(item.imageUrls) %>)'
-                         onerror="this.onerror=null; this.src='<%= firstUrl %>';">
-                  <% } else { %>
-                    <span class="text-muted">-</span>
-                  <% } %>
+                    <img src="https://drive.google.com/thumbnail?id=<%= fileId %>&sz=w100" class="thumbnail" onclick="lihatGambar(<%= JSON.stringify(item.imageUrls) %>)">
+                  <% } else { %>-<% } %>
                 </td>
                 <td>
                   <% if (item.status === 'approved') { %>
@@ -474,27 +367,16 @@
                     <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
                   <% } %>
                 </td>
-                <td class="text-center">
-                  <div class="d-flex gap-1 justify-content-center">
-                    <% if (item.status === 'pending') { %>
-                      <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/approve" style="display:inline;">
-                        <button class="btn-icon-sm btn-approve" title="Setujui" onclick="return confirm('Setujui logbook ini?')">
-                          <i class="bi bi-check-lg"></i>
-                        </button>
-                      </form>
-                      <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/reject" style="display:inline;">
-                        <button class="btn-icon-sm btn-reject" title="Tolak" onclick="return confirm('Tolak logbook ini?')">
-                          <i class="bi bi-x-lg"></i>
-                        </button>
-                      </form>
-                    <% } else { %>
-                      <span class="text-muted">-</span>
-                    <% } %>
-                  </div>
+                <td>
+                  <% if (item.status === 'pending') { %>
+                    <form method="POST" action="/admin/emagang/logbook/<%= item.id %>/approve" style="display:inline;">
+                      <button class="btn-approve btn-sm" onclick="return confirm('Setujui logbook ini?')"><i class="bi bi-check-lg"></i> Setujui</button>
+                    </form>
+                    <button class="btn-reject btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal" data-logbook-id="<%= item.id %>" data-logbook-title="<%= item.kegiatan.substring(0, 50) %>">Tolak</button>
+                  <% } else { %>-<% } %>
                 </td>
-                <td><small class="text-muted"><%= item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '-' %></small></td>
               </tr>
-            <% }) %>
+            <% }); %>
           <% } %>
         </tbody>
       </table>
@@ -502,62 +384,358 @@
   </div>
 </div>
 
-<!-- Lightbox Modal untuk melihat semua gambar -->
-<div class="modal fade lightbox-modal" id="galleryModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+<!-- Modal Start Period -->
+<div class="modal fade" id="startPeriodModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-images"></i> Dokumentasi</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-play-fill"></i> Mulai Periode Magang</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-0">
-        <div id="galleryCarousel" class="carousel slide" data-bs-ride="false">
-          <div class="carousel-inner" id="galleryCarouselInner"></div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
+      <form method="POST" action="/admin/emagang/period/start">
+        <input type="hidden" name="mahasiswaId" value="<%= mahasiswa.id %>">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Pilih PDK <span class="text-danger">*</span></label>
+              <select name="pdkId" class="form-select" required>
+                <option value="">-- Pilih PDK --</option>
+                <% if (pdkList && pdkList.length > 0) { %>
+                  <% pdkList.forEach(function(p) { %>
+                    <option value="<%= p.id %>"><%= p.kode %> - <%= p.nama %></option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Tanggal Mulai <span class="text-danger">*</span></label>
+              <input type="date" name="tanggalMulai" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Tanggal Selesai (Opsional)</label>
+              <input type="date" name="tanggalSelesai" class="form-control">
+            </div>
+          </div>
+          <hr>
+          <h6 class="fw-bold">Informasi Perusahaan</h6>
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label>Nama Perusahaan <span class="text-danger">*</span></label>
+              <input type="text" name="namaPerusahaan" class="form-control" required>
+            </div>
+            <div class="col-12 mb-3">
+              <label>Alamat</label>
+              <textarea name="alamatPerusahaan" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Kontak Telepon</label>
+              <input type="text" name="kontakPerusahaan" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Kontak HP</label>
+              <input type="text" name="kontakHpPerusahaan" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Pembimbing Lapangan</label>
+              <input type="text" name="pembimbingLapangan" class="form-control">
+            </div>
+          </div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Mulai Magang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Perusahaan -->
+<div class="modal fade" id="editPerusahaanModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-building"></i> Edit Perusahaan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
+      <form method="POST" id="editPerusahaanForm">
+        <div class="modal-body">
+          <div class="mb-3"><label>Nama Perusahaan</label><input type="text" name="namaPerusahaan" id="editNama" class="form-control" required></div>
+          <div class="mb-3"><label>Alamat</label><textarea name="alamatPerusahaan" id="editAlamat" class="form-control" rows="2"></textarea></div>
+          <div class="row"><div class="col-md-6 mb-3"><label>Kontak Telepon</label><input type="text" name="kontakPerusahaan" id="editKontak" class="form-control"></div>
+          <div class="col-md-6 mb-3"><label>Kontak HP</label><input type="text" name="kontakHpPerusahaan" id="editKontakHp" class="form-control"></div></div>
+          <div class="mb-3"><label>Pembimbing Lapangan</label><input type="text" name="pembimbingLapangan" id="editPembimbing" class="form-control"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Lock -->
+<div class="modal fade" id="lockModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-lock"></i> Kunci Periode Magang</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="lockForm">
+        <div class="modal-body">
+          <p>Yakin ingin mengunci periode magang <strong id="lockPeriodName"></strong>?</p>
+          <div class="mb-3"><label>Alasan</label><textarea name="reason" class="form-control" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-warning">Kunci</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Unlock -->
+<div class="modal fade" id="unlockModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-unlock"></i> Buka Kunci Periode Magang</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="unlockForm">
+        <div class="modal-body">
+          <p>Yakin ingin membuka kunci periode magang <strong id="unlockPeriodName"></strong>?</p>
+          <div class="mb-3"><label>Alasan</label><textarea name="reason" class="form-control" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">Buka Kunci</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Extend -->
+<div class="modal fade" id="extendModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-calendar-plus"></i> Perpanjang Periode Magang</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="extendForm">
+        <div class="modal-body">
+          <p>Perpanjang periode magang <strong id="extendPeriodName"></strong></p>
+          <div class="mb-3"><label>Tanggal Selesai Baru</label><input type="date" name="tanggalSelesaiBaru" id="extendDate" class="form-control" required></div>
+          <div class="mb-3"><label>Catatan</label><textarea name="catatan" class="form-control" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Perpanjang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Complete -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-check-circle"></i> Selesaikan & Beri Nilai</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="completeForm">
+        <div class="modal-body">
+          <p>Selesaikan periode magang <strong id="completePeriodName"></strong></p>
+          <div class="row">
+            <div class="col-md-6 mb-3"><label>Nilai Angka (0-100) <span class="text-danger">*</span></label><input type="number" name="nilaiAngka" class="form-control" min="0" max="100" step="0.01" required></div>
+            <div class="col-md-6 mb-3"><label>Nilai Huruf</label><input type="text" id="nilaiHurufDisplay" class="form-control" readonly disabled></div>
+          </div>
+          <div class="mb-3"><label>Komentar</label><textarea name="komentarNilai" class="form-control" rows="2"></textarea></div>
+          <hr>
+          <h6 class="fw-bold">Komponen Nilai (Opsional)</h6>
+          <div class="row">
+            <div class="col-md-4 mb-2"><label>Kehadiran</label><input type="number" name="nilaiKehadiran" class="form-control" min="0" max="100" step="0.01"></div>
+            <div class="col-md-4 mb-2"><label>Logbook</label><input type="number" name="nilaiLogbook" class="form-control" min="0" max="100" step="0.01"></div>
+            <div class="col-md-4 mb-2"><label>Laporan</label><input type="number" name="nilaiLaporan" class="form-control" min="0" max="100" step="0.01"></div>
+            <div class="col-md-4 mb-2"><label>Sikap</label><input type="number" name="nilaiSikap" class="form-control" min="0" max="100" step="0.01"></div>
+            <div class="col-md-4 mb-2"><label>Presentasi</label><input type="number" name="nilaiPresentasi" class="form-control" min="0" max="100" step="0.01"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">Selesaikan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Reject -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-x-circle"></i> Tolak Logbook</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="rejectForm">
+        <div class="modal-body">
+          <div class="mb-3"><label>Alasan Penolakan</label><textarea name="alasan" class="form-control" rows="3" required></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger">Tolak</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
 
 <script>
+  // Edit Perusahaan Modal
+  const editPerusahaanModal = document.getElementById('editPerusahaanModal');
+  if (editPerusahaanModal) {
+    editPerusahaanModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const nama = button.getAttribute('data-nama');
+      const alamat = button.getAttribute('data-alamat');
+      const kontak = button.getAttribute('data-kontak');
+      const kontakHp = button.getAttribute('data-kontakhp');
+      const pembimbing = button.getAttribute('data-pembimbing');
+      
+      const form = document.getElementById('editPerusahaanForm');
+      form.action = '/admin/emagang/period/' + periodId + '/update-perusahaan';
+      
+      document.getElementById('editNama').value = nama || '';
+      document.getElementById('editAlamat').value = alamat || '';
+      document.getElementById('editKontak').value = kontak || '';
+      document.getElementById('editKontakHp').value = kontakHp || '';
+      document.getElementById('editPembimbing').value = pembimbing || '';
+    });
+  }
+  
+  // Lock Modal
+  const lockModal = document.getElementById('lockModal');
+  if (lockModal) {
+    lockModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      
+      const form = document.getElementById('lockForm');
+      form.action = '/admin/emagang/period/' + periodId + '/lock';
+      document.getElementById('lockPeriodName').textContent = periodName;
+    });
+  }
+  
+  // Unlock Modal
+  const unlockModal = document.getElementById('unlockModal');
+  if (unlockModal) {
+    unlockModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      
+      const form = document.getElementById('unlockForm');
+      form.action = '/admin/emagang/period/' + periodId + '/unlock';
+      document.getElementById('unlockPeriodName').textContent = periodName;
+    });
+  }
+  
+  // Extend Modal
+  const extendModal = document.getElementById('extendModal');
+  if (extendModal) {
+    extendModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      const currentEnd = button.getAttribute('data-current-end');
+      
+      const form = document.getElementById('extendForm');
+      form.action = '/admin/emagang/period/' + periodId + '/extend';
+      document.getElementById('extendPeriodName').textContent = periodName;
+      document.getElementById('extendDate').value = currentEnd || '';
+    });
+  }
+  
+  // Complete Modal
+  const completeModal = document.getElementById('completeModal');
+  if (completeModal) {
+    completeModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const periodId = button.getAttribute('data-period-id');
+      const periodName = button.getAttribute('data-period-name');
+      
+      const form = document.getElementById('completeForm');
+      form.action = '/admin/emagang/period/' + periodId + '/complete';
+      document.getElementById('completePeriodName').textContent = periodName;
+    });
+    
+    const nilaiInput = document.querySelector('#completeModal input[name="nilaiAngka"]');
+    const nilaiHurufDisplay = document.getElementById('nilaiHurufDisplay');
+    if (nilaiInput) {
+      nilaiInput.addEventListener('input', function() {
+        const nilai = parseFloat(this.value);
+        let huruf = 'E';
+        if (nilai >= 85) huruf = 'A';
+        else if (nilai >= 75) huruf = 'B';
+        else if (nilai >= 65) huruf = 'C';
+        else if (nilai >= 50) huruf = 'D';
+        nilaiHurufDisplay.value = huruf;
+      });
+    }
+  }
+  
+  // Reject Modal
+  const rejectModal = document.getElementById('rejectModal');
+  if (rejectModal) {
+    rejectModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const logbookId = button.getAttribute('data-logbook-id');
+      const logbookTitle = button.getAttribute('data-logbook-title');
+      
+      const form = document.getElementById('rejectForm');
+      form.action = '/admin/emagang/logbook/' + logbookId + '/reject';
+      
+      const modalTitle = rejectModal.querySelector('.modal-title');
+      if (modalTitle) modalTitle.innerHTML = '<i class="bi bi-x-circle"></i> Tolak Logbook: ' + logbookTitle;
+    });
+  }
+  
   function lihatGambar(imageUrls) {
     const inner = document.getElementById('galleryCarouselInner');
+    if (!inner) return;
     inner.innerHTML = '';
     if (!imageUrls || imageUrls.length === 0) {
       alert('Tidak ada gambar untuk ditampilkan.');
       return;
     }
-    imageUrls.forEach((url, index) => {
+    imageUrls.forEach(function(url, index) {
       let imgUrl = url;
       const fileId = getFileIdFromUrl(url);
       if (fileId) {
-        imgUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+        imgUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w800';
       }
       const activeClass = index === 0 ? 'active' : '';
-      const item = `
-        <div class="carousel-item ${activeClass}">
-          <img src="${imgUrl}" 
-               class="d-block w-100" 
-               alt="Dokumentasi"
-               onerror="this.onerror=null; this.src='${url}';">
-        </div>
-      `;
+      const item = '<div class="carousel-item ' + activeClass + '">' +
+        '<img src="' + imgUrl + '" class="d-block w-100" alt="Dokumentasi" onerror="this.onerror=null; this.src=\'' + url + '\';">' +
+        '</div>';
       inner.innerHTML += item;
     });
     new bootstrap.Modal(document.getElementById('galleryModal')).show();
   }
-
+  
   function getFileIdFromUrl(url) {
     if (!url) return null;
-    let match = url.match(/[?&]id=([^&]+)/);
+    var match = url.match(/[?&]id=([^&]+)/);
     if (match) return match[1];
     match = url.match(/\/d\/([^\/]+)/);
     if (match) return match[1];

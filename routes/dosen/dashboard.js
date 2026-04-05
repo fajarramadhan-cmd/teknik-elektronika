@@ -1,7 +1,6 @@
 /**
  * routes/dosen/dashboard.js
- * Dashboard utama untuk dosen
- * Menampilkan ringkasan mata kuliah, mahasiswa, tugas aktif, dan pengumpulan belum dinilai
+ * Dashboard utama untuk dosen - TANPA MEMERLUKAN INDEKS BARU
  */
 
 const express = require('express');
@@ -9,20 +8,24 @@ const router = express.Router();
 const { verifyToken, isDosen } = require('../../middleware/auth');
 const { db } = require('../../config/firebaseAdmin');
 
-// Middleware autentikasi – pastikan user sudah login dan merupakan dosen
 router.use(verifyToken);
 router.use(isDosen);
 
-/**
- * GET /dosen/dashboard
- * Halaman utama dashboard dosen
- */
+function formatDate(dateString) {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
+  });
+}
+
 router.get('/', async (req, res) => {
   try {
-    // Data dosen dari middleware isDosen (sudah termasuk id dokumen, nama, dll)
     const dosen = req.dosen;
 
-    // ===== 1. Ambil semua mata kuliah yang diampu oleh dosen ini =====
+    // ===== 1. Mata Kuliah yang diampu =====
     const mkSnapshot = await db.collection('mataKuliah')
       .where('dosenIds', 'array-contains', req.dosen.id)
       .get();
@@ -35,19 +38,23 @@ router.get('/', async (req, res) => {
       sks: doc.data().sks
     }));
 
-    // ===== 2. Hitung total mahasiswa unik dari semua MK yang diampu =====
-    const mahasiswaSet = new Set();
-    for (const mk of mkSnapshot.docs) {
-      const enrollmentSnapshot = await db.collection('enrollment')
-        .where('mkId', '==', mk.id)
-        .get();
-      enrollmentSnapshot.docs.forEach(doc => {
-        mahasiswaSet.add(doc.data().userId); // tambahkan userId ke Set
-      });
-    }
-    const totalMahasiswa = mahasiswaSet.size; // ukuran Set adalah jumlah mahasiswa unik
+    // ===== 2. Total mahasiswa bimbingan =====
+    const bimbinganSnapshot1 = await db.collection('bimbingan')
+      .where('pembimbing1Id', '==', req.dosen.id)
+      .where('status', '==', 'active')
+      .get();
+    
+    const bimbinganSnapshot2 = await db.collection('bimbingan')
+      .where('pembimbing2Id', '==', req.dosen.id)
+      .where('status', '==', 'active')
+      .get();
+    
+    const mahasiswaBimbinganIds = new Set();
+    bimbinganSnapshot1.docs.forEach(doc => mahasiswaBimbinganIds.add(doc.data().mahasiswaId));
+    bimbinganSnapshot2.docs.forEach(doc => mahasiswaBimbinganIds.add(doc.data().mahasiswaId));
+    const totalMahasiswa = mahasiswaBimbinganIds.size;
 
-    // ===== 3. Hitung jumlah tugas aktif (deadline > sekarang) =====
+    // ===== 3. Tugas aktif =====
     const now = new Date().toISOString();
     const tugasSnapshot = await db.collection('tugas')
       .where('dosenId', '==', req.dosen.id)
@@ -55,22 +62,21 @@ router.get('/', async (req, res) => {
       .get();
     const tugasAktif = tugasSnapshot.size;
 
-    // ===== 4. Hitung jumlah pengumpulan yang belum dinilai =====
+    // ===== 4. Pengumpulan belum dinilai =====
     let pengumpulanBelumDinilai = 0;
     const tugasSemua = await db.collection('tugas')
       .where('dosenId', '==', req.dosen.id)
       .get();
 
-    for (const tugas of tugasSemua.docs) {
+    for (const tugasDoc of tugasSemua.docs) {
       const pengumpulanSnapshot = await db.collection('pengumpulan')
-        .where('tugasId', '==', tugas.id)
+        .where('tugasId', '==', tugasDoc.id)
         .where('status', '==', 'dikumpulkan')
         .get();
-    
       pengumpulanBelumDinilai += pengumpulanSnapshot.size;
     }
 
-    // ===== 5. Ambil event terdekat (untuk ditampilkan di dashboard) =====
+    // ===== 5. Event terdekat =====
     const today = new Date().toISOString().split('T')[0];
     const eventsSnapshot = await db.collection('jadwalPenting')
       .where('tanggal', '>=', today)
@@ -79,7 +85,62 @@ router.get('/', async (req, res) => {
       .get();
     const events = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // ===== 6. Render halaman dashboard dengan semua data =====
+    // ===== 6. LOGBOOK PENDING (TANPA INDEKS BARU) =====
+    const logbookPendingList = [];
+    
+    for (const mahasiswaId of mahasiswaBimbinganIds) {
+      // Ambil semua logbook mahasiswa
+      const logbookSnapshot = await db.collection('logbookMagang')
+        .where('userId', '==', mahasiswaId)
+        .get();
+      
+      // Filter status 'pending' di memory
+      for (const logbookDoc of logbookSnapshot.docs) {
+        const data = logbookDoc.data();
+        
+        if (data.status !== 'pending') continue;
+        
+        // Ambil data mahasiswa
+        const userDoc = await db.collection('users').doc(mahasiswaId).get();
+        const mahasiswaNama = userDoc.exists ? userDoc.data().nama : 'Unknown';
+        const mahasiswaNim = userDoc.exists ? userDoc.data().nim : '-';
+        
+        // Ambil info PDK jika ada
+        let pdkInfo = '';
+        if (data.pdkId) {
+          const periodSnapshot = await db.collection('magangPeriod')
+            .where('pdkId', '==', data.pdkId)
+            .where('mahasiswaId', '==', mahasiswaId)
+            .limit(1)
+            .get();
+          if (!periodSnapshot.empty) {
+            const period = periodSnapshot.docs[0].data();
+            pdkInfo = `${period.pdkKode} - ${period.pdkNama}`;
+          }
+        }
+        
+        logbookPendingList.push({
+          id: logbookDoc.id,
+          mahasiswaId: mahasiswaId,
+          mahasiswaNama: mahasiswaNama,
+          mahasiswaNim: mahasiswaNim,
+          tanggal: data.tanggal,
+          tanggalFormatted: formatDate(data.tanggal),
+          kegiatan: data.kegiatan && data.kegiatan.length > 60 ? data.kegiatan.substring(0, 60) + '...' : (data.kegiatan || '-'),
+          durasi: data.durasi,
+          pdkInfo: pdkInfo,
+          imageCount: data.imageUrls ? data.imageUrls.length : 0
+        });
+      }
+    }
+    
+    // Urutkan di memory
+    logbookPendingList.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+    
+    const recentLogbookPending = logbookPendingList.slice(0, 10);
+    const logbookPendingCount = logbookPendingList.length;
+
+    // ===== 7. Render dashboard =====
     res.render('dosen/dashboard', {
       title: 'Dashboard Dosen',
       dosen,
@@ -87,9 +148,11 @@ router.get('/', async (req, res) => {
       totalMahasiswa,
       tugasAktif,
       pengumpulanBelumDinilai,
-      events,          // <-- data event untuk ditampilkan
-      mkList: mkList.slice(0, 5), // tampilkan 5 MK terbaru (opsional)
-      berita: []       // jika tidak ada berita, kirim array kosong
+      events,
+      mkList: mkList.slice(0, 5),
+      berita: [],
+      logbookPendingList: recentLogbookPending,
+      logbookPendingCount: logbookPendingCount
     });
 
   } catch (error) {

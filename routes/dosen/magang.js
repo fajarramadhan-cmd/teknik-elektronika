@@ -312,6 +312,39 @@ router.get('/', async (req, res) => {
       });
     }
     
+    // ========== TAMBAHAN: Ambil data PDK dari KRS ==========
+    for (const mhs of mahasiswaList) {
+      // Ambil enrollment PDK mahasiswa
+      const enrollmentSnapshot = await db.collection('enrollment')
+        .where('userId', '==', mhs.id)
+        .where('status', '==', 'active')
+        .get();
+      
+      const enrolledPdks = [];
+      for (const doc of enrollmentSnapshot.docs) {
+        const enrollment = doc.data();
+        const mkDoc = await db.collection('mataKuliah').doc(enrollment.mkId).get();
+        if (mkDoc.exists && mkDoc.data().isPDK === true) {
+          enrolledPdks.push({
+            id: mkDoc.id,
+            kode: mkDoc.data().kode,
+            nama: mkDoc.data().nama,
+            urutan: mkDoc.data().urutanPDK
+          });
+        }
+      }
+      mhs.enrolledPdks = enrolledPdks;
+      
+      // Cek apakah memiliki periode magang aktif
+      const periodSnapshot = await db.collection('magangPeriod')
+        .where('mahasiswaId', '==', mhs.id)
+        .where('status', '==', 'active')
+        .limit(1)
+        .get();
+      mhs.hasActivePeriod = !periodSnapshot.empty;
+    }
+    // ========== END TAMBAHAN ==========
+    
     // Tambahkan statistik untuk setiap mahasiswa
     for (const mhs of mahasiswaList) {
       const statistik = await getLogbookStatistik(mhs.id);
@@ -326,8 +359,7 @@ router.get('/', async (req, res) => {
     res.render('dosen/magang_list', {
       title: 'Monitoring Magang',
       mahasiswaList,
-      message: null,
-      user: req.user
+      message: null
     });
   } catch (error) {
     console.error('Error ambil daftar mahasiswa bimbingan:', error);

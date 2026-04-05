@@ -4,6 +4,8 @@
   // Set default values for optional variables to prevent undefined errors
   if (typeof events === 'undefined') events = [];
   if (typeof berita === 'undefined') berita = [];
+  if (typeof logbookPendingList === 'undefined') logbookPendingList = [];
+  if (typeof logbookPendingCount === 'undefined') logbookPendingCount = 0;
 
   // Fungsi untuk mendapatkan URL gambar dari Google Drive
   const getImageUrl = (url) => {
@@ -14,6 +16,19 @@
     if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w200-h200`;
     return url;
   };
+  
+  // Format tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 %>
 
 <style>
@@ -23,6 +38,12 @@
     --primary-end: #3b82f6;
     --primary-light: rgba(30,58,138,0.1);
     --primary-dark: #0f2b5c;
+    --warning-bg: #fef3c7;
+    --warning-text: #92400e;
+    --success-bg: #d1fae5;
+    --success-text: #065f46;
+    --danger-bg: #fee2e2;
+    --danger-text: #991b1b;
     --font-base: 16px;
   }
 
@@ -188,6 +209,70 @@
     box-shadow: 0 5px 10px rgba(30,58,138,0.3);
   }
 
+  /* ===== LOGBOOK PENDING TABLE ===== */
+  .logbook-pending-table {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+  .logbook-pending-table th {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+  }
+  .logbook-pending-table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .logbook-pending-table tr:hover td {
+    background-color: #f8fafc;
+  }
+  .btn-approve-small {
+    background: #10b981;
+    border: none;
+    color: white;
+    border-radius: 50px;
+    padding: 0.25rem 0.8rem;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-approve-small:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    color: white;
+  }
+  .btn-view-small {
+    background: transparent;
+    border: 1px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.25rem 0.8rem;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-view-small:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+  }
+  .badge-pending-small {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+    padding: 0.2rem 0.5rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
   /* ===== QUICK ACTION CARDS ===== */
   .quick-card {
     background: white;
@@ -262,6 +347,11 @@
     .profile-card h2 { font-size: 1.4rem; }
     .profile-avatar { width: 60px; height: 60px; }
     .stat-number { font-size: 1.5rem; }
+    .logbook-pending-table th,
+    .logbook-pending-table td {
+      padding: 0.5rem;
+      font-size: 0.75rem;
+    }
   }
 
   @media (max-width: 576px) {
@@ -273,6 +363,34 @@
     .btn-outline-primary { width: 100%; text-align: center; }
     .quick-icon { width: 55px; height: 55px; font-size: 1.8rem; }
     .quick-card h6 { font-size: 0.85rem; }
+    
+    /* Card view untuk logbook pending */
+    .logbook-pending-table thead {
+      display: none;
+    }
+    .logbook-pending-table tr {
+      display: block;
+      margin-bottom: 1rem;
+      border: 1px solid #e9ecef;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+    }
+    .logbook-pending-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed #e9ecef;
+    }
+    .logbook-pending-table td:last-child {
+      border-bottom: none;
+    }
+    .logbook-pending-table td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--primary-start);
+      width: 40%;
+    }
   }
 </style>
 
@@ -304,65 +422,80 @@
     </div>
   </div>
 
-  <!-- Card Informasi Dosen (Tugas Aktif & Belum Dinilai + Event) -->
-<div class="info-card">
-  <div class="card-header">
-    <h5><i class="bi bi-info-circle me-2"></i>Informasi Dosen</h5>
-  </div>
-  <div class="card-body">
-    <div class="stat-row">
-      <!-- Tugas Aktif -->
-      <div class="stat-item">
-        <div class="stat-icon">
-          <i class="bi bi-file-earmark-text"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Tugas Aktif</div>
-          <div class="stat-number"><%= tugasAktif || 0 %></div>
-        </div>
-        <a href="/dosen/tugas" class="btn <%= tugasAktif > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
-          <%= tugasAktif > 0 ? 'Lihat Tugas' : 'Tidak Ada' %>
-        </a>
-      </div>
-      <!-- Belum Dinilai -->
-      <div class="stat-item">
-        <div class="stat-icon">
-          <i class="bi bi-clock-history"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Belum Dinilai</div>
-          <div class="stat-number"><%= pengumpulanBelumDinilai || 0 %></div>
-        </div>
-        <a href="/dosen/nilai" class="btn <%= pengumpulanBelumDinilai > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
-          <%= pengumpulanBelumDinilai > 0 ? 'Lihat Nilai' : 'Tidak Ada' %>
-        </a>
-      </div>
+  <!-- Card Informasi Dosen (Tugas Aktif & Belum Dinilai + Event + Logbook Pending) -->
+  <div class="info-card">
+    <div class="card-header">
+      <h5><i class="bi bi-info-circle me-2"></i>Informasi Dosen</h5>
     </div>
-
-    <!-- Bagian Event (jika ada) -->
-    <% if (events && events.length > 0) { %>
-      <hr class="my-4">
-      <h6 class="fw-semibold mb-3"><i class="bi bi-calendar-event me-2"></i>Acara Mendatang</h6>
-      <div class="d-flex flex-wrap gap-3">
-        <% events.slice(0, 4).forEach(event => { %>
-          <div class="flex-grow-1" style="min-width: 200px;">
-            <div class="p-3 rounded-3" style="background: rgba(30,58,138,0.05); border-left: 3px solid var(--primary-start);">
-              <div class="fw-semibold"><%= event.judul %></div>
-              <div class="small text-muted">
-                <i class="bi bi-calendar3 me-1"></i><%= new Date(event.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' }) %>
-              </div>
-              <% if (event.deskripsi) { %>
-                <p class="small text-muted mt-1 mb-0"><%= event.deskripsi.substring(0, 40) %><%= event.deskripsi.length > 40 ? '...' : '' %></p>
-              <% } %>
-            </div>
+    <div class="card-body">
+      <div class="stat-row">
+        <!-- Tugas Aktif -->
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="bi bi-file-earmark-text"></i>
           </div>
-        <% }) %>
+          <div class="stat-content">
+            <div class="stat-label">Tugas Aktif</div>
+            <div class="stat-number"><%= tugasAktif || 0 %></div>
+          </div>
+          <a href="/dosen/tugas" class="btn <%= tugasAktif > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
+            <%= tugasAktif > 0 ? 'Lihat Tugas' : 'Tidak Ada' %>
+          </a>
+        </div>
+        <!-- Belum Dinilai -->
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Belum Dinilai</div>
+            <div class="stat-number"><%= pengumpulanBelumDinilai || 0 %></div>
+          </div>
+          <a href="/dosen/tugas" class="btn <%= pengumpulanBelumDinilai > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
+            <%= pengumpulanBelumDinilai > 0 ? 'Lihat Nilai' : 'Tidak Ada' %>
+          </a>
+        </div>
+        <!-- Logbook Pending (TAMBAHAN) -->
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="bi bi-journal-bookmark-fill"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Logbook Pending</div>
+            <div class="stat-number"><%= logbookPendingCount %></div>
+          </div>
+          <a href="/dosen/magang" class="btn <%= logbookPendingCount > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
+            <%= logbookPendingCount > 0 ? 'Lihat Logbook' : 'Tidak Ada' %>
+          </a>
+        </div>
       </div>
-    <% } %>
-  </div>
-</div>
 
-  <!-- Aksi Cepat (Fitur Dosen) - Urutan baru sesuai permintaan -->
+      
+
+      <!-- Bagian Event (jika ada) -->
+      <% if (events && events.length > 0) { %>
+        <hr class="my-4">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-calendar-event me-2"></i>Acara Mendatang</h6>
+        <div class="d-flex flex-wrap gap-3">
+          <% events.slice(0, 4).forEach(event => { %>
+            <div class="flex-grow-1" style="min-width: 200px;">
+              <div class="p-3 rounded-3" style="background: rgba(30,58,138,0.05); border-left: 3px solid var(--primary-start);">
+                <div class="fw-semibold"><%= event.judul %></div>
+                <div class="small text-muted">
+                  <i class="bi bi-calendar3 me-1"></i><%= new Date(event.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' }) %>
+                </div>
+                <% if (event.deskripsi) { %>
+                  <p class="small text-muted mt-1 mb-0"><%= event.deskripsi.substring(0, 100) %><%= event.deskripsi.length > 100 ? '...' : '' %></p>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Aksi Cepat (Fitur Dosen) -->
   <h4 class="section-title">Fitur Dosen</h4>
   <div class="row g-4 mb-4">
     <!-- Buat Tugas -->
@@ -430,13 +563,13 @@
     </a>
     </div>
     <!-- Laporan Magang -->
-<div class="col-6 col-md-3">
-  <a href="/dosen/laporan-magang" class="quick-card">
-    <div class="quick-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-    <h6>Laporan Magang</h6>
-    <p>Lihat laporan mahasiswa</p>
-  </a>
-</div>
+    <div class="col-6 col-md-3">
+      <a href="/dosen/laporan-magang" class="quick-card">
+        <div class="quick-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+        <h6>Laporan Magang</h6>
+        <p>Lihat laporan mahasiswa</p>
+      </a>
+    </div>
     <!-- Biodata -->
     <div class="col-6 col-md-3">
       <a href="/dosen/biodata" class="quick-card">
