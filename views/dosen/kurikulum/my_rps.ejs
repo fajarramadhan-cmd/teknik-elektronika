@@ -1,0 +1,139 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+    --gray-border: #e2e8f0;
+  }
+
+  .page-header {
+    background: linear-gradient(125deg, var(--primary-start), var(--primary-end));
+    border-radius: 2rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 35px -10px rgba(30,58,138,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header h2 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+  }
+  .page-header p {
+    opacity: 0.9;
+  }
+  .mk-card {
+    background: white;
+    border-radius: 1.25rem;
+    border: 1px solid var(--gray-border);
+    padding: 1.25rem;
+    transition: all 0.25s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .mk-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -12px rgba(30,58,138,0.15);
+    border-color: transparent;
+  }
+  .mk-kode {
+    font-size: 0.8rem;
+    color: var(--primary-start);
+    font-weight: 600;
+  }
+  .mk-nama {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+    flex-grow: 1;
+  }
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border-radius: 60px;
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+    color: white;
+  }
+  .btn-outline-custom {
+    border: 1px solid var(--primary-start);
+    border-radius: 60px;
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    color: var(--primary-start);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+  .btn-outline-custom:hover {
+    background: var(--primary-light);
+  }
+  .badge-rps {
+    background: var(--primary-light);
+    color: var(--primary-start);
+    border-radius: 50px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+  }
+  .card-footer-action {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-file-earmark-text me-2"></i>My RPS</h2>
+    <p class="mb-0">Daftar mata kuliah yang Anda ampu. Kelola RPS dan materi perkuliahan.</p>
+  </div>
+
+  <% if (mkList.length === 0) { %>
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle"></i> Anda belum mengampu mata kuliah apapun.
+    </div>
+  <% } else { %>
+    <div class="row g-4">
+      <% mkList.forEach(mk => { %>
+        <div class="col-md-6 col-lg-4">
+          <div class="mk-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <span class="mk-kode"><%= mk.kode %></span>
+              <span class="badge-rps">SKS <%= mk.sks %> | Semester <%= mk.semester %></span>
+            </div>
+            <div class="mk-nama"><%= mk.nama %></div>
+            <div class="card-footer-action">
+              <a href="/dosen/kurikulum/<%= mk.id %>" class="btn-primary-custom">
+                <i class="bi bi-eye"></i> Detail RPS
+              </a>
+              <% if (mk.rpsUrl) { %>
+                <a href="<%= mk.rpsUrl %>" target="_blank" class="btn-outline-custom">
+                  <i class="bi bi-file-pdf"></i> Lihat PDF
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../../partials/footer') %>

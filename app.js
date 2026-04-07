@@ -63,7 +63,15 @@ app.get('/api/current-user', verifyToken, (req, res) => {
     nim: req.user.nim || ''
   });
 });
+// Mengakses halaman detail kurikulum (misal untuk mata kuliah tertentu)
+app.get('/dosen/kurikulum/detail/:id', (req, res) => {
+    res.render('dosen/kurikulum/detail', { id: req.params.id });
+});
 
+// Mengakses halaman my_rps (daftar RPS milik dosen)
+app.get('/dosen/kurikulum/my-rps', (req, res) => {
+    res.render('dosen/kurikulum/my_rps');
+});
 // ============================================================================
 // ROUTES MAHASISWA
 // ============================================================================

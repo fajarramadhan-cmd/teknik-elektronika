@@ -1,132 +1,538 @@
-<%- include('../partials/header') %>
+<%- include('../../partials/header') %>
+
+<%
+  // Default values
+  if (typeof mk === 'undefined') mk = {};
+  if (typeof dosenList === 'undefined') dosenList = [];
+  if (typeof pertemuanList === 'undefined') pertemuanList = [];
+  if (typeof mahasiswaList === 'undefined') mahasiswaList = [];
+  if (typeof terlaksana === 'undefined') terlaksana = 0;
+  if (typeof persentase === 'undefined') persentase = 0;
+%>
 
 <style>
+  /* ===== VARIABEL WARNA (konsisten dengan navbar) ===== */
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+    --primary-dark: #0f2b5c;
+    --gray-light: #f8fafc;
+    --gray-border: #e2e8f0;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0dcaf0;
+    --font-base: 16px;
+  }
+
+  html {
+    font-size: var(--font-base);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(145deg, #f1f5f9 0%, #f8fafc 100%);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER DETAIL ===== */
   .detail-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(125deg, var(--primary-start), var(--primary-end));
+    border-radius: 2rem;
+    padding: 1.5rem 2rem;
     color: white;
-    padding: 2rem;
-    border-radius: 1rem;
     margin-bottom: 2rem;
+    box-shadow: 0 20px 35px -10px rgba(30,58,138,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-header::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -5%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(30px);
   }
   .detail-header h1 {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    position: relative;
+    z-index: 1;
   }
+  .detail-header p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-back {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-back:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  /* ===== CARD UMUM ===== */
   .info-card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 6px -2px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02);
     padding: 1.5rem;
     margin-bottom: 2rem;
+    border: 1px solid var(--gray-border);
+    transition: all 0.2s;
   }
-  .materi-table th {
-    background: #f8f9fa;
-    font-weight: 600;
+  .info-card h5 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
   }
-  .badge-status {
+  .info-card h5 i {
+    color: var(--primary-start);
+  }
+
+  /* ===== DOSEN BADGE ===== */
+  .dosen-badge {
+    background: var(--primary-light);
+    color: var(--primary-start);
     padding: 0.4rem 1rem;
     border-radius: 50px;
+    display: inline-block;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
     font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress {
+    height: 8px;
+    border-radius: 10px;
+    background-color: #e2e8f0;
+  }
+  .progress-bar {
+    background: linear-gradient(95deg, var(--primary-start), var(--primary-end));
+    border-radius: 10px;
+  }
+
+  /* ===== TABEL MATERI (PERTEMUAN) ===== */
+  .table-responsive {
+    border-radius: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .materi-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+  .materi-table th {
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--gray-border);
+    padding: 0.75rem;
+    vertical-align: middle;
+  }
+  .materi-table td {
+    padding: 0.75rem;
+    border: 1px solid var(--gray-border);
+    vertical-align: middle;
+  }
+  .materi-table tbody tr:hover {
+    background-color: #fefce8;
+  }
+
+  /* ===== BADGE STATUS ===== */
+  .badge-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    display: inline-block;
+  }
+  .badge-selesai {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .badge-belum {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  /* ===== TOMBOL & FORM ===== */
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+    color: white;
+  }
+  .btn-outline-custom {
+    background: transparent;
+    border: 1px solid var(--primary-start);
+    color: var(--primary-start);
+    border-radius: 60px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .btn-outline-custom:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+  }
+  .btn-sm {
+    padding: 0.25rem 0.8rem;
+    font-size: 0.7rem;
+  }
+  .form-control, .form-select {
+    border-radius: 0.8rem;
+    border: 1px solid var(--gray-border);
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-end);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  }
+
+  /* ===== MODAL ===== */
+  .modal-header-custom {
+    background: linear-gradient(125deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+  }
+  .modal-header-custom .btn-close {
+    filter: brightness(0) invert(1);
+  }
+  .modal-content {
+    border-radius: 1.25rem;
+    border: none;
+    overflow: hidden;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .detail-header h1 { font-size: 1.5rem; }
+    .info-card { padding: 1rem; }
+    .materi-table th, .materi-table td { padding: 0.5rem; font-size: 0.8rem; }
   }
 </style>
 
-<div class="container-fluid mt-4">
-  <div class="detail-header">
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <h1><%= mk.kode %> - <%= mk.nama %></h1>
-        <p class="mb-0 opacity-75">
-          <i class="bi bi-book me-2"></i><%= mk.sks %> SKS | 
-          <i class="bi bi-calendar me-2"></i>Semester <%= mk.semester %>
-        </p>
+<div class="container mt-4">
+  <!-- Header Detail -->
+  <div class="detail-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h1><%= mk.kode %> - <%= mk.nama %></h1>
+      <p><i class="bi bi-book me-2"></i><%= mk.sks %> SKS | 
+         <i class="bi bi-calendar me-2"></i>Semester <%= mk.semester %></p>
+    </div>
+    <a href="/dosen/mk" class="btn-back mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left"></i> Kembali ke Daftar MK
+    </a>
+  </div>
+
+  <!-- Ringkasan Progress & Dosen Pengampu -->
+  <div class="info-card">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h5><i class="bi bi-people"></i> Dosen Pengampu</h5>
+        <div>
+          <% if (dosenList.length > 0) { %>
+            <% dosenList.forEach(d => { %>
+              <span class="dosen-badge"><%= d %></span>
+            <% }) %>
+          <% } else { %>
+            <span class="text-muted">-</span>
+          <% } %>
+        </div>
       </div>
-      <div>
-        <a href="/dosen/kurikulum" class="btn btn-light">
-          <i class="bi bi-arrow-left me-2"></i>Kembali
+      <div class="col-md-6">
+        <h5><i class="bi bi-graph-up"></i> Progress Perkuliahan</h5>
+        <div class="d-flex justify-content-between mb-1">
+          <small>Pertemuan terlaksana: <%= terlaksana %> dari 16</small>
+          <small><%= persentase %>%</small>
+        </div>
+        <div class="progress mb-2">
+          <div class="progress-bar" style="width: <%= persentase %>%"></div>
+        </div>
+        <div class="text-muted small">
+          <i class="bi bi-info-circle"></i> Status "Selesai" menandakan pertemuan sudah dilaksanakan.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload / Unduh RPS (Kurikulum) -->
+  <div class="info-card">
+    <h5><i class="bi bi-file-earmark-pdf"></i> Rencana Pembelajaran Semester (RPS)</h5>
+    <% if (mk.rpsUrl) { %>
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <a href="<%= mk.rpsUrl %>" target="_blank" class="btn-primary-custom">
+          <i class="bi bi-eye"></i> Lihat RPS
         </a>
+        <a href="<%= mk.rpsUrl %>" download class="btn-outline-custom">
+          <i class="bi bi-download"></i> Unduh
+        </a>
+        <button class="btn-outline-custom" data-bs-toggle="modal" data-bs-target="#uploadRpsModal">
+          <i class="bi bi-arrow-up"></i> Ganti RPS
+        </button>
       </div>
+    <% } else { %>
+      <p class="text-muted mb-3">Belum ada RPS yang diunggah. Silakan upload kurikulum mata kuliah ini.</p>
+      <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#uploadRpsModal">
+        <i class="bi bi-cloud-upload"></i> Upload RPS (PDF)
+      </button>
+    <% } %>
+    <div class="mt-3 small text-muted">
+      <i class="bi bi-info-circle"></i> RPS harus sesuai dengan poin materi yang telah ditentukan oleh Koordinator Prodi.
     </div>
   </div>
 
-  <!-- Dosen Pengampu -->
+  <!-- Daftar Mahasiswa Terdaftar -->
   <div class="info-card">
-    <h5 class="fw-bold mb-3"><i class="bi bi-people me-2"></i>Dosen Pengampu</h5>
-    <div class="d-flex flex-wrap gap-2">
-      <% dosenList.forEach(d => { %>
-        <span class="badge bg-primary bg-opacity-10 text-primary p-2"><%= d %></span>
-      <% }) %>
-    </div>
+    <h5><i class="bi bi-people-fill"></i> Mahasiswa Terdaftar</h5>
+    <% if (mahasiswaList.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>NIM</th>
+              <th>Nama</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% mahasiswaList.forEach(m => { %>
+              <tr>
+                <td><%= m.nim %></td>
+                <td><%= m.nama %></td>
+                <td>
+                  <a href="/dosen/mk/<%= mk.id %>/mahasiswa/<%= m.id %>" class="btn-outline-custom btn-sm">
+                    <i class="bi bi-journal-bookmark-fill"></i> Lihat Progress
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="text-muted">Belum ada mahasiswa yang mengambil mata kuliah ini.</p>
+    <% } %>
   </div>
 
-  <!-- CPL -->
-  <% if (mk.cpl) { %>
-    <div class="info-card">
-      <h5 class="fw-bold mb-3"><i class="bi bi-award me-2"></i>Capaian Pembelajaran Lulusan (CPL)</h5>
-      <p><%= mk.cpl %></p>
-    </div>
-  <% } %>
-
-  <!-- RPS -->
-  <% if (mk.rpsUrl) { %>
-    <div class="info-card">
-      <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-text me-2"></i>Rencana Pembelajaran Semester (RPS)</h5>
-      <a href="<%= mk.rpsUrl %>" target="_blank" class="btn btn-outline-primary">
-        <i class="bi bi-file-pdf"></i> Unduh RPS
-      </a>
-    </div>
-  <% } %>
-
-  <!-- Materi per Pertemuan -->
+  <!-- Materi Perkuliahan (16 Pertemuan) -->
   <div class="info-card">
-    <h5 class="fw-bold mb-3"><i class="bi bi-list-task me-2"></i>Materi Perkuliahan (16 Pertemuan)</h5>
+    <h5><i class="bi bi-calendar-week"></i> Materi Perkuliahan (16 Pertemuan)</h5>
     <div class="table-responsive">
-      <table class="table table-bordered materi-table">
+      <table class="materi-table">
         <thead>
           <tr>
-            <th>Pertemuan</th>
-            <th>Topik</th>
-            <th>Status</th>
+            <th style="width: 8%">Pertemuan</th>
+            <th style="width: 25%">Topik (dari Kurikulum)</th>
+            <th style="width: 12%">Tanggal</th>
+            <th style="width: 10%">Status</th>
+            <th style="width: 20%">Materi Pendukung</th>
+            <th style="width: 15%">Catatan</th>
+            <th style="width: 10%">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          <% if (materi.length === 0) { %>
-            <tr><td colspan="3" class="text-center">Belum ada materi yang diinput.</td></tr>
-          <% } %>
-          <% materi.forEach(m => { %>
-            <tr>
-              <td class="text-center"><%= m.pertemuan %></td>
-              <td><%= m.topik %></td>
+          <% pertemuanList.forEach(p => { %>
+            <tr id="row-<%= p.pertemuan %>">
+              <td class="text-center fw-bold"><%= p.pertemuan %></td>
+              <td><%= p.topik %></td>
+              <td><%= p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-' %></td>
               <td>
-                <% if (m.status === 'selesai') { %>
-                  <span class="badge-status bg-success text-white">Selesai</span>
+                <span class="badge-status <%= p.status === 'selesai' ? 'badge-selesai' : 'badge-belum' %>">
+                  <%= p.status === 'selesai' ? 'Selesai' : 'Belum' %>
+                </span>
+              </td>
+              <td>
+                <% if (p.fileUrl) { %>
+                  <a href="<%= p.fileUrl %>" target="_blank" class="btn-outline-custom btn-sm">
+                    <i class="bi bi-file-earmark-pdf"></i> Lihat
+                  </a>
                 <% } else { %>
-                  <span class="badge-status bg-warning text-dark">Belum</span>
+                  <span class="text-muted">-</span>
                 <% } %>
+              </td>
+              <td><%= p.catatan ? p.catatan.substring(0, 30) : '-' %></td>
+              <td>
+                <button class="btn-outline-custom btn-sm" data-bs-toggle="modal" 
+                        data-bs-target="#editPertemuanModal"
+                        data-pertemuan="<%= p.pertemuan %>"
+                        data-topik="<%= p.topik %>"
+                        data-tanggal="<%= p.tanggal || '' %>"
+                        data-status="<%= p.status %>"
+                        data-catatan="<%= p.catatan || '' %>"
+                        data-fileurl="<%= p.fileUrl || '' %>">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
               </td>
             </tr>
           <% }) %>
         </tbody>
       </table>
     </div>
-  </div>
-
-  <!-- Tugas Terkait -->
-  <% if (tugasList.length > 0) { %>
-    <div class="info-card">
-      <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-text me-2"></i>Tugas Terkait</h5>
-      <ul class="list-group">
-        <% tugasList.forEach(t => { %>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong><%= t.judul %></strong><br>
-              <small class="text-muted">Deadline: <%= new Date(t.deadline).toLocaleDateString('id-ID') %></small>
-            </div>
-            <span class="badge bg-primary"><%= t.tipe %></span>
-          </li>
-        <% }) %>
-      </ul>
+    <div class="mt-3 small text-muted">
+      <i class="bi bi-info-circle"></i> Topik materi sudah ditetapkan oleh Koordinator Prodi. Dosen hanya dapat mengisi tanggal pelaksanaan, status, catatan, dan upload file pendukung.
     </div>
-  <% } %>
+  </div>
 </div>
 
-<%- include('../partials/footer') %>
+<!-- Modal Upload RPS -->
+<div class="modal fade" id="uploadRpsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-cloud-upload"></i> Unggah RPS (Kurikulum)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/dosen/kurikulum/<%= mk.id %>/rps" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">File RPS (PDF) <span class="text-danger">*</span></label>
+            <input type="file" class="form-control" name="rpsFile" accept=".pdf" required>
+            <div class="form-text">Pastikan file sesuai dengan materi yang telah ditentukan.</div>
+          </div>
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> File akan disimpan di Google Drive dan dapat diakses oleh Kaprodi dan SPMP.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-primary-custom">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Pertemuan -->
+<div class="modal fade" id="editPertemuanModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit Pertemuan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" enctype="multipart/form-data" id="editPertemuanForm">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Pertemuan ke-</label>
+              <input type="text" class="form-control" id="modalPertemuan" readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Topik (dari Kurikulum)</label>
+              <input type="text" class="form-control" id="modalTopik" readonly>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tanggal Pelaksanaan</label>
+              <input type="date" class="form-control" name="tanggal" id="modalTanggal">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Status</label>
+              <select class="form-select" name="status" id="modalStatus">
+                <option value="belum">Belum</option>
+                <option value="selesai">Selesai</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Catatan (untuk dosen / mahasiswa)</label>
+            <textarea class="form-control" name="catatan" rows="2" id="modalCatatan"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Upload Materi Pendukung (PDF)</label>
+            <input type="file" class="form-control" name="file" accept=".pdf">
+            <div class="form-text" id="currentFileInfo"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn-primary-custom">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal Edit Pertemuan: isi data dari tombol
+  const editModal = document.getElementById('editPertemuanModal');
+  if (editModal) {
+    editModal.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      const pertemuan = button.getAttribute('data-pertemuan');
+      const topik = button.getAttribute('data-topik');
+      const tanggal = button.getAttribute('data-tanggal');
+      const status = button.getAttribute('data-status');
+      const catatan = button.getAttribute('data-catatan');
+      const fileUrl = button.getAttribute('data-fileurl');
+      
+      document.getElementById('modalPertemuan').value = pertemuan;
+      document.getElementById('modalTopik').value = topik;
+      document.getElementById('modalTanggal').value = tanggal || '';
+      document.getElementById('modalStatus').value = status || 'belum';
+      document.getElementById('modalCatatan').value = catatan || '';
+      
+      const fileInfo = document.getElementById('currentFileInfo');
+      if (fileUrl && fileUrl !== '') {
+        fileInfo.innerHTML = `<i class="bi bi-paperclip"></i> File saat ini: <a href="${fileUrl}" target="_blank">Lihat file</a>`;
+      } else {
+        fileInfo.innerHTML = '<i class="bi bi-info-circle"></i> Belum ada file terupload.';
+      }
+      
+      const form = document.getElementById('editPertemuanForm');
+      form.action = `/dosen/kurikulum/<%= mk.id %>/pertemuan/${pertemuan}`;
+    });
+  }
+</script>
+
+<%- include('../../partials/footer') %>
