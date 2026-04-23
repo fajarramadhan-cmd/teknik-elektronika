@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Info Kelas 16:9 - Politeknik Dewantara</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+      background: radial-gradient(circle at 20% 30%, #0a2f3a, #03121f);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Rasio 16:9 container utama */
+    .tv-screen {
+      width: 100%;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 32px;
+      backdrop-filter: blur(2px);
+      box-shadow: 0 25px 45px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    /* Header dengan 3 bagian: kiri (logo+kampus), tengah (nama kelas besar), kanan (jam) */
+    .tv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      background: rgba(15, 35, 55, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 40px;
+      padding: 12px 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+    }
+    .logo-area img {
+      height: 50px;
+      width: auto;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    }
+    .univ-title h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .univ-title p {
+      font-size: 0.65rem;
+      opacity: 0.9;
+      color: #f0f0f0;
+    }
+    .class-name-header {
+      flex: 2;
+      text-align: center;
+    }
+    .class-name-header h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(120deg, #fff, #ffd966);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      letter-spacing: 2px;
+    }
+    .clock {
+      flex: 1;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 60px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      text-align: center;
+      border: 1px solid rgba(255,215,0,0.4);
+      color: #ffffff;
+      min-width: 160px;
+    }
+
+    /* Carousel area */
+    .carousel-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+    }
+    .slides-wrapper {
+      height: 100%;
+      width: 100%;
+      position: relative;
+    }
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.7s ease-in-out;
+      visibility: hidden;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Layout 3 kolom */
+    .three-col {
+      display: flex;
+      gap: 20px;
+      height: 100%;
+      padding: 4px 0;
+    }
+
+    /* Kolom Kiri: Daftar Mata Kuliah */
+    .col-left {
+      flex: 1.1;
+      background: rgba(20, 40, 60, 0.7);
+      backdrop-filter: blur(14px);
+      border-radius: 28px;
+      padding: 16px 14px;
+      overflow-y: auto;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+    }
+    .col-left h2 {
+      font-size: 1.3rem;
+      border-left: 4px solid #ffb347;
+      padding-left: 12px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .course-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px;
+      margin-bottom: 6px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #ffffff;
+    }
+    .course-time {
+      min-width: 70px;
+      background: #0e2b4e;
+      padding: 4px 8px;
+      border-radius: 30px;
+      text-align: center;
+      font-weight: 600;
+      font-family: monospace;
+      color: #ffffff;
+    }
+    .course-info {
+      flex: 1;
+    }
+    .course-info strong {
+      display: block;
+      font-size: 0.9rem;
+      color: #ffffff;
+    }
+    .course-info span {
+      font-size: 0.7rem;
+      opacity: 0.9;
+      color: #f0f0f0;
+    }
+    .highlight-course {
+      background: rgba(255, 180, 70, 0.4);
+      border-left: 3px solid #ffb347;
+    }
+
+    /* Kolom Tengah: Dua Kartu Besar */
+    .col-middle {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .big-card {
+      flex: 1;
+      border-radius: 28px;
+      padding: 18px 22px;
+      backdrop-filter: blur(20px);
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+    }
+    .big-card.current {
+      background: linear-gradient(125deg, rgba(25, 100, 60, 0.85), rgba(15, 70, 40, 0.95));
+      border-left: 6px solid #b9ff9e;
+    }
+    .big-card.next {
+      background: linear-gradient(125deg, rgba(180, 100, 30, 0.85), rgba(120, 70, 20, 0.95));
+      border-left: 6px solid #ffdd99;
+    }
+    .big-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .big-card .matkul {
+      font-size: 1.7rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .big-card .detail {
+      font-size: 1rem;
+      margin: 6px 0;
+      color: #f5f5f5;
+    }
+    .time-remaining {
+      font-size: 1rem;
+      background: rgba(0,0,0,0.5);
+      display: inline-block;
+      padding: 5px 16px;
+      border-radius: 40px;
+      margin-top: 12px;
+      color: #ffffff;
+    }
+
+    /* Kolom Kanan: Informasi Penting */
+    .col-right {
+      flex: 1;
+      background: rgba(20, 30, 50, 0.8);
+      backdrop-filter: blur(14px);
+      border-radius: 28px;
+      padding: 16px;
+      border: 1px solid rgba(255,215,0,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      color: #ffffff;
+    }
+    .info-card {
+      background: rgba(0,0,0,0.5);
+      border-radius: 24px;
+      padding: 14px;
+    }
+    .info-card h4 {
+      font-size: 1.1rem;
+      border-bottom: 2px solid #ffb347;
+      display: inline-block;
+      margin-bottom: 12px;
+      padding-right: 8px;
+      color: #ffffff;
+    }
+    .info-card p, .info-card li {
+      font-size: 0.8rem;
+      margin: 8px 0;
+      line-height: 1.4;
+      color: #f0f0f0;
+    }
+    .highlight-text {
+      color: #ffd966;
+      font-weight: bold;
+    }
+
+    /* Running text bawah */
+    .running-text {
+      background: rgba(10, 25, 40, 0.8);
+      backdrop-filter: blur(12px);
+      border-radius: 40px;
+      padding: 10px 20px;
+      margin-top: 18px;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,215,0,0.5);
+      color: #ffffff;
+    }
+    marquee {
+      color: #ffffff;
+    }
+
+    .col-left::-webkit-scrollbar {
+      width: 4px;
+    }
+    .col-left::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    .col-left::-webkit-scrollbar-thumb {
+      background: #ffb347;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 1000px) {
+      .three-col { flex-direction: column; overflow-y: auto; }
+      .col-left, .col-middle, .col-right { flex: none; min-height: 200px; }
+      .tv-screen { aspect-ratio: auto; height: auto; }
+      .class-name-header h2 { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<%
+  // ========== DATA 10 KELAS DENGAN SINGKATAN ==========
+  const classrooms = [
+    { name: "L101", schedules: [ // LABORATORIUM 01
+      { start: "07:30", end: "09:10", matkul: "Pemrograman Web", dosen: "Budi Santoso, M.Kom" },
+      { start: "09:20", end: "11:00", matkul: "Basis Data", dosen: "Siti Aminah, M.T" },
+      { start: "11:10", end: "12:50", matkul: "Pemrograman Mobile", dosen: "Eka Prasetyo, M.Kom" },
+      { start: "13:00", end: "14:40", matkul: "Cloud Computing", dosen: "Dewi Lestari, M.T" }
+    ]},
+    { name: "L102", schedules: [ // LABORATORIUM 02
+      { start: "07:30", end: "09:10", matkul: "Jaringan Komputer", dosen: "Andi Wijaya, M.Kom" },
+      { start: "09:20", end: "11:00", matkul: "Sistem Operasi", dosen: "Rina Fitriani, M.Kom" },
+      { start: "11:10", end: "12:50", matkul: "Keamanan Sistem", dosen: "Ahmad Fauzi, M.Kom" },
+      { start: "13:00", end: "14:40", matkul: "IoT & Embedded", dosen: "Rizki Fauzan, M.T" }
+    ]},
+    { name: "L103", schedules: [ // LABORATORIUM 03
+      { start: "07:30", end: "09:10", matkul: "Kecerdasan Buatan", dosen: "Dedi Kurniawan, M.T" },
+      { start: "09:20", end: "11:00", matkul: "Pengolahan Citra", dosen: "Dr. Ratna Sari, M.Kom" },
+      { start: "11:10", end: "12:50", matkul: "Machine Learning", dosen: "Dedi Kurniawan, M.T" },
+      { start: "13:00", end: "14:40", matkul: "Data Mining", dosen: "Nina Herlina, M.T" }
+    ]},
+    { name: "K301", schedules: [ // RUANG 301
+      { start: "07:30", end: "09:10", matkul: "Bahasa Inggris Teknik", dosen: "Sarah Wijaya, M.Pd" },
+      { start: "09:20", end: "11:00", matkul: "Kewirausahaan", dosen: "Agus Setiawan, M.M" },
+      { start: "11:10", end: "12:50", matkul: "Etika Profesi", dosen: "Dr. Hendra Gunawan" }
+    ]},
+    { name: "L104", schedules: [ // LABORATORIUM 04
+      { start: "07:30", end: "09:10", matkul: "AI Programming", dosen: "Rizki Fauzan, M.T" },
+      { start: "09:20", end: "11:00", matkul: "Computer Vision", dosen: "Dr. Ratna Sari, M.Kom" },
+      { start: "11:10", end: "12:50", matkul: "Deep Learning", dosen: "Dedi Kurniawan, M.T" }
+    ]},
+    { name: "L105", schedules: [ // LABORATORIUM 05
+      { start: "07:30", end: "09:10", matkul: "Riset Operasi", dosen: "Nina Herlina, M.T" },
+      { start: "09:20", end: "11:00", matkul: "Simulasi Digital", dosen: "Budi Santoso, M.Kom" },
+      { start: "11:10", end: "12:50", matkul: "Manajemen Proyek", dosen: "Agus Setiawan, M.M" }
+    ]},
+    { name: "K302", schedules: [ // RUANG 302
+      { start: "07:30", end: "09:10", matkul: "Multimedia", dosen: "Eka Prasetyo, M.Kom" },
+      { start: "09:20", end: "11:00", matkul: "Desain Grafis", dosen: "Sarah Wijaya, M.Pd" }
+    ]},
+    { name: "L106", schedules: [ // LABORATORIUM 06
+      { start: "07:30", end: "09:10", matkul: "Cloud Infrastructure", dosen: "Dewi Lestari, M.T" },
+      { start: "09:20", end: "11:00", matkul: "DevOps", dosen: "Rizki Fauzan, M.T" },
+      { start: "11:10", end: "12:50", matkul: "Container Technology", dosen: "Andi Wijaya, M.Kom" }
+    ]},
+    { name: "L107", schedules: [ // LABORATORIUM 07
+      { start: "07:30", end: "09:10", matkul: "Big Data", dosen: "Dedi Kurniawan, M.T" },
+      { start: "09:20", end: "11:00", matkul: "Analisis Data", dosen: "Nina Herlina, M.T" }
+    ]},
+    { name: "K303", schedules: [ // RUANG 303
+      { start: "07:30", end: "09:10", matkul: "Statistika", dosen: "Dr. Hendra Gunawan" },
+      { start: "09:20", end: "11:00", matkul: "Kalkulus", dosen: "Rina Fitriani, M.Kom" }
+    ]}
+  ];
+
+  // Informasi penting
+  const importantInfo = {
+    ujian: "UTS: 3-7 Juni 2024 | UAS: 24-28 Juni 2024",
+    krs: "Registrasi KRS Genap: 1-15 Juni 2024",
+    libur: "Libur Isra Mi'raj: 27 Mei 2024",
+    workshop: "Workshop React Native: 25 Mei, Aula Lt.3",
+    kontak: "Helpdesk: 0812-3456-7890 | help@polidewa.ac.id"
+  };
+
+  function timeToMinutes(t) { let [h,m] = t.split(':').map(Number); return h*60+m; }
+  const now = new Date();
+  const fullDateTime = now.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const timeNow = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+%>
+<div class="tv-screen">
+  <div class="tv-header">
+    <div class="logo-area">
+      <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo Politeknik Dewantara" onerror="this.src='https://placehold.co/60x60?text=PD'">
+      <div class="univ-title">
+        <h1>POLITEKNIK DEWANTARA</h1>
+        <p>TV DISPLAY - BY ELEKTRONIKA</p>
+      </div>
+    </div>
+    <div class="class-name-header" id="classNameHeader">
+      <h2>L101</h2>
+    </div>
+    <div class="clock" id="liveClock">
+      <%= fullDateTime %><br>🕒 <%= timeNow %>
+    </div>
+  </div>
+
+  <div class="carousel-container">
+    <div class="slides-wrapper" id="slidesWrapper"></div>
+  </div>
+
+  <div class="running-text">
+    <marquee behavior="scroll" direction="left" scrollamount="5" onmouseover="this.stop()" onmouseout="this.start()">
+      📢 <%= importantInfo.ujian %> ★ <%= importantInfo.krs %> ★ <%= importantInfo.libur %> ★ <%= importantInfo.workshop %> ★ Kontak: <%= importantInfo.kontak %>
+    </marquee>
+  </div>
+</div>
+
+<script>
+  const classrooms = <%- JSON.stringify(classrooms) %>;
+  const importantInfo = <%- JSON.stringify(importantInfo) %>;
+  let currentIndex = 0;
+  let autoInterval;
+
+  function timeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  function getCurrentAndNext(schedules) {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    let current = null, next = null, remaining = 0;
+    for (let i = 0; i < schedules.length; i++) {
+      const s = schedules[i];
+      const start = timeToMinutes(s.start);
+      const end = timeToMinutes(s.end);
+      if (currentMinutes >= start && currentMinutes < end) {
+        current = s;
+        remaining = end - currentMinutes;
+        for (let j = i+1; j < schedules.length; j++) {
+          if (timeToMinutes(schedules[j].start) >= end) {
+            next = schedules[j];
+            break;
+          }
+        }
+        break;
+      }
+    }
+    if (!current) {
+      for (let i = 0; i < schedules.length; i++) {
+        if (timeToMinutes(schedules[i].start) > currentMinutes) {
+          next = schedules[i];
+          break;
+        }
+      }
+    }
+    return { current, next, remainingMinutes: remaining };
+  }
+
+  function renderSlide(index) {
+    const room = classrooms[index];
+    if (!room) return '';
+    const { current, next, remainingMinutes } = getCurrentAndNext(room.schedules);
+    // Kolom kiri
+    let leftHtml = `<div class="col-left"><h2>DAFTAR MATA KULIAH<br>${room.name}</h2>`;
+    room.schedules.forEach(course => {
+      const isCurrent = current && current.matkul === course.matkul && current.start === course.start;
+      leftHtml += `<div class="course-item ${isCurrent ? 'highlight-course' : ''}">
+                    <div class="course-time">${course.start} - ${course.end}</div>
+                    <div class="course-info"><strong>${course.matkul}</strong><span>${course.dosen}</span></div>
+                  </div>`;
+    });
+    leftHtml += `</div>`;
+
+    // Kolom tengah
+    let middleHtml = `<div class="col-middle">`;
+    middleHtml += `<div class="big-card current"><h3>🔴 SEDANG BERLANGSUNG</h3>`;
+    if (current) {
+      middleHtml += `<div class="matkul">${current.matkul}</div>
+                      <div class="detail">👨‍🏫 ${current.dosen}</div>
+                      <div class="detail">⏰ ${current.start} - ${current.end}</div>
+                      <div class="time-remaining">⏳ Sisa Waktu: ${remainingMinutes} menit</div>`;
+    } else {
+      middleHtml += `<div class="matkul">✨ Tidak ada kelas</div><div class="detail">Istirahat / menunggu jadwal berikutnya</div>`;
+    }
+    middleHtml += `</div>`;
+    middleHtml += `<div class="big-card next"><h3>⏩ KELAS BERIKUTNYA</h3>`;
+    if (next) {
+      middleHtml += `<div class="matkul">${next.matkul}</div>
+                      <div class="detail">👨‍🏫 ${next.dosen}</div>
+                      <div class="detail">🕘 Mulai: ${next.start} WIB</div>`;
+    } else {
+      middleHtml += `<div class="matkul">✅ Hari selesai</div><div class="detail">Tidak ada jadwal lagi</div>`;
+    }
+    middleHtml += `</div></div>`;
+
+    // Kolom kanan
+    let rightHtml = `<div class="col-right">
+      <div class="info-card"><h4>📢 PENGUMUMAN</h4>
+        <p>📌 <span class="highlight-text">UTS:</span> ${importantInfo.ujian}</p>
+        <p>📌 <span class="highlight-text">KRS:</span> ${importantInfo.krs}</p>
+        <p>📌 <span class="highlight-text">Libur:</span> ${importantInfo.libur}</p>
+      </div>
+      <div class="info-card"><h4>🎓 KEGIATAN</h4>
+        <p>🏆 ${importantInfo.workshop}</p>
+        <p>📞 <span class="highlight-text">Helpdesk:</span> ${importantInfo.kontak}</p>
+      </div>
+      <div class="info-card"><h4>🏛️ POLITEKNIK DEWANTARA</h4>
+        <p>"Unggul dalam Teknologi, Berkarakter Pancasila"</p>
+      </div>
+    </div>`;
+
+    return `<div class="three-col">${leftHtml}${middleHtml}${rightHtml}</div>`;
+  }
+
+  function buildCarousel() {
+    const wrapper = document.getElementById('slidesWrapper');
+    wrapper.innerHTML = '';
+    for (let i = 0; i < classrooms.length; i++) {
+      const slideDiv = document.createElement('div');
+      slideDiv.className = 'slide';
+      if (i === currentIndex) slideDiv.classList.add('active');
+      slideDiv.innerHTML = renderSlide(i);
+      wrapper.appendChild(slideDiv);
+    }
+    // Update header nama kelas
+    document.getElementById('classNameHeader').innerHTML = `<h2>${classrooms[currentIndex].name}</h2>`;
+  }
+
+  function goToSlide(index) {
+    const slides = document.querySelectorAll('.slide');
+    if (!slides.length) return;
+    slides[currentIndex].classList.remove('active');
+    currentIndex = (index + classrooms.length) % classrooms.length;
+    slides[currentIndex].classList.add('active');
+    slides[currentIndex].innerHTML = renderSlide(currentIndex);
+    // Update header nama kelas
+    document.getElementById('classNameHeader').innerHTML = `<h2>${classrooms[currentIndex].name}</h2>`;
+  }
+
+  function nextSlide() {
+    goToSlide(currentIndex + 1);
+  }
+
+  function startAutoSlide() {
+    if (autoInterval) clearInterval(autoInterval);
+    autoInterval = setInterval(() => nextSlide(), 10000);
+  }
+
+  function updateClockAndActiveSlide() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const dateStr = now.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    document.getElementById('liveClock').innerHTML = `${dateStr}<br>🕒 ${timeStr}`;
+    const activeSlide = document.querySelector('.slide.active');
+    if (activeSlide) {
+      activeSlide.innerHTML = renderSlide(currentIndex);
+    }
+  }
+
+  window.onload = () => {
+    buildCarousel();
+    startAutoSlide();
+    updateClockAndActiveSlide();
+    setInterval(updateClockAndActiveSlide, 1000);
+  };
+</script>
+</body>
+</html>

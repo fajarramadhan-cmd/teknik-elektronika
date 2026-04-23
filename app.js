@@ -132,7 +132,11 @@ app.get('/dashboard', verifyToken, (req, res) => {
     res.redirect('/mahasiswa/dashboard');
   }
 });
-
+// ============================================================================
+// ROUTES DISPLAY (TV KAMPUS)
+// ============================================================================
+const displayRoutes = require('./routes/display');
+app.use('/display', displayRoutes);
 // ============================================================================
 // HANDLE 404 (Halaman Tidak Ditemukan)
 // ============================================================================

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Display</title>
+
+<style>
+body { font-family: Arial; padding: 20px; }
+form { display: flex; gap: 10px; margin-bottom: 20px; }
+input, button { padding: 8px; }
+table { width: 100%; }
+</style>
+
+</head>
+
+<body>
+
+<h2>Kelola Jadwal Display</h2>
+
+<form method="POST" action="/display/admin/add">
+  <input name="matkul" placeholder="Matkul" required>
+  <input name="dosen" placeholder="Dosen" required>
+  <input name="ruang" placeholder="Ruang" required>
+  <input type="time" name="mulai" required>
+  <input type="time" name="selesai" required>
+  <button>Tambah</button>
+</form>
+
+<table border="1">
+<tr>
+<th>Matkul</th><th>Dosen</th><th>Ruang</th><th>Jam</th>
+</tr>
+
+<% jadwal.forEach(j => { %>
+<tr>
+<td><%= j.matkul %></td>
+<td><%= j.dosen %></td>
+<td><%= j.ruang %></td>
+<td><%= j.mulai %> - <%= j.selesai %></td>
+</tr>
+<% }) %>
+
+</table>
+
+</body>
+</html>

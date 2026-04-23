@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Infografis & Prosedur E-Log Magang | Politeknik Dewantara</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Roboto', sans-serif;
+            background: #f0f4f8;
+            color: #1e2a3e;
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #0b3b5f, #1b7b5e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #2c5f7a;
+            font-weight: 500;
+        }
+
+        .grid-2, .grid-3, .grid-4 {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            border: 1px solid #e2edf2;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 28px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #0f3b3c;
+            border-left: 5px solid #2c9c7c;
+            padding-left: 0.8rem;
+        }
+        .icon {
+            font-size: 1.8rem;
+        }
+        .timeline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .timeline-step {
+            flex: 1;
+            background: #ffffffd9;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            text-align: center;
+            background: #f9fdfe;
+            border: 1px solid #cde3ec;
+        }
+        .step-number {
+            background: #1b7b5e;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 0.6rem;
+        }
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+        }
+        .checklist li::before {
+            content: "✓";
+            color: #1b7b5e;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .badge {
+            display: inline-block;
+            background: #eef2f5;
+            padding: 0.2rem 0.6rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #1e5f6b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.8rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid #dce7ed;
+        }
+        th {
+            background-color: #eaf4f0;
+            color: #155f4b;
+        }
+        .nilai-A { background-color: #dff0e6; font-weight: bold; }
+        .nilai-Bplus { background-color: #e6f2ef; }
+        .nilai-B { background-color: #f0f6f3; }
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #e7f0ed;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+        }
+        .role-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            text-align: center;
+        }
+        .role-item {
+            background: #f4fafc;
+            border-radius: 1rem;
+            padding: 1rem;
+            flex: 1;
+            min-width: 120px;
+        }
+        .step-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .step-item {
+            background: #f9fdfe;
+            border-left: 5px solid #1b7b5e;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+        }
+        .step-item strong {
+            display: flex;
+            gap: 0.5rem;
+        }
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .card h3 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📘 Alur Magang Mahasiswa<br>Politeknik Dewantara</h1>
+        <p>Dari Pendaftaran Hingga Penilaian & Prosedur E-Log Magang | Berbasis Link & Match dengan IDUKA</p>
+    </div>
+
+    <!-- ==================== 1. SYARAT MAGANG ==================== -->
+    <div class="grid-2">
+        <div class="card">
+            <h3><span class="icon">✅</span> Syarat Magang (Dalam Negeri)</h3>
+            <ul class="checklist">
+                <li>Mahasiswa aktif (KTM) – semua prodi vokasi</li>
+                <li>Lunas SPP semester sebelumnya + 50% semester berjalan</li>
+                <li>Minimal 56 SKS (D3) atau 96 SKS (D4)</li>
+                <li>Mengambil Program Magang di KRS & isi form pendaftaran</li>
+                <li>Tidak mengambil kelas tatap muka selama magang</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3><span class="icon">🌏</span> Syarat Magang Luar Negeri</h3>
+            <ul class="checklist">
+                <li>Mahasiswa aktif semua prodi</li>
+                <li>Lunas SPP semester sebelumnya + 50% berjalan</li>
+                <li>Minimal 20 SKS (1 semester)</li>
+                <li>KRS magang + form pendaftaran</li>
+                <li>Tanpa kuliah tatap muka paralel</li>
+            </ul>
+            <div class="badge">Laporan 6 bulan sekali</div>
+        </div>
+    </div>
+
+    <!-- ==================== 2. TAHAPAN PENDAFTARAN ==================== -->
+    <div class="card">
+        <h3><span class="icon">📋</span> Tahap Pendaftaran & Verifikasi</h3>
+        <div class="timeline">
+            <div class="timeline-step"><div class="step-number">1</div> Isi form online</div>
+            <div class="timeline-step"><div class="step-number">2</div> Verifikasi dokumen</div>
+            <div class="timeline-step"><div class="step-number">3</div> Pengumuman lolos</div>
+            <div class="timeline-step"><div class="step-number">4</div> Pengajuan IDUKA & kuota</div>
+            <div class="timeline-step"><div class="step-number">5</div> Penetapan lokasi magang</div>
+        </div>
+        <p class="badge" style="margin-top: 8px;">Kepala Bagian Magang berwenang menentukan lokasi</p>
+    </div>
+
+    <!-- ==================== 3. PIHAK TERKAIT ==================== -->
+    <div class="card">
+        <h3><span class="icon">🤝</span> Pihak-pihak Terkait</h3>
+        <div class="role-diagram">
+            <div class="role-item">🧑‍🎓 Mahasiswa<br><small>pelaksana magang</small></div>
+            <div class="role-item">👨‍🏫 Dosen Pembimbing 1 & 2<br><small>dari kampus</small></div>
+            <div class="role-item">🏭 Pendamping Lapangan<br><small>dari IDUKA</small></div>
+            <div class="role-item">📌 Kaprodi & Kepala Bagian Magang<br><small>koordinator & evaluator</small></div>
+        </div>
+        <p style="font-size:0.85rem; margin-top:12px;">🔁 Bimbingan berjenjang : Mahasiswa → Pembimbing 2 → Pembimbing 1</p>
+    </div>
+
+    <!-- ==================== 4. PELAKSANAAN MAGANG ==================== -->
+    <div class="grid-2">
+        <div class="card">
+            <h3><span class="icon">⚙️</span> Pelaksanaan Magang</h3>
+            <ul class="checklist">
+                <li>Pembekalan magang (Kepala Bagian Magang)</li>
+                <li>Pengiriman mahasiswa ke IDUKA</li>
+                <li>Pendampingan aktif oleh pembimbing lapangan</li>
+                <li>Monitoring via WA / kunjungan langsung</li>
+                <li>Logbook mingguan wajib (dikirim ke Pembimbing 2)</li>
+                <li>Umpan balik dari dosen & pendamping lapangan</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3><span class="icon">📓</span> Logbook & Pelaporan</h3>
+            <p>Setiap minggu mahasiswa melaporkan kegiatan harian ke <strong>Pembimbing 2</strong> dan pendamping lapangan (WA/email). Dosen wajib memberi umpan balik.</p>
+            <div class="badge">Untuk LN: laporan 6 bulan sekali sesuai kepulangan</div>
+        </div>
+    </div>
+
+    <!-- ==================== 5. KEWAJIBAN MAHASISWA ==================== -->
+    <div class="card">
+        <h3><span class="icon">📌</span> Kewajiban Mahasiswa Magang</h3>
+        <div class="grid-3" style="margin-top: 0.5rem;">
+            <div>✔️ Etika & profesionalisme</div>
+            <div>✔️ Patuhi petunjuk pendamping & dosen</div>
+            <div>✔️ Logbook mingguan sebagai presensi</div>
+            <div>✔️ Laporan magang akhir semester</div>
+            <div>✔️ Tidak melakukan plagiasi</div>
+            <div>✔️ Ikuti seluruh proses magang</div>
+        </div>
+    </div>
+
+    <!-- ==================== 6. PENILAIAN ==================== -->
+    <div class="card">
+        <h3><span class="icon">🏆</span> Sistem Penilaian Magang</h3>
+        <p><strong>Komponen penilaian:</strong> Pembekalan (Kepala Bagian Magang), Pelaksanaan (Pendamping Lapangan), Pelaporan (Pembimbing 1 & 2)</p>
+        <table>
+            <thead>
+                <tr><th>Nilai</th><th>Skor</th><th>Rentang</th><th>Kategori</th></tr>
+            </thead>
+            <tbody>
+                <tr class="nilai-A"><td>A</td><td>4,0</td><td>86,0 - 100</td><td>Istimewa</td></tr>
+                <tr class="nilai-Bplus"><td>B+</td><td>3,5</td><td>76,0 - 85,9</td><td>Sangat baik</td></tr>
+                <tr class="nilai-B"><td>B</td><td>3,0</td><td>60,0 - 75,9</td><td>Baik</td></tr>
+                <tr><td>C+</td><td>2,5</td><td>50,0 - 59,9</td><td>Cukup baik</td></tr>
+                <tr><td>C</td><td>2,0</td><td>25,0 - 49,9</td><td>Cukup</td></tr>
+                <tr><td>D</td><td>1,0</td><td>10,0 - 24,9</td><td>Kurang</td></tr>
+                <tr><td>E</td><td>0,0</td><td>0,0 - 9,9</td><td>Sangat kurang</td></tr>
+            </tbody>
+        </table>
+        <p>✅ Nilai akhir = rata-rata dari ketiga komponen, lalu dikonversi ke huruf.<br>
+        📎 Laporan disetujui pendamping lapangan, dosen pembimbing, dan disahkan Kepala Bagian Magang.</p>
+    </div>
+
+    <!-- ==================== 7. KETENTUAN KHUSUS & SANKSI ==================== -->
+    <div class="grid-3">
+        <div class="card">
+            <h3><span class="icon">⏸️</span> Menolak lokasi magang</h3>
+            <p>Tanpa alasan sah & persetujuan prodi → <strong>magang ditunda ke periode berikutnya</strong>. Lokasi dialihkan ke mahasiswa lain.</p>
+        </div>
+        <div class="card">
+            <h3><span class="icon">⚠️</span> Pelanggaran berat</h3>
+            <p>Jika dipulangkan IDUKA sebelum selesai karena kesalahan mahasiswa → <strong>dinyatakan tidak lulus</strong> magang.</p>
+        </div>
+        <div class="card">
+            <h3><span class="icon">🛡️</span> Perlakuan tidak sesuai norma</h3>
+            <p>Mahasiswa mendapat perlakuan menyimpang → dikembalikan ke kampus untuk ditindaklanjuti.</p>
+        </div>
+    </div>
+
+    <!-- ==================== 8. ATRIBUT & ETIKA ==================== -->
+    <div class="card">
+        <h3><span class="icon">👕</span> Atribut & Etika di IDUKA</h3>
+        <p>Selama magang, mahasiswa menggunakan atribut dari kampus dan/atau atribut yang disediakan IDUKA. Wajib mematuhi peraturan perusahaan dan menjaga nama baik Politeknik Dewantara.</p>
+        <div class="badge">💼 IDUKA dapat memberikan kesempatan kerja jika kompetensi sesuai kebutuhan</div>
+    </div>
+
+    <!-- ==================== 9. HAK DAN KEWAJIBAN RINGKAS ==================== -->
+    <div class="grid-2">
+        <div class="card">
+            <h3><span class="icon">🎓</span> Hak Mahasiswa</h3>
+            <ul class="checklist">
+                <li>Mendapat persetujuan magang</li>
+                <li>Bimbingan dari dosen & pendamping lapangan</li>
+                <li>Memperoleh nilai magang</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3><span class="icon">🏢</span> Kewajiban Kampus & IDUKA</h3>
+            <p><strong>Kampus</strong> : memfasilitasi tempat magang, menunjuk dosen pembimbing, memberikan bimbingan.<br>
+            <strong>IDUKA</strong> : memberi fasilitas kerja & K3, menunjuk pendamping lapangan, memberikan penilaian.</p>
+        </div>
+    </div>
+
+    <!-- ==================== 10. PROSEDUR AKSES MENU E-LOG MAGANG ==================== -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3><span class="icon">🖥️</span> Prosedur Akses Menu E-Log Magang (Sistem Informasi Magang)</h3>
+        <p style="margin-bottom: 1rem;">Menu magang mahasiswa baru dapat diakses setelah mahasiswa memprogramkan mata kuliah magang (PDK 1/2/3) di KRS. Berikut alur lengkapnya:</p>
+        <div class="step-flow">
+            <div class="step-item"><strong>1️⃣ Mahasiswa memprogram KRS magang (PDK 1/2/3)</strong><br><div class="badge">Harus di-ACC oleh Ketua Program Studi</div></div>
+            <div class="step-item"><strong>2️⃣ Dosen Pembimbing 2 mengaktivasi periode magang (durasi 4 bulan)</strong><br>Menentukan tanggal awal dan akhir magang di sistem</div>
+            <div class="step-item"><strong>3️⃣ Mahasiswa dapat mengisi <em>logbook harian/mingguan</em> selama 4 bulan</strong><br>Logbook akan terkunci secara otomatis setelah tanggal akhir magang (bisa diperpanjang oleh Dosen Pembimbing 2 jika masih magang)</div>
+            <div class="step-item"><strong>4️⃣ Setelah magang selesai → logbook terkunci, Dosen Pembimbing 2 wajib input nilai</strong><br>Nilai dari pembimbing 2 menjadi salah satu komponen penilaian</div>
+            <div class="step-item"><strong>5️⃣ Setelah nilai pembimbing 2 masuk, fitur <em>Upload Laporan</em> terbuka di menu mahasiswa</strong><br>Mahasiswa bisa upload laporan, lalu Dosen Pembimbing 1 melakukan review (ACC / Reject + komentar), mahasiswa bisa revisi</div>
+            <div class="step-item"><strong>6️⃣ Laporan di-ACC oleh Dosen Pembimbing 1</strong></div>
+            <div class="step-item"><strong>7️⃣ Finalisasi magang oleh Ketua Program Studi</strong><br>Kaprodi menginput nilai dari <strong>Pendamping Lapangan (IDUKA)</strong>. Sistem akan merekap nilai akhir dari 3 komponen: <br> 
+            (1) Pembekalan (Kepala Bagian Magang), (2) Pelaksanaan (Pendamping Lapangan), (3) Pelaporan (Pembimbing 1 & 2).</div>
+            <div class="step-item"><strong>8️⃣ Setelah mendapat nilai magang, mahasiswa diarahkan mengisi <em>Ulasan & Rating</em> (bintang 1–5)</strong><br>Berisi pengalaman magang, rekomendasi untuk angkatan berikutnya, dan berbagai masukan tentang perusahaan tempat magang.</div>
+            <div class="step-item"><strong>9️⃣ Ulasan & rating dapat diakses oleh mahasiswa lain</strong><br>Sebagai referensi gambaran perusahaan sebelum memilih lokasi magang.</div>
+        </div>
+        <div class="badge" style="margin-top: 1rem; background: #e0f0e8;">
+            💡 Catatan: Menu magang hanya muncul di sistem setelah KRS magang di-ACC. Logbook terkunci otomatis sesuai periode yang ditetapkan dosen pembimbing 2.
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <div class="footer-note">
+        <strong>📌 Berdasarkan SK Direktur Politeknik Dewantara No. 407/D/Polidewa/II/2026</strong><br>
+        Pedoman Magang berlaku sejak 12 Februari 2026. Untuk informasi lebih lanjut hubungi Kepala Bagian Magang atau Ketua Program Studi masing-masing.
+    </div>
+</div>
+</body>
+</html>
