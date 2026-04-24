@@ -1,0 +1,400 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+    --gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+  }
+
+  /* Header Modern */
+  .sk-header {
+    background: var(--gradient);
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(30,58,138,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .sk-header::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  .sk-header h2 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    position: relative;
+    z-index: 1;
+  }
+  .sk-header p {
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Stat Cards */
+  .stat-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border: 1px solid rgba(30,58,138,0.1);
+    transition: all 0.25s;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+  }
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-light);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--primary-start);
+  }
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.5px;
+  }
+
+  /* Filter & Search */
+  .filter-bar {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    border: 1px solid #eef2ff;
+  }
+  .search-input {
+    border-radius: 60px;
+    padding-left: 2.5rem;
+    border: 1px solid #e2e8f0;
+  }
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+  }
+  .filter-select {
+    border-radius: 60px;
+    border: 1px solid #e2e8f0;
+    padding: 0.4rem 1rem;
+  }
+
+  /* SK Card */
+  .sk-card {
+    border-radius: 1.25rem;
+    border: none;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .sk-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 30px -12px rgba(30,58,138,0.2);
+    border-color: transparent;
+  }
+  .sk-card .card-body {
+    padding: 1.2rem;
+    flex: 1;
+  }
+  .badge-sk {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .badge-pa { background: #e0e7ff; color: #1e3a8a; }
+  .badge-pembimbing { background: #dcfce7; color: #166534; }
+  .badge-mengajar { background: #fef3c7; color: #92400e; }
+  .sk-judul {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0.75rem 0 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .sk-dosen {
+    font-size: 0.8rem;
+    color: #475569;
+    margin-bottom: 0.5rem;
+  }
+  .sk-tanggal {
+    font-size: 0.7rem;
+    color: #94a3b8;
+  }
+  .btn-outline-sk {
+    border-radius: 60px;
+    padding: 0.3rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 1.5rem;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    color: #cbd5e1;
+  }
+
+  /* Modal */
+  .modal-header-custom {
+    background: var(--gradient);
+    color: white;
+    border-bottom: none;
+  }
+  .modal-header-custom .btn-close {
+    filter: brightness(0) invert(1);
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="sk-header d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-file-earmark-text-fill me-2"></i> Surat Keputusan (SK)</h2>
+      <p>Kelola SK untuk dosen: PA, Pembimbing Magang, dan Mengajar</p>
+    </div>
+    <button class="btn btn-light rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#uploadSkModal">
+      <i class="bi bi-cloud-upload me-1"></i> Upload SK Baru
+    </button>
+  </div>
+
+  <!-- Statistik ringkasan (hitung dari skList yang sudah ada) -->
+  <%
+    const totalSk = skList.length;
+    const totalPa = skList.filter(s => s.kategori === 'pa').length;
+    const totalPembimbing = skList.filter(s => s.kategori === 'pembimbing_magang').length;
+    const totalMengajar = skList.filter(s => s.kategori === 'mengajar').length;
+  %>
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number"><%= totalSk %></div>
+          <div class="stat-label">Total SK</div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-files"></i></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number"><%= totalPa %></div>
+          <div class="stat-label">SK PA</div>
+        </div>
+        <div class="stat-icon" style="color:#1e3a8a;"><i class="bi bi-person-check"></i></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number"><%= totalPembimbing %></div>
+          <div class="stat-label">SK Pembimbing Magang</div>
+        </div>
+        <div class="stat-icon" style="color:#166534;"><i class="bi bi-briefcase"></i></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number"><%= totalMengajar %></div>
+          <div class="stat-label">SK Mengajar</div>
+        </div>
+        <div class="stat-icon" style="color:#92400e;"><i class="bi bi-chalkboard"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search (client side) -->
+  <div class="filter-bar">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-5">
+        <div class="position-relative">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" id="searchSk" class="form-control search-input" placeholder="Cari judul SK atau nama dosen...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select id="filterKategori" class="form-select filter-select">
+          <option value="all">Semua Kategori</option>
+          <option value="pa">SK PA</option>
+          <option value="pembimbing_magang">SK Pembimbing Magang</option>
+          <option value="mengajar">SK Mengajar</option>
+        </select>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <button id="resetFilter" class="btn btn-outline-secondary rounded-pill px-4">
+          <i class="bi bi-arrow-repeat"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid SK Cards -->
+  <div class="row" id="skGrid">
+    <% skList.forEach(sk => { %>
+      <div class="col-md-6 col-lg-4 mb-4 sk-item" 
+           data-kategori="<%= sk.kategori %>" 
+           data-judul="<%= sk.judul.toLowerCase() %>" 
+           data-dosen="<%= sk.namaDosen.toLowerCase() %>">
+        <div class="card sk-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start">
+              <span class="badge-sk 
+                <%= sk.kategori === 'pa' ? 'badge-pa' : (sk.kategori === 'pembimbing_magang' ? 'badge-pembimbing' : 'badge-mengajar') %>">
+                <i class="bi <%= sk.kategori === 'pa' ? 'bi-person-check' : (sk.kategori === 'pembimbing_magang' ? 'bi-briefcase' : 'bi-chalkboard') %>"></i>
+                <%= sk.kategori === 'pa' ? 'SK PA' : (sk.kategori === 'pembimbing_magang' ? 'SK Pembimbing Magang' : 'SK Mengajar') %>
+              </span>
+              <span class="sk-tanggal"><i class="bi bi-calendar3 me-1"></i><%= sk.tanggalUpload ? sk.tanggalUpload.toLocaleDateString('id-ID') : '-' %></span>
+            </div>
+            <h6 class="sk-judul"><%= sk.judul %></h6>
+            <p class="sk-dosen"><i class="bi bi-person-badge me-1"></i> <%= sk.namaDosen %></p>
+            <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
+              <a href="<%= sk.fileUrl %>" target="_blank" class="btn btn-outline-primary btn-outline-sk">
+                <i class="bi bi-eye me-1"></i> Lihat PDF
+              </a>
+              <form action="/admin/sk/<%= sk.id %>/delete" method="POST" onsubmit="return confirm('Yakin hapus SK ini?')" class="d-inline">
+                <button class="btn btn-outline-danger btn-outline-sk">
+                  <i class="bi bi-trash me-1"></i> Hapus
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+    <% if (skList.length === 0) { %>
+      <div class="col-12">
+        <div class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <p class="mt-2 text-muted">Belum ada SK yang diupload.</p>
+          <button class="btn btn-primary rounded-pill mt-2" data-bs-toggle="modal" data-bs-target="#uploadSkModal">
+            <i class="bi bi-cloud-upload"></i> Upload SK Pertama
+          </button>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Modal Upload SK (dipercantik) -->
+<div class="modal fade" id="uploadSkModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-cloud-upload me-2"></i> Upload SK Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/admin/sk" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Pilih Dosen</label>
+            <select name="dosenId" class="form-select" required>
+              <option value="">-- Pilih Dosen --</option>
+              <% dosenList.forEach(d => { %>
+                <option value="<%= d.id %>"><%= d.nama %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Kategori SK</label>
+            <select name="kategori" class="form-select" required>
+              <option value="pa">SK PA (Pembimbing Akademik)</option>
+              <option value="pembimbing_magang">SK Pembimbing Magang</option>
+              <option value="mengajar">SK Mengajar</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Judul (opsional)</label>
+            <input type="text" name="judul" class="form-control" placeholder="Contoh: SK Pembimbing Akademik 2025">
+            <div class="form-text">Kosongkan maka akan diisi otomatis.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">File SK (PDF)</label>
+            <input type="file" name="fileSk" accept=".pdf" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Client-side filter & search -->
+<script>
+  (function() {
+    const searchInput = document.getElementById('searchSk');
+    const filterKategori = document.getElementById('filterKategori');
+    const resetBtn = document.getElementById('resetFilter');
+    const skItems = document.querySelectorAll('.sk-item');
+
+    function filterSk() {
+      const searchTerm = (searchInput.value || '').toLowerCase();
+      const kategori = filterKategori.value;
+      skItems.forEach(item => {
+        const itemKategori = item.getAttribute('data-kategori');
+        const itemJudul = item.getAttribute('data-judul') || '';
+        const itemDosen = item.getAttribute('data-dosen') || '';
+        const matchKategori = (kategori === 'all' || itemKategori === kategori);
+        const matchSearch = (searchTerm === '' || itemJudul.includes(searchTerm) || itemDosen.includes(searchTerm));
+        if (matchKategori && matchSearch) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    searchInput.addEventListener('keyup', filterSk);
+    filterKategori.addEventListener('change', filterSk);
+    resetBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      filterKategori.value = 'all';
+      filterSk();
+    });
+  })();
+</script>
+
+<%- include('../../partials/footer') %>

@@ -34,7 +34,8 @@ router.use((req, res, next) => {
 // MOUNT SUB‑MODUL ROUTE
 // ============================================================================
 const bimbinganRouter = require('./bimbingan');
-
+const rpsRouter = require('./rps');
+router.use('/rps', rpsRouter);
 // Tambahkan ini di bagian mount sub-modul
 router.use('/bimbingan', bimbinganRouter);
 // Kelola Pengguna (users) – CRUD akun

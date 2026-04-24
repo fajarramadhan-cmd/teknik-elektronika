@@ -372,7 +372,6 @@
         <div class="card-body">
             <!-- Pending Stats Grid -->
             <div class="row g-3">
-                <!-- KRS Pending -->
                 <div class="col-md-3 col-6">
                     <div class="stat-item d-flex align-items-center">
                         <div class="stat-icon me-2">
@@ -385,7 +384,6 @@
                         <a href="/admin/krs" class="btn-warning-custom ms-2">Lihat</a>
                     </div>
                 </div>
-                <!-- Laporan Magang Pending -->
                 <div class="col-md-3 col-6">
                     <div class="stat-item d-flex align-items-center">
                         <div class="stat-icon me-2" style="color: #198754; background: rgba(25,135,84,0.1);">
@@ -398,7 +396,6 @@
                         <a href="/admin/laporan-magang/rekap" class="btn-warning-custom ms-2">Lihat</a>
                     </div>
                 </div>
-                <!-- Logbook Pending -->
                 <div class="col-md-3 col-6">
                     <div class="stat-item d-flex align-items-center">
                         <div class="stat-icon me-2" style="color: #ffc107; background: rgba(255,193,7,0.1);">
@@ -411,7 +408,6 @@
                         <a href="/admin/emagang" class="btn-warning-custom ms-2">Lihat</a>
                     </div>
                 </div>
-                <!-- Surat Pending -->
                 <div class="col-md-3 col-6">
                     <div class="stat-item d-flex align-items-center">
                         <div class="stat-icon me-2" style="color: #0dcaf0; background: rgba(13,202,240,0.1);">
@@ -452,7 +448,7 @@
         </div>
     </div>
 
-    <!-- Pintasan (Quick Actions) -->
+    <!-- Pintasan Admin (Quick Actions) -->
     <h3 class="section-title"><span>Pintasan Admin</span></h3>
     <div class="menu-grid">
         <a href="/admin/surat" class="menu-card">
@@ -481,6 +477,18 @@
             <h6 class="menu-title">Kelola Tagihan</h6>
             <p class="menu-desc">Atur tagihan SPP</p>
         </a>
+
+        <!-- ✅ MENU RPS DOSEN (TAMBAHAN BARU) -->
+        <a href="/admin/rps" class="menu-card">
+            <div class="menu-icon" style="color: #8b5cf6; background: rgba(139,92,246,0.1);">
+                <i class="bi bi-file-earmark-pdf-fill"></i>
+            </div>
+            <h6 class="menu-title">RPS Dosen</h6>
+            <p class="menu-desc">Lihat RPS yang diupload dosen</p>
+            <% if (stats.rpsPending > 0) { %>
+                <span class="badge-new"><%= stats.rpsPending %></span>
+            <% } %>
+        </a>
     </div>
 
     <!-- Menu Utama -->
@@ -502,7 +510,6 @@
             <p class="menu-desc">List per angkatan, tagihan</p>
         </a>
         
-        <!-- ✅ MENU BIMBINGAN MAGANG (BARU) -->
         <a href="/admin/bimbingan" class="menu-card">
             <div class="menu-icon" style="color: #8b5cf6; background: rgba(139,92,246,0.1);">
                 <i class="bi bi-person-lines-fill"></i>

@@ -1,0 +1,328 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: #e0e7ff;
+    --gray-bg: #f8fafc;
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  }
+  body {
+    background: linear-gradient(135deg, #f5f7fc 0%, #eef2f9 100%);
+  }
+  /* Page Header */
+  .page-header-modern {
+    background: linear-gradient(125deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: 0 20px 35px -10px rgba(30,58,138,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header-modern::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 280px;
+    height: 280px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  .page-header-modern h2 {
+    font-weight: 800;
+    font-size: 1.9rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header-modern p {
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  /* Stat Cards */
+  .stat-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1rem 1.2rem;
+    transition: all 0.25s;
+    border: 1px solid rgba(0,0,0,0.03);
+    box-shadow: var(--card-shadow);
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-light);
+  }
+  .stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 1rem;
+    background: linear-gradient(145deg, #eef2ff, #e0e7ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--primary-start);
+  }
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+  }
+  /* Search & Filter */
+  .search-section {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #eef2ff;
+  }
+  .search-input-group {
+    position: relative;
+  }
+  .search-input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1rem;
+  }
+  .search-input {
+    padding-left: 2.5rem;
+    border-radius: 60px;
+    border: 1px solid #e2e8f0;
+    background: #fefefe;
+    transition: all 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--primary-end);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  }
+  .btn-search {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    border-radius: 60px;
+    padding: 0.5rem 1.5rem;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+  }
+  /* Tabel Modern */
+  .table-wrapper {
+    background: white;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #ecf3fa;
+  }
+  .table-rps {
+    margin-bottom: 0;
+    width: 100%;
+  }
+  .table-rps thead th {
+    background: #f1f5f9;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1rem;
+  }
+  .table-rps tbody td {
+    padding: 1rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+    color: #334155;
+  }
+  .table-rps tbody tr:hover {
+    background-color: #fefce8;
+    transition: background 0.2s;
+  }
+  /* Badge */
+  .badge-success {
+    background: #dcfce7;
+    color: #166534;
+    padding: 0.35rem 1rem;
+    border-radius: 60px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .badge-warning {
+    background: #ffedd5;
+    color: #9a3412;
+    padding: 0.35rem 1rem;
+    border-radius: 60px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  /* Tombol PDF */
+  .btn-pdf {
+    background: #ef4444;
+    color: white;
+    border-radius: 60px;
+    padding: 0.3rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-pdf:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 10px rgba(220,38,38,0.3);
+  }
+  .text-muted-light {
+    color: #94a3b8;
+  }
+  @media (max-width: 768px) {
+    .page-header-modern h2 { font-size: 1.5rem; }
+    .stat-card { margin-bottom: 0.75rem; }
+    .table-rps thead th { font-size: 0.7rem; padding: 0.75rem; }
+    .table-rps tbody td { font-size: 0.8rem; padding: 0.75rem; }
+  }
+</style>
+
+<div class="container mt-4">
+  <!-- Header Modern -->
+  <div class="page-header-modern d-flex flex-wrap justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-file-earmark-pdf-fill me-2"></i> Arsip RPS</h2>
+      <p>Semua dokumen Rencana Pembelajaran Semester yang telah diunggah oleh dosen</p>
+    </div>
+    <div class="mt-2 mt-sm-0">
+      <a href="/admin/dashboard" class="btn btn-light rounded-pill px-4">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat Cards Ringkasan -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">Total Mata Kuliah</div>
+          <div class="stat-number"><%= mkList.length %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-book"></i></div>
+      </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">RPS Terupload</div>
+          <div class="stat-number"><%= mkList.filter(mk => mk.rpsUrl).length %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-file-pdf-fill"></i></div>
+      </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <div class="stat-card d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">Belum Upload RPS</div>
+          <div class="stat-number"><%= mkList.filter(mk => !mk.rpsUrl).length %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="search-section">
+    <form method="GET" class="row g-3 align-items-center">
+      <div class="col-md-8 col-sm-12">
+        <div class="search-input-group">
+          <i class="bi bi-search"></i>
+          <input type="text" name="search" class="form-control search-input" placeholder="Cari kode MK, nama mata kuliah, atau nama dosen..." value="<%= search %>">
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-12">
+        <button type="submit" class="btn btn-search w-100"><i class="bi bi-funnel-fill me-1"></i> Filter Data</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabel Data RPS -->
+  <div class="table-wrapper">
+    <div class="table-responsive">
+      <table class="table table-rps">
+        <thead>
+          <tr>
+            <th>Kode MK</th>
+            <th>Nama Mata Kuliah</th>
+            <th>Semester</th>
+            <th>SKS</th>
+            <th>Dosen Pengampu</th>
+            <th>Status RPS</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (mkList.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted-light"></i>
+                <p class="mt-2 text-muted">Tidak ada data mata kuliah yang ditemukan</p>
+              </td>
+            </tr>
+          <% } else { %>
+            <% mkList.forEach(mk => { %>
+              <tr>
+                <td class="fw-bold"><%= mk.kode %></td>
+                <td><%= mk.nama %></td>
+                <td><span class="badge bg-light text-dark rounded-pill px-3 py-1"><%= mk.semester %></span></td>
+                <td><%= mk.sks %> SKS</td>
+                <td><%= mk.dosen %></td>
+                <td>
+                  <% if (mk.rpsUrl) { %>
+                    <span class="badge-success"><i class="bi bi-check-circle-fill"></i> Sudah Upload</span>
+                  <% } else { %>
+                    <span class="badge-warning"><i class="bi bi-clock-history"></i> Belum Upload</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (mk.rpsUrl) { %>
+                    <a href="<%= mk.rpsUrl %>" target="_blank" class="btn-pdf text-decoration-none">
+                      <i class="bi bi-eye"></i> Lihat RPS
+                    </a>
+                  <% } else { %>
+                    <span class="text-muted-light small">-</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer kecil informasi -->
+  <div class="text-center mt-4 text-muted small">
+    <i class="bi bi-info-circle"></i> RPS yang sudah diupload dapat diakses melalui tautan Google Drive. Pastikan Anda login sebagai admin untuk melihat semua dokumen.
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
