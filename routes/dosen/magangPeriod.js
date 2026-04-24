@@ -14,6 +14,32 @@ router.use(isDosen);
 /**
  * Ambil data mahasiswa
  */
+async function getActivePdkListForMahasiswa(mahasiswaId) {
+  try {
+    const enrollmentSnapshot = await db.collection('enrollment')
+      .where('userId', '==', mahasiswaId)
+      .where('status', '==', 'active')
+      .get();
+    
+    const pdkList = [];
+    for (const doc of enrollmentSnapshot.docs) {
+      const enrollment = doc.data();
+      const mkDoc = await db.collection('mataKuliah').doc(enrollment.mkId).get();
+      if (mkDoc.exists && mkDoc.data().isPDK === true) {
+        pdkList.push({
+          id: mkDoc.id,
+          kode: mkDoc.data().kode,
+          nama: mkDoc.data().nama,
+          urutan: mkDoc.data().urutanPDK
+        });
+      }
+    }
+    return pdkList;
+  } catch (error) {
+    console.error('Error getActivePdkListForMahasiswa:', error);
+    return [];
+  }
+}
 async function getMahasiswa(userId) {
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.exists ? { id: userDoc.id, ...userDoc.data() } : null;
@@ -85,7 +111,8 @@ router.get('/:mahasiswaId', async (req, res) => {
       .where('isPDK', '==', true)
       .orderBy('urutanPDK', 'asc')
       .get();
-    
+    const activePdks = await getActivePdkListForMahasiswa(mahasiswaId);
+    const hasActivePdk = activePdks.length > 0;
     const pdkList = pdkSnapshot.docs.map(doc => ({ 
       id: doc.id, 
       kode: doc.data().kode, 
@@ -99,6 +126,8 @@ router.get('/:mahasiswaId', async (req, res) => {
       bimbingan,
       periods,
       pdkList,
+      activePdks,   // PDK yang sudah diambil mahasiswa
+      hasActivePdk, // flag apakah ada PDK aktif
       user: req.user
     });
   } catch (error) {
@@ -132,23 +161,36 @@ router.post('/start', async (req, res) => {
       return res.status(400).send('Data tidak lengkap. Nama perusahaan wajib diisi.');
     }
     
+    // 1. Validasi PDK aktif (harus sudah diambil di KRS)
+    const activePdks = await getActivePdkListForMahasiswa(mahasiswaId);
+    if (activePdks.length === 0) {
+      return res.status(400).send('Mahasiswa belum mengambil mata kuliah PDK. Arahkan mahasiswa untuk membuat KRS PDK terlebih dahulu.');
+    }
+    const isValidPdk = activePdks.some(p => p.id === pdkId);
+    if (!isValidPdk) {
+      return res.status(400).send('PDK yang dipilih tidak aktif atau tidak diambil mahasiswa.');
+    }
+    
+    // 2. Validasi akses dosen sebagai pembimbing
     const isPembimbingDosen = await isPembimbing(req.dosen.id, mahasiswaId);
     if (!isPembimbingDosen) {
       return res.status(403).send('Anda tidak memiliki akses');
     }
     
+    // 3. Ambil data PDK dari mataKuliah
     const pdkDoc = await db.collection('mataKuliah').doc(pdkId).get();
     if (!pdkDoc.exists) {
       return res.status(404).send('Mata kuliah PDK tidak ditemukan');
     }
     const pdk = pdkDoc.data();
     
+    // 4. Cek bimbingan mahasiswa
     const bimbingan = await getBimbingan(mahasiswaId);
     if (!bimbingan) {
       return res.status(400).send('Mahasiswa belum memiliki dosen pembimbing');
     }
     
-    // Cek apakah sudah ada periode aktif untuk PDK ini
+    // 5. Cek apakah sudah ada periode aktif/locked untuk PDK ini
     const existing = await db.collection('magangPeriod')
       .where('mahasiswaId', '==', mahasiswaId)
       .where('pdkId', '==', pdkId)
@@ -193,9 +235,7 @@ router.post('/start', async (req, res) => {
         dinilaiPada: null,
         komponenNilai: {}
       },
-      ulasan: {
-        isFilled: false
-      },
+      ulasan: { isFilled: false },
       lockHistory: [],
       createdAt: now,
       updatedAt: now,

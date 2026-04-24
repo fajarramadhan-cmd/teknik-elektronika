@@ -49,7 +49,7 @@
 <div class="container-fluid mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">Kelola Berita</h2>
-    <a href="/admin-content/berita/create" class="btn btn-primary">
+    <a href="/admin/berita/create" class="btn btn-primary">
       <i class="bi bi-plus-circle me-2"></i>Tambah Berita
     </a>
   </div>
@@ -102,10 +102,10 @@
               <% } %>
             </td>
             <td>
-              <a href="/admin-content/berita/<%= b.id %>/edit" class="btn btn-sm btn-warning btn-action">
+              <a href="/admin/berita/<%= b.id %>/edit" class="btn btn-sm btn-warning btn-action">
                 <i class="bi bi-pencil"></i> Edit
               </a>
-              <form method="POST" action="/admin-content/berita/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus berita ini?')">
+              <form method="POST" action="/admin/berita/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus berita ini?')">
                 <button type="submit" class="btn btn-sm btn-danger btn-action">
                   <i class="bi bi-trash"></i> Hapus
                 </button>

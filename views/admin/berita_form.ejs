@@ -80,7 +80,7 @@
     </div>
     <div class="form-body">
       <!-- Hapus enctype -->
-      <form method="POST" action="<%= berita ? '/admin-content/berita/' + berita.id + '/update' : '/admin-content/berita' %>">
+      <form method="POST" action="<%= berita ? '/admin/berita/' + berita.id + '/update' : '/admin/berita' %>">
         <div class="mb-3">
           <label for="judul" class="form-label">Judul <span class="text-danger">*</span></label>
           <input type="text" class="form-control" id="judul" name="judul" value="<%= berita ? berita.judul : '' %>" required>
@@ -110,7 +110,7 @@
           <small class="text-muted">Masukkan URL gambar (opsional)</small>
         </div>
         <div class="d-flex justify-content-between mt-4">
-          <a href="/admin-content/berita" class="btn-outline-gradient">
+          <a href="/admin/berita" class="btn-outline-gradient">
             <i class="bi bi-arrow-left me-2"></i>Kembali
           </a>
           <button type="submit" class="btn-gradient">

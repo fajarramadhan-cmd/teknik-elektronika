@@ -622,36 +622,133 @@
     </div>
   <% } %>
 
-  <!-- ========== PANDUAN MAGANG ========== -->
+    <!-- ========== PANDUAN PROSEDUR MAGANG (LENGKAP) - DIPERCANTIK ========== -->
   <div class="info-section">
-    <div class="d-flex align-items-center gap-2 mb-3">
-      <i class="bi bi-question-circle-fill fs-4" style="color: var(--primary-start);"></i>
-      <h5 class="fw-bold mb-0">Panduan Magang</h5>
+    <div class="d-flex align-items-center gap-2 mb-4">
+      <div class="rounded-circle bg-primary bg-opacity-10 p-2">
+        <i class="bi bi-question-circle-fill fs-3 text-primary"></i>
+      </div>
+      <div>
+        <h5 class="fw-bold mb-0">📋 Panduan & Alur Magang</h5>
+        <p class="text-muted small mb-0">Ikuti 8 langkah berikut untuk menyelesaikan magang dengan baik</p>
+      </div>
     </div>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="info-item">
-          <div class="info-icon"><i class="bi bi-check-lg"></i></div>
-          <div>Pastikan logbook diisi setiap ada aktivitas magang</div>
-        </div>
-        <div class="info-item">
-          <div class="info-icon"><i class="bi bi-check-lg"></i></div>
-          <div>Unggah laporan magang 1,2,3 sesuai format PDF</div>
+
+    <div class="row g-4">
+      <!-- Step 1 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">1</div>
+            <span class="badge bg-warning text-dark">Wajib</span>
+          </div>
+          <h6 class="fw-bold">Program PDK di KRS</h6>
+          <p class="small text-muted mb-0">Ambil PDK 1/2/3 melalui KRS, tunggu ACC Kaprodi. Menu magang baru terbuka setelah ini.</p>
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="info-item">
-          <div class="info-icon"><i class="bi bi-check-lg"></i></div>
-          <div>Ajukan seminar setelah laporan disetujui</div>
+      <!-- Step 2 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">2</div>
+            <span class="badge bg-info text-white">Dospim 2</span>
+          </div>
+          <h6 class="fw-bold">Aktivasi Periode</h6>
+          <p class="small text-muted mb-0">Dosen Pembimbing 2 mengaktifkan periode magang (contoh: 4 bulan) dengan tanggal mulai & selesai.</p>
         </div>
-        <div class="info-item">
-          <div class="info-icon"><i class="bi bi-check-lg"></i></div>
-          <div>Beri ulasan perusahaan setelah magang selesai</div>
+      </div>
+      <!-- Step 3 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">3</div>
+            <span class="badge bg-success text-white">Harian</span>
+          </div>
+          <h6 class="fw-bold">Isi Logbook Harian</h6>
+          <p class="small text-muted mb-0">Selama periode aktif, isi logbook setiap hari kerja. Progress = hari diisi / total hari.</p>
         </div>
+      </div>
+      <!-- Step 4 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">4</div>
+            <span class="badge bg-secondary text-white">Otomatis</span>
+          </div>
+          <h6 class="fw-bold">Logbook Terkunci</h6>
+          <p class="small text-muted mb-0">Setelah periode berakhir, logbook terkunci otomatis (bisa diperpanjang dosen).</p>
+        </div>
+      </div>
+      <!-- Step 5 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">5</div>
+            <span class="badge bg-warning text-dark">Nilai</span>
+          </div>
+          <h6 class="fw-bold">Penilaian Dospim 2</h6>
+          <p class="small text-muted mb-0">Dospim 2 memberi nilai logbook & seminar. Setelah itu fitur upload laporan terbuka.</p>
+        </div>
+      </div>
+      <!-- Step 6 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">6</div>
+            <span class="badge bg-danger text-white">Revisi</span>
+          </div>
+          <h6 class="fw-bold">Upload Laporan & Revisi</h6>
+          <p class="small text-muted mb-0">Unggah laporan PDF, Dospim 1 bisa ACC/Reject + komentar. Mahasiswa perbaiki hingga disetujui.</p>
+        </div>
+      </div>
+      <!-- Step 7 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">7</div>
+            <span class="badge bg-success text-white">Final</span>
+          </div>
+          <h6 class="fw-bold">Finalisasi Kaprodi</h6>
+          <p class="small text-muted mb-0">Kaprodi input nilai pembimbing lapangan, sistem hitung nilai akhir (3 komponen).</p>
+        </div>
+      </div>
+      <!-- Step 8 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3 step-card">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">8</div>
+            <span class="badge bg-info text-white">⭐ Ulasan</span>
+          </div>
+          <h6 class="fw-bold">Beri Ulasan Perusahaan</h6>
+          <p class="small text-muted mb-0">Setelah dapat nilai, isi ulasan (pengalaman, rekomendasi, rating bintang) untuk referensi mahasiswa lain.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-4">
+    <div class="alert alert-primary bg-opacity-10 border-0 rounded-4 d-flex align-items-center gap-3">
+      <i class="bi bi-info-circle-fill fs-4 text-primary"></i>
+      <div class="small">
+        <strong>Catatan Penting:</strong> Dosen Pembimbing 2 dapat memperpanjang periode magang. Semua proses tercatat dan dapat dipantau oleh Kaprodi & admin.
       </div>
     </div>
   </div>
-</div>
+
+  <style>
+    .step-card {
+      transition: all 0.2s ease-in-out;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .step-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important;
+    }
+    .step-number {
+      font-weight: 700;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
 
 <script>
   function copyPesan() {

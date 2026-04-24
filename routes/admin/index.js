@@ -77,8 +77,6 @@ router.use('/emagang', require('./emagang'));
 // Manajemen Surat
 router.use('/surat', require('./surat'));
 
-// Kelola Berita (menggunakan modul admin-content)
-router.use('/berita', require('../admin-content/berita'));
 
 // Statistik Prodi (menggunakan modul admin-content)
 
