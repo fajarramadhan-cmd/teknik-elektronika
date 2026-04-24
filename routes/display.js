@@ -1,71 +1,101 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
+const { db } = require('../config/firebaseAdmin');
 
-// ============================================================================
-// DATA SEMENTARA (nanti bisa diganti database)
-// ============================================================================
-let jadwalKelas = [
-  {
-    matkul: "Pemrograman Web",
-    dosen: "Budi Santoso, M.Kom",
-    ruang: "Lab 01",
-    mulai: "07:30",
-    selesai: "09:10"
-  },
-  {
-    matkul: "Basis Data",
-    dosen: "Siti Aminah, M.T",
-    ruang: "Lab 01",
-    mulai: "09:20",
-    selesai: "11:00"
+// Cache nama mahasiswa
+let mahasiswaCache = new Map();
+
+async function getMahasiswaName(userId) {
+  if (mahasiswaCache.has(userId)) return mahasiswaCache.get(userId);
+  try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    let name = userDoc.exists ? userDoc.data().nama : 'Mahasiswa';
+    mahasiswaCache.set(userId, name);
+    return name;
+  } catch (error) {
+    console.error('Error getMahasiswaName:', error);
+    return 'Mahasiswa';
   }
-];
+}
 
-// ============================================================================
-// DISPLAY TV (PUBLIC)
-// ============================================================================
-router.get('/', (req, res) => {
-  const now = new Date();
-  const timeNow = now.toTimeString().slice(0,5);
+function getValidImageUrl(url) {
+  if (!url) return null;
+  // Jika sudah URL thumbnail Google Drive, langsung kembalikan
+  if (url.includes('drive.google.com/thumbnail')) return url;
+  // Konversi URL drive biasa ke thumbnail
+  const match = url.match(/[?&]id=([^&]+)/);
+  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  const match2 = url.match(/\/d\/([^\/]+)/);
+  if (match2) return `https://drive.google.com/thumbnail?id=${match2[1]}&sz=w1000`;
+  // URL lain (misal imgur)
+  return url;
+}
 
-  let current = null;
-  let next = null;
+router.get('/', async (req, res) => {
+  try {
+    console.log('📡 Mengambil data logbook approved...');
+    const logbookSnapshot = await db.collection('logbookMagang')
+      .where('status', '==', 'approved')
+      .limit(100)
+      .get();
 
-  jadwalKelas.forEach(j => {
-    if (timeNow >= j.mulai && timeNow <= j.selesai) {
-      current = j;
+    console.log(`✅ Ditemukan ${logbookSnapshot.size} logbook approved.`);
+    
+    let logs = logbookSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    logs.sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || ''));
+
+    const slides = [];
+    for (const data of logs) {
+      const imageUrls = data.imageUrls || [];
+      if (imageUrls.length === 0) continue;
+
+      const namaMahasiswa = await getMahasiswaName(data.userId);
+      const kegiatan = data.kegiatan || 'Kegiatan magang';
+      const tanggal = data.tanggal ? new Date(data.tanggal).toLocaleDateString('id-ID') : '-';
+      const lokasi = data.lokasi || '';
+
+      for (const rawUrl of imageUrls) {
+        const imageUrl = getValidImageUrl(rawUrl);
+        if (!imageUrl) continue;
+        slides.push({
+          imageUrl,
+          caption: kegiatan,
+          mahasiswa: namaMahasiswa,
+          tanggal,
+          lokasi
+        });
+      }
     }
-    if (timeNow < j.mulai && !next) {
-      next = j;
+
+    console.log(`🖼️ Total slide yang dihasilkan: ${slides.length}`);
+
+    if (slides.length === 0) {
+      slides.push({
+        imageUrl: 'https://via.placeholder.com/1280x720?text=Belum+Ada+Foto+Magang',
+        caption: 'Belum ada foto magang yang disetujui',
+        mahasiswa: '-',
+        tanggal: '-',
+        lokasi: '-'
+      });
     }
-  });
 
-  res.render('display/display', {
-    current,
-    next,
-    jadwal: jadwalKelas,
-    timeNow
-  });
-});
+    // Statistik (paralel)
+    const [totalMahasiswaMagang, totalLogbookApproved] = await Promise.all([
+      db.collection('magangPeriod').where('status', '==', 'active').get().then(snap => snap.size),
+      db.collection('logbookMagang').where('status', '==', 'approved').get().then(snap => snap.size)
+    ]);
 
-// ============================================================================
-// ADMIN DISPLAY (WAJIB LOGIN ADMIN)
-// ============================================================================
-router.get('/admin', verifyToken, (req, res) => {
-  if (req.user.role !== 'admin') return res.redirect('/dashboard');
-
-  res.render('display/admin', {
-    jadwal: jadwalKelas
-  });
-});
-
-// TAMBAH DATA
-router.post('/admin/add', verifyToken, (req, res) => {
-  if (req.user.role !== 'admin') return res.redirect('/dashboard');
-
-  jadwalKelas.push(req.body);
-  res.redirect('/display/admin');
+    res.render('display/display', {
+      title: 'TV Prodi - Galeri Magang',
+      slides,
+      totalMahasiswaMagang,
+      totalLogbookApproved
+    });
+  } catch (error) {
+    console.error('❌ Error display TV:', error);
+    res.status(500).send('Gagal memuat tampilan TV');
+  }
 });
 
 module.exports = router;
