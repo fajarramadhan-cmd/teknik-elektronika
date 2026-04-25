@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Galeri Magang - TV Prodi</title>
+  <title><%= title %></title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -17,7 +17,7 @@
     }
     .tv-screen {
       width: 100%;
-      max-width: 1280px;
+      max-width: 1400px;
       aspect-ratio: 16 / 9;
       background: rgba(0,0,0,0.3);
       border-radius: 32px;
@@ -27,6 +27,7 @@
       flex-direction: column;
       padding: 20px;
     }
+    /* Header */
     .tv-header {
       display: flex;
       justify-content: space-between;
@@ -34,34 +35,20 @@
       background: rgba(15,35,55,0.7);
       backdrop-filter: blur(16px);
       border-radius: 40px;
-      padding: 12px 24px;
+      padding: 10px 20px;
       margin-bottom: 20px;
       border: 1px solid rgba(255,255,255,0.2);
     }
     .logo-area {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
     }
-    .logo-area img {
-      height: 50px;
-      width: auto;
-    }
-    .title h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: white;
-    }
-    .title p {
-      font-size: 0.7rem;
-      opacity: 0.9;
-    }
-    .center-title {
-      text-align: center;
-      flex: 1;
-    }
+    .logo-area img { height: 45px; width: auto; }
+    .title h1 { font-size: 1.2rem; color: white; }
+    .title p { font-size: 0.65rem; opacity: 0.9; }
     .center-title h2 {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       background: linear-gradient(120deg, #fff, #ffd966);
       background-clip: text;
       -webkit-background-clip: text;
@@ -69,22 +56,72 @@
     }
     .clock {
       background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 60px;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       text-align: center;
       border: 1px solid rgba(255,215,0,0.4);
       color: white;
-      min-width: 160px;
+      min-width: 150px;
     }
-    .carousel-container {
+    /* 3 Kolom Layout */
+    .three-col {
       flex: 1;
-      position: relative;
-      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      min-height: 0;
+    }
+    /* Kolom Kiri - Info Mahasiswa */
+    .col-left {
+      flex: 1.2;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
       border-radius: 28px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .student-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .student-card h3 {
+      color: #ffd966;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      border-left: 3px solid #ffd966;
+      padding-left: 10px;
+    }
+    .info-row {
+      margin: 8px 0;
+      color: white;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .info-label {
+      font-weight: 600;
+      min-width: 90px;
+      color: #aaa;
+    }
+    .info-value {
+      color: white;
+      word-break: break-word;
+    }
+    /* Kolom Tengah - Foto */
+    .col-middle {
+      flex: 2.5;
       background: #00000066;
+      border-radius: 28px;
+      overflow: hidden;
+      position: relative;
     }
     .slides-wrapper {
       height: 100%;
@@ -98,7 +135,7 @@
       width: 100%;
       height: 100%;
       opacity: 0;
-      transition: opacity 0.7s ease-in-out;
+      transition: opacity 0.7s;
       visibility: hidden;
       display: flex;
       flex-direction: column;
@@ -110,7 +147,7 @@
     .slide-image {
       flex: 1;
       overflow: hidden;
-      margin: 8px;
+      margin: 10px;
       border-radius: 24px;
     }
     .slide-image img {
@@ -119,41 +156,69 @@
       object-fit: cover;
       border-radius: 24px;
     }
-    .slide-caption {
-      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-      padding: 15px 20px;
+    /* Kolom Kanan - Statistik Prodi */
+    .col-right {
+      flex: 1;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 12px;
+    }
+    .stat-card h4 {
+      color: #ffd966;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
       color: white;
-      border-radius: 0 0 24px 24px;
-      margin-top: -70px;
-      position: relative;
-      z-index: 2;
+      text-align: center;
     }
-    .slide-caption h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 5px;
+    .stat-desc {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #ccc;
     }
-    .slide-caption p {
-      font-size: 0.85rem;
-      margin: 3px 0;
+    .progress-bar-container {
+      background: #333;
+      border-radius: 10px;
+      margin-top: 5px;
+    }
+    .progress-bar-fill {
+      width: 0%;
+      height: 8px;
+      background: #ffd966;
+      border-radius: 10px;
     }
     .running-text {
       background: rgba(10,25,40,0.8);
-      backdrop-filter: blur(12px);
       border-radius: 40px;
-      padding: 10px 20px;
+      padding: 8px 16px;
       margin-top: 18px;
       overflow: hidden;
       white-space: nowrap;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       border: 1px solid rgba(255,215,0,0.5);
       color: white;
     }
     marquee { color: white; }
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      .three-col { flex-direction: column; }
       .tv-screen { aspect-ratio: auto; height: auto; }
-      .center-title h2 { font-size: 1.2rem; }
-      .slide-caption h3 { font-size: 1rem; }
     }
   </style>
 </head>
@@ -163,26 +228,74 @@
     <div class="logo-area">
       <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo" onerror="this.src='https://placehold.co/50x50?text=PD'">
       <div class="title">
-        <h1>POLITEKNIK DEWANTARA</h1>
-        <p>TV DISPLAY - PRODI ELEKTRONIKA</p>
+        <h1>TEKNIK ELEKTRONIKA (D3)</h1>
+        <p>by POLIDEWA.AC.ID</p>
       </div>
     </div>
     <div class="center-title">
-      <h2>📸 GALERI MAGANG MAHASISWA</h2>
+      <h2>MONITORING MAGANG MAHASISWA</h2>
     </div>
     <div class="clock" id="liveClock">Memuat jam...</div>
   </div>
 
-  <div class="carousel-container">
-    <div class="slides-wrapper" id="slidesWrapper"></div>
+  <div class="three-col">
+    <!-- KOLOM KIRI: Info Mahasiswa -->
+    <div class="col-left" id="infoMahasiswa">
+      <div class="student-card">
+        <h3><i class="fas fa-user-graduate"></i> Mahasiswa</h3>
+        <div class="info-row">
+    
+          <span class="info-value" id="slideNama" style="font-size: 1.4rem; font-weight: bold; color: #ffd966;">-</span>
+        </div>
+        <div class="info-row"><span class="info-label">NIM:</span><span class="info-value" id="slideNim">-</span></div>
+        <div class="info-row"><span class="info-label">Perusahaan:</span><span class="info-value" id="slidePerusahaan">-</span></div>
+        <div class="info-row"><span class="info-label">Pembimbing 1:</span><span class="info-value" id="slidePembimbing1">-</span></div>
+        <div class="info-row"><span class="info-label">Pembimbing 2:</span><span class="info-value" id="slidePembimbing2">-</span></div>
+        <div class="info-row"><span class="info-label">Progress Logbook:</span>
+          <span class="info-value" id="slideProgress">-</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="slideProgressBar" class="progress-bar-fill"></div>
+        </div>
+        <div class="info-row"><span class="info-label">Kegiatan:</span><span class="info-value" id="slideKegiatan">-</span></div>
+        <div class="info-row"><span class="info-label">Tanggal:</span><span class="info-value" id="slideTanggal">-</span></div>
+        <div class="info-row"><span class="info-label">Lokasi:</span><span class="info-value" id="slideLokasi">-</span></div>
+      </div>
+    </div>
+
+    <!-- KOLOM TENGAH: Slideshow Foto -->
+    <div class="col-middle">
+      <div class="slides-wrapper" id="slidesWrapper"></div>
+    </div>
+
+    <!-- KOLOM KANAN: Statistik Prodi -->
+    <div class="col-right">
+      <div class="stat-card">
+        <h4><i class="fas fa-book"></i> Total Logbook</h4>
+        <div class="stat-number"><%= stats.totalLogbook %></div>
+        <div class="stat-desc">semua entri</div>
+      </div>
+      <div class="stat-card">
+        <h4><i class="fas fa-clock"></i> Logbook Pending</h4>
+        <div class="stat-number"><%= stats.logbookPending %></div>
+        <div class="stat-desc">menunggu persetujuan</div>
+      </div>
+      <div class="stat-card">
+        <h4><i class="fas fa-users"></i> Mahasiswa Magang Aktif</h4>
+        <div class="stat-number"><%= stats.totalMahasiswaMagangAktif %></div>
+        <div class="stat-desc">sedang magang</div>
+      </div>
+      <div class="stat-card">
+        <h4><i class="fas fa-tasks"></i> Tugas Aktif</h4>
+        <div class="stat-number"><%= stats.tugasAktif %></div>
+        <div class="stat-desc">perlu dinilai</div>
+      </div>
+    </div>
   </div>
 
   <div class="running-text">
     <marquee behavior="scroll" direction="left" scrollamount="5" onmouseover="this.stop()" onmouseout="this.start()">
-      📢 Total Mahasiswa Aktif Magang: <span id="totalMahasiswa"><%= totalMahasiswaMagang %></span> orang | 
-      📸 Total Logbook Disetujui: <span id="totalLogbook"><%= totalLogbookApproved %></span> foto | 
-      🏆 Semangat menyelesaikan magang dengan baik! | 
-      📞 Hubungi helpdesk akademik untuk informasi lebih lanjut.
+      📢 Selamat Datang di TV Prodi Teknik Elektronika | 📸 Galeri Magang Mahasiswa | 🎓 Semangat Menyelesaikan Magang!
     </marquee>
   </div>
 </div>
@@ -192,14 +305,21 @@
   let currentIndex = 0;
   let autoInterval;
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
+  function updateInfoPanel(index) {
+    const slide = slides[index];
+    if (!slide) return;
+    document.getElementById('slideNama').innerText = slide.mahasiswa || '-';
+    document.getElementById('slideNim').innerText = slide.nim || '-';
+    document.getElementById('slidePerusahaan').innerText = slide.perusahaan || '-';
+    document.getElementById('slidePembimbing1').innerText = slide.pembimbing1 || '-';
+    document.getElementById('slidePembimbing2').innerText = slide.pembimbing2 || '-';
+    document.getElementById('slideKegiatan').innerText = slide.caption || '-';
+    document.getElementById('slideTanggal').innerText = slide.tanggal || '-';
+    document.getElementById('slideLokasi').innerText = slide.lokasi || '-';
+    
+    const progressText = `${slide.progressUploaded || 0} / ${slide.progressTotal || 0} hari (${slide.progressPercent || 0}%)`;
+    document.getElementById('slideProgress').innerText = progressText;
+    document.getElementById('slideProgressBar').style.width = `${slide.progressPercent || 0}%`;
   }
 
   function buildSlides() {
@@ -211,16 +331,12 @@
       if (idx === 0) slideDiv.classList.add('active');
       slideDiv.innerHTML = `
         <div class="slide-image">
-          <img src="${slide.imageUrl}" alt="Foto Magang" onerror="this.onerror=null; this.src='https://via.placeholder.com/1280x720?text=Gambar+Tidak+Tersedia'">
-        </div>
-        <div class="slide-caption">
-          <h3><i class="fas fa-user-graduate"></i> ${escapeHtml(slide.mahasiswa)}</h3>
-          <p><i class="fas fa-calendar-alt"></i> ${slide.tanggal} | <i class="fas fa-map-marker-alt"></i> ${slide.lokasi || 'Tidak ada lokasi'}</p>
-          <p><i class="fas fa-tasks"></i> ${escapeHtml(slide.caption)}</p>
+          <img src="${slide.imageUrl}" alt="Foto Magang" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x600?text=Gambar+Tidak+Tersedia'">
         </div>
       `;
       wrapper.appendChild(slideDiv);
     });
+    if (slides.length) updateInfoPanel(0);
   }
 
   function goToSlide(index) {
@@ -229,12 +345,10 @@
     slidesDivs[currentIndex].classList.remove('active');
     currentIndex = (index + slides.length) % slides.length;
     slidesDivs[currentIndex].classList.add('active');
+    updateInfoPanel(currentIndex);
   }
 
-  function nextSlide() {
-    goToSlide(currentIndex + 1);
-  }
-
+  function nextSlide() { goToSlide(currentIndex + 1); }
   function startAutoSlide() {
     if (autoInterval) clearInterval(autoInterval);
     autoInterval = setInterval(nextSlide, 8000);
