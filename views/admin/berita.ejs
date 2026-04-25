@@ -1,122 +1,316 @@
 <%- include('../partials/header') %>
 
 <style>
-  .berita-table th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    color: white;
-    font-weight: 600;
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    --card-radius: 1.25rem;
+    --shadow-sm: 0 5px 20px rgba(0,0,0,0.05);
+    --shadow-hover: 0 15px 30px rgba(0,0,0,0.1);
+  }
+
+  /* Header & Cards */
+  .stat-card {
+    background: white;
+    border-radius: var(--card-radius);
+    padding: 1.2rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.25s;
+    border: 1px solid rgba(0,0,0,0.03);
+    cursor: default;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+  }
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: var(--gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 0.8rem;
     text-transform: uppercase;
-    font-size: 0.85rem;
     letter-spacing: 0.5px;
+    color: #64748b;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    background: white;
+    border-radius: 60px;
+    padding: 0.3rem 0.3rem 0.3rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+  .search-box {
+    flex: 2;
+    min-width: 200px;
+    position: relative;
+  }
+  .search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.4rem;
     border: none;
+    border-radius: 60px;
+    background: #f1f5f9;
+    transition: all 0.2s;
+  }
+  .search-box input:focus {
+    outline: none;
+    background: white;
+    box-shadow: 0 0 0 2px var(--primary-end);
+  }
+  .btn-reset {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    padding: 0.5rem 1.2rem;
+    border-radius: 60px;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover {
+    background: #eef2ff;
+    color: var(--primary-start);
+  }
+
+  /* Tabel Modern */
+  .table-wrapper {
+    background: white;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .berita-table {
+    width: 100%;
+    margin-bottom: 0;
+  }
+  .berita-table thead th {
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .berita-table tbody tr {
+    transition: background 0.2s;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .berita-table tbody tr:hover {
+    background: #fefce8;
   }
   .berita-table td {
+    padding: 1rem;
     vertical-align: middle;
-    padding: 1rem 0.75rem;
+  }
+  .thumbnail {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
   .btn-action {
-    margin: 2px;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.85rem;
+    margin: 0 3px;
+    border-radius: 50px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     transition: all 0.2s;
   }
   .btn-action:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
   }
-  .thumbnail {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
   }
-  .filter-card {
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+  .empty-state i {
+    font-size: 3.5rem;
+    color: #cbd5e1;
   }
-  .table-responsive {
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  .judul-cell {
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .badge-tanggal {
+    background: #f1f5f9;
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    color: #334155;
+  }
+
+  @media (max-width: 768px) {
+    .filter-bar { border-radius: 1rem; flex-direction: column; align-items: stretch; padding: 0.8rem; gap: 0.5rem; }
+    .search-box input { padding: 0.5rem 1rem 0.5rem 2rem; }
+    .berita-table thead { display: none; }
+    .berita-table tbody tr { display: block; margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 0.5rem; }
+    .berita-table td { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem; border-bottom: 1px dashed #e2e8f0; }
+    .berita-table td:last-child { border-bottom: none; }
+    .berita-table td::before { content: attr(data-label); font-weight: 700; width: 35%; color: #475569; }
+    .thumbnail { width: 50px; height: 50px; }
   }
 </style>
 
 <div class="container-fluid mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Kelola Berita</h2>
-    <a href="/admin/berita/create" class="btn btn-primary">
+  <!-- Header + Tombol -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold"><i class="bi bi-newspaper me-2" style="background: var(--gradient); background-clip: text; -webkit-background-clip: text; color: transparent;"></i>Kelola Berita</h2>
+      <p class="text-muted mb-0">Kelola seluruh informasi dan pengumuman</p>
+    </div>
+    <a href="/admin/berita/create" class="btn btn-primary rounded-pill px-4 shadow-sm">
       <i class="bi bi-plus-circle me-2"></i>Tambah Berita
     </a>
   </div>
 
+  <!-- Statistik Ringkasan -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-number"><%= berita ? berita.length : 0 %></div>
+        <div class="stat-label">Total Berita</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-number"><%= berita ? berita.filter(b => b.gambar).length : 0 %></div>
+        <div class="stat-label">Dengan Gambar</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-number"><%= berita ? new Set(berita.map(b => b.penulis)).size : 0 %></div>
+        <div class="stat-label">Penulis Aktif</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-number"><%= berita && berita[0] ? new Date(berita[0].tanggal).toLocaleDateString('id-ID') : '-' %></div>
+        <div class="stat-label">Terbaru</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter dan Pencarian (client side) -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <i class="bi bi-search"></i>
+      <input type="text" id="searchBerita" placeholder="Cari judul atau penulis..." autocomplete="off">
+    </div>
+    <button id="resetFilter" class="btn-reset"><i class="bi bi-arrow-repeat me-1"></i> Reset</button>
+  </div>
+
   <!-- Notifikasi Sukses -->
   <% if (typeof success !== 'undefined' && success) { %>
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i>Berita berhasil <%= success %>.
+    <div class="alert alert-success alert-dismissible fade show mb-4 rounded-4" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>Berita berhasil <strong><%= success %></strong>.
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   <% } %>
 
   <!-- Tabel Berita -->
-  <div class="table-responsive">
-    <table class="table berita-table">
-      <thead>
-        <tr>
-          <th>Gambar</th>
-          <th>Judul</th>
-          <th>Penulis</th>
-          <th>Tanggal</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (!berita || berita.length === 0) { %>
+  <div class="table-wrapper">
+    <div class="table-responsive">
+      <table class="table berita-table" id="beritaTable">
+        <thead>
           <tr>
-            <td colspan="5" class="text-center py-5">
-              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
-              <p class="text-muted">Belum ada berita.</p>
-            </td>
+            <th>Gambar</th>
+            <th>Judul</th>
+            <th>Penulis</th>
+            <th>Tanggal</th>
+            <th>Aksi</th>
           </tr>
-        <% } else { %>
-          <% berita.forEach(b => { %>
-          <tr>
-            <td>
-              <% if (b.gambar) { %>
-                <img src="<%= b.gambar %>" alt="thumbnail" class="thumbnail">
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td><strong><%= b.judul || '-' %></strong></td>
-            <td><%= b.penulis || '-' %></td>
-            <td>
-              <% if (b.tanggal) { %>
-                <%= new Date(b.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td>
-              <a href="/admin/berita/<%= b.id %>/edit" class="btn btn-sm btn-warning btn-action">
-                <i class="bi bi-pencil"></i> Edit
-              </a>
-              <form method="POST" action="/admin/berita/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus berita ini?')">
-                <button type="submit" class="btn btn-sm btn-danger btn-action">
-                  <i class="bi bi-trash"></i> Hapus
-                </button>
-              </form>
-            </td>
-          </tr>
-          <% }) %>
-        <% } %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (!berita || berita.length === 0) { %>
+            <tr>
+              <td colspan="5" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p class="mt-2 text-muted">Belum ada berita. Klik "Tambah Berita" untuk membuat.</p>
+              </td>
+            </tr>
+          <% } else { %>
+            <% berita.forEach(b => { %>
+              <tr class="berita-row" data-judul="<%= (b.judul || '').toLowerCase() %>" data-penulis="<%= (b.penulis || '').toLowerCase() %>">
+                <td data-label="Gambar">
+                  <% if (b.gambar) { %>
+                    <img src="<%= b.gambar %>" alt="thumbnail" class="thumbnail">
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td data-label="Judul" class="judul-cell"><%= b.judul || '-' %></td>
+                <td data-label="Penulis"><%= b.penulis || '-' %></td>
+                <td data-label="Tanggal">
+                  <span class="badge-tanggal">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    <%= b.tanggal ? new Date(b.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' %>
+                  </span>
+                </td>
+                <td data-label="Aksi">
+                  <div class="d-flex flex-wrap gap-1">
+                    <a href="/admin/berita/<%= b.id %>/edit" class="btn btn-sm btn-warning btn-action">
+                      <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <form method="POST" action="/admin/berita/<%= b.id %>/delete" style="display:inline;" onsubmit="return confirm('Yakin hapus berita ini?')">
+                      <button type="submit" class="btn btn-sm btn-danger btn-action">
+                        <i class="bi bi-trash"></i> Hapus
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
+<script>
+  // Fitur pencarian real-time
+  document.getElementById('searchBerita')?.addEventListener('keyup', function() {
+    const keyword = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.berita-row');
+    rows.forEach(row => {
+      const judul = row.getAttribute('data-judul') || '';
+      const penulis = row.getAttribute('data-penulis') || '';
+      if (judul.includes(keyword) || penulis.includes(keyword)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
+  document.getElementById('resetFilter')?.addEventListener('click', function() {
+    document.getElementById('searchBerita').value = '';
+    const rows = document.querySelectorAll('.berita-row');
+    rows.forEach(row => row.style.display = '');
+  });
+</script>
 
 <%- include('../partials/footer') %>

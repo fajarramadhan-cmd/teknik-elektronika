@@ -1,6 +1,7 @@
 /**
  * routes/admin/berita.js
  * Kelola Berita Prodi - CRUD lengkap dengan upload gambar ke Google Drive
+ * Fitur: input tanggal manual
  */
 
 const express = require('express');
@@ -12,7 +13,6 @@ const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Middleware autentikasi
 router.use(verifyToken);
 router.use(isAdmin);
 
@@ -20,10 +20,6 @@ router.use(isAdmin);
 // FUNGSI BANTU
 // ============================================================================
 
-/**
- * Mendapatkan ID folder gambar berita di Google Drive.
- * Membuat folder jika belum ada.
- */
 async function getBeritaGambarFolderId() {
   const folderName = 'Gambar_Berita';
   const query = await drive.files.list({
@@ -45,10 +41,6 @@ async function getBeritaGambarFolderId() {
 // DAFTAR BERITA
 // ============================================================================
 
-/**
- * GET /admin/berita
- * Menampilkan semua berita (terbaru di atas)
- */
 router.get('/', async (req, res) => {
   try {
     const snapshot = await db.collection('berita').orderBy('tanggal', 'desc').get();
@@ -64,25 +56,26 @@ router.get('/', async (req, res) => {
 // TAMBAH BERITA
 // ============================================================================
 
-/**
- * GET /admin/berita/create
- * Form tambah berita
- */
 router.get('/create', (req, res) => {
   res.render('admin/berita_form', { title: 'Tambah Berita', berita: null, action: 'tambah' });
 });
 
-/**
- * POST /admin/berita
- * Simpan berita baru (dengan upload gambar opsional)
- */
 router.post('/', upload.single('gambar'), async (req, res) => {
   try {
-    const { judul, isi, penulis, sumber } = req.body;
+    const { judul, isi, penulis, sumber, tanggal } = req.body;
     const file = req.file;
 
     if (!judul || !isi) {
       return res.status(400).send('Judul dan isi berita wajib diisi');
+    }
+
+    // Proses tanggal: jika diisi manual, gunakan itu; jika tidak, pakai hari ini
+    let tanggalFinal;
+    if (tanggal && tanggal.trim() !== '') {
+      // Konversi dari yyyy-mm-dd ke ISO string (00:00:00 waktu lokal? Biarkan sebagai tanggal UTC)
+      tanggalFinal = new Date(tanggal).toISOString();
+    } else {
+      tanggalFinal = new Date().toISOString();
     }
 
     let gambarUrl = null, gambarFileId = null;
@@ -107,7 +100,7 @@ router.post('/', upload.single('gambar'), async (req, res) => {
       sumber: sumber || '',
       gambar: gambarUrl,
       gambarFileId,
-      tanggal: new Date().toISOString(),
+      tanggal: tanggalFinal,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
@@ -123,10 +116,6 @@ router.post('/', upload.single('gambar'), async (req, res) => {
 // EDIT BERITA
 // ============================================================================
 
-/**
- * GET /admin/berita/:id/edit
- * Form edit berita
- */
 router.get('/:id/edit', async (req, res) => {
   try {
     const doc = await db.collection('berita').doc(req.params.id).get();
@@ -141,13 +130,9 @@ router.get('/:id/edit', async (req, res) => {
   }
 });
 
-/**
- * POST /admin/berita/:id/update
- * Update berita (dengan upload gambar baru opsional)
- */
 router.post('/:id/update', upload.single('gambar'), async (req, res) => {
   try {
-    const { judul, isi, penulis, sumber } = req.body;
+    const { judul, isi, penulis, sumber, tanggal } = req.body;
     const file = req.file;
     const docRef = db.collection('berita').doc(req.params.id);
     const doc = await docRef.get();
@@ -165,8 +150,16 @@ router.post('/:id/update', upload.single('gambar'), async (req, res) => {
       updatedAt: new Date().toISOString()
     };
 
+    // Update tanggal jika diisi
+    if (tanggal && tanggal.trim() !== '') {
+      updateData.tanggal = new Date(tanggal).toISOString();
+    } else if (tanggal === '') {
+      // Jika dikosongkan, biarkan tanggal lama atau pakai hari ini? Biarkan lama lebih aman.
+      // Atau bisa juga update ke hari ini, tapi untuk keperluan edit lebih baik tidak mengubah jika kosong.
+      // Kita skip agar tidak mengubah.
+    }
+
     if (file) {
-      // Hapus gambar lama jika ada
       if (oldData.gambarFileId) {
         try {
           await drive.files.delete({ fileId: oldData.gambarFileId });
@@ -199,10 +192,6 @@ router.post('/:id/update', upload.single('gambar'), async (req, res) => {
 // HAPUS BERITA
 // ============================================================================
 
-/**
- * POST /admin/berita/:id/delete
- * Hapus berita beserta gambar di Drive
- */
 router.post('/:id/delete', async (req, res) => {
   try {
     const docRef = db.collection('berita').doc(req.params.id);

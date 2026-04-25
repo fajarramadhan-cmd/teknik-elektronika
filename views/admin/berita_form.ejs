@@ -86,6 +86,12 @@
           <input type="text" class="form-control" id="judul" name="judul" value="<%= berita ? berita.judul : '' %>" required>
         </div>
         <div class="mb-3">
+  <label for="tanggal" class="form-label">Tanggal Berita</label>
+  <input type="date" class="form-control" id="tanggal" name="tanggal" 
+         value="<%= berita && berita.tanggal ? new Date(berita.tanggal).toISOString().split('T')[0] : '' %>">
+  <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
+</div>
+        <div class="mb-3">
           <label for="isi" class="form-label">Isi Berita <span class="text-danger">*</span></label>
           <textarea class="form-control" id="isi" name="isi" rows="8" required><%= berita ? berita.isi : '' %></textarea>
         </div>

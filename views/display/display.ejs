@@ -46,7 +46,7 @@
     }
     .logo-area img { height: 45px; width: auto; }
     .title h1 { font-size: 1.2rem; color: white; }
-    .title p { font-size: 0.65rem; opacity: 0.9; }
+    .title p { font-size: 0.65rem; opacity: 0.9; color: white; } /* subtitle putih */
     .center-title h2 {
       font-size: 1.5rem;
       background: linear-gradient(120deg, #fff, #ffd966);
@@ -54,16 +54,19 @@
       -webkit-background-clip: text;
       color: transparent;
     }
+    /* Jam besar, putih, tanpa tanggal */
     .clock {
       background: rgba(0,0,0,0.6);
       padding: 6px 14px;
       border-radius: 60px;
       font-family: monospace;
-      font-size: 0.8rem;
+      font-size: 1.8rem;  /* diperbesar */
+      font-weight: bold;
       text-align: center;
       border: 1px solid rgba(255,215,0,0.4);
       color: white;
-      min-width: 150px;
+      min-width: 180px;
+      letter-spacing: 2px;
     }
     /* 3 Kolom Layout */
     .three-col {
@@ -219,6 +222,7 @@
     @media (max-width: 900px) {
       .three-col { flex-direction: column; }
       .tv-screen { aspect-ratio: auto; height: auto; }
+      .clock { font-size: 1.2rem; min-width: 120px; }
     }
   </style>
 </head>
@@ -229,13 +233,13 @@
       <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo" onerror="this.src='https://placehold.co/50x50?text=PD'">
       <div class="title">
         <h1>TEKNIK ELEKTRONIKA (D3)</h1>
-        <p>by POLIDEWA.AC.ID</p>
+        <p>by POLITEKNIK DEWANTARA</p>   <!-- subtitle putih -->
       </div>
     </div>
     <div class="center-title">
       <h2>MONITORING MAGANG MAHASISWA</h2>
     </div>
-    <div class="clock" id="liveClock">Memuat jam...</div>
+    <div class="clock" id="liveClock">--:--:--</div> <!-- hanya waktu -->
   </div>
 
   <div class="three-col">
@@ -244,13 +248,12 @@
       <div class="student-card">
         <h3><i class="fas fa-user-graduate"></i> Mahasiswa</h3>
         <div class="info-row">
-    
           <span class="info-value" id="slideNama" style="font-size: 1.4rem; font-weight: bold; color: #ffd966;">-</span>
         </div>
         <div class="info-row"><span class="info-label">NIM:</span><span class="info-value" id="slideNim">-</span></div>
         <div class="info-row"><span class="info-label">Perusahaan:</span><span class="info-value" id="slidePerusahaan">-</span></div>
-        <div class="info-row"><span class="info-label">Pembimbing 1:</span><span class="info-value" id="slidePembimbing1">-</span></div>
-        <div class="info-row"><span class="info-label">Pembimbing 2:</span><span class="info-value" id="slidePembimbing2">-</span></div>
+        <div class="info-row"><span class="info-label">Dospim 1:</span><span class="info-value" id="slidePembimbing1">-</span></div>
+        <div class="info-row"><span class="info-label">Dospim 2:</span><span class="info-value" id="slidePembimbing2">-</span></div>
         <div class="info-row"><span class="info-label">Progress Logbook:</span>
           <span class="info-value" id="slideProgress">-</span>
         </div>
@@ -295,7 +298,7 @@
 
   <div class="running-text">
     <marquee behavior="scroll" direction="left" scrollamount="5" onmouseover="this.stop()" onmouseout="this.start()">
-      📢 Selamat Datang di TV Prodi Teknik Elektronika | 📸 Galeri Magang Mahasiswa | 🎓 Semangat Menyelesaikan Magang!
+      Realtime Monitoring Magang Mahasiswa Prodi Teknik Elektronika | Database dari Logbook Digital ELK-Magang elektronika.polidewa.ac.id | Design by Fajar Elektrik v.1.0.0
     </marquee>
   </div>
 </div>
@@ -354,11 +357,11 @@
     autoInterval = setInterval(nextSlide, 8000);
   }
 
+  // Jam hanya menampilkan waktu (HH:MM:SS), besar, putih
   function updateClock() {
     const now = new Date();
-    const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('liveClock').innerHTML = `${dateStr}<br>🕒 ${timeStr}`;
+    document.getElementById('liveClock').innerText = timeStr;
   }
 
   window.onload = () => {

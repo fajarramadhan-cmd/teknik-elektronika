@@ -2,23 +2,57 @@
  * routes/admin/krs.js
  * Kelola KRS: lihat daftar, detail, setujui, tolak, dan hapus
  * Dilengkapi pencegahan duplikat enrollment dan penolakan otomatis KRS lain untuk semester yang sama
+ * OPTIMASI: cache per request + Promise.all + batch paralel
  */
 
 const express = require('express');
 const router = express.Router();
 const { verifyToken, isAdmin } = require('../../middleware/auth');
 const { db } = require('../../config/firebaseAdmin');
-const drive = require('../../config/googleDrive'); // untuk hapus file
+const drive = require('../../config/googleDrive');
 
 router.use(verifyToken);
 router.use(isAdmin);
 
+// Cache sederhana untuk satu request (direset setiap route)
+let mahasiswaCache = new Map();
+let mataKuliahCache = new Map();
+
+function clearCache() {
+  mahasiswaCache.clear();
+  mataKuliahCache.clear();
+}
+
+async function getMahasiswa(userId) {
+  if (mahasiswaCache.has(userId)) return mahasiswaCache.get(userId);
+  try {
+    const doc = await db.collection('users').doc(userId).get();
+    const data = doc.exists ? doc.data() : { nama: 'Unknown', nim: '-' };
+    mahasiswaCache.set(userId, data);
+    return data;
+  } catch {
+    return { nama: 'Unknown', nim: '-' };
+  }
+}
+
+async function getMataKuliah(mkId) {
+  if (mataKuliahCache.has(mkId)) return mataKuliahCache.get(mkId);
+  try {
+    const doc = await db.collection('mataKuliah').doc(mkId).get();
+    const data = doc.exists ? doc.data() : null;
+    mataKuliahCache.set(mkId, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 // ============================================================================
 // DAFTAR KRS (dengan filter status & semester)
 // ============================================================================
-
 router.get('/', async (req, res) => {
   try {
+    clearCache();
     const { status, semester } = req.query;
 
     let query = db.collection('krs');
@@ -27,27 +61,59 @@ router.get('/', async (req, res) => {
     query = query.orderBy('createdAt', 'desc');
 
     const krsSnapshot = await query.get();
+    const krsDocs = krsSnapshot.docs;
 
-    const krsList = [];
-    for (const doc of krsSnapshot.docs) {
+    if (krsDocs.length === 0) {
+      return res.render('admin/krs_list', {
+        title: 'Daftar KRS',
+        krsList: [],
+        filters: { status, semester },
+        success: req.query.success
+      });
+    }
+
+    // Kumpulkan semua userId dan mkIds unik
+    const userIds = new Set();
+    const allMkIds = new Set();
+    for (const doc of krsDocs) {
       const data = doc.data();
-      
-      const mahasiswaDoc = await db.collection('users').doc(data.userId).get();
-      const mahasiswa = mahasiswaDoc.exists ? mahasiswaDoc.data() : { nama: 'Unknown', nim: '-' };
+      userIds.add(data.userId);
+      const mkIds = data.mataKuliah || [];
+      mkIds.forEach(id => allMkIds.add(id));
+    }
 
+    // Ambil semua data mahasiswa dan mata kuliah secara paralel
+    const [mahasiswaMap, mkMap] = await Promise.all([
+      Promise.all(Array.from(userIds).map(async uid => {
+        const m = await getMahasiswa(uid);
+        return [uid, m];
+      })),
+      Promise.all(Array.from(allMkIds).map(async mid => {
+        const mk = await getMataKuliah(mid);
+        return [mid, mk];
+      }))
+    ]);
+
+    const userMap = new Map(mahasiswaMap);
+    const mkFullMap = new Map(mkMap);
+
+    // Bangun list KRS
+    const krsList = [];
+    for (const doc of krsDocs) {
+      const data = doc.data();
+      const mahasiswa = userMap.get(data.userId) || { nama: 'Unknown', nim: '-' };
       const mkIds = data.mataKuliah || [];
       const courses = [];
       for (const mkId of mkIds.slice(0, 3)) {
-        const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
-        if (mkDoc.exists) {
+        const mk = mkFullMap.get(mkId);
+        if (mk) {
           courses.push({
-            kode: mkDoc.data().kode,
-            nama: mkDoc.data().nama,
-            sks: mkDoc.data().sks
+            kode: mk.kode,
+            nama: mk.nama,
+            sks: mk.sks
           });
         }
       }
-
       krsList.push({
         id: doc.id,
         ...data,
@@ -57,11 +123,10 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const filters = { status, semester };
     res.render('admin/krs_list', {
       title: 'Daftar KRS',
       krsList,
-      filters,
+      filters: { status, semester },
       success: req.query.success
     });
   } catch (error) {
@@ -76,9 +141,9 @@ router.get('/', async (req, res) => {
 // ============================================================================
 // DETAIL KRS
 // ============================================================================
-
 router.get('/:id', async (req, res) => {
   try {
+    clearCache();
     const krsDoc = await db.collection('krs').doc(req.params.id).get();
     if (!krsDoc.exists) {
       return res.status(404).render('error', {
@@ -88,28 +153,28 @@ router.get('/:id', async (req, res) => {
     }
     const krs = { id: krsDoc.id, ...krsDoc.data() };
 
-    const mahasiswaDoc = await db.collection('users').doc(krs.userId).get();
-    const mahasiswa = mahasiswaDoc.exists ? mahasiswaDoc.data() : { nama: '-', nim: '-' };
+    const mahasiswa = await getMahasiswa(krs.userId);
 
     const mkIds = krs.mataKuliah || [];
-    const mkList = [];
-    for (const mkId of mkIds) {
-      const mkDoc = await db.collection('mataKuliah').doc(mkId).get();
-      if (mkDoc.exists) {
-        mkList.push({
+    const mkList = await Promise.all(mkIds.map(async mkId => {
+      const mk = await getMataKuliah(mkId);
+      if (mk) {
+        return {
           id: mkId,
-          kode: mkDoc.data().kode,
-          nama: mkDoc.data().nama,
-          sks: mkDoc.data().sks
-        });
+          kode: mk.kode,
+          nama: mk.nama,
+          sks: mk.sks
+        };
       }
-    }
+      return null;
+    }));
+    const filteredMkList = mkList.filter(m => m !== null);
 
     res.render('admin/krs_detail', {
       title: `Detail KRS - ${mahasiswa.nama}`,
       krs,
       mahasiswa,
-      mkList
+      mkList: filteredMkList
     });
   } catch (error) {
     console.error('Error detail KRS:', error);
@@ -123,7 +188,6 @@ router.get('/:id', async (req, res) => {
 // ============================================================================
 // APPROVE KRS (dengan pencegahan duplikat enrollment)
 // ============================================================================
-
 router.post('/:id/approve', async (req, res) => {
   try {
     const krsRef = db.collection('krs').doc(req.params.id);
@@ -143,18 +207,21 @@ router.post('/:id/approve', async (req, res) => {
       approvedBy: req.user.id
     });
 
-    // Untuk setiap mata kuliah, cek apakah sudah ada enrollment aktif
-    for (const mkId of mkIds) {
-      const existingSnapshot = await db.collection('enrollment')
+    // Cek duplikat enrollment untuk semua mk sekaligus
+    const enrollmentChecks = await Promise.all(mkIds.map(mkId =>
+      db.collection('enrollment')
         .where('userId', '==', userId)
         .where('mkId', '==', mkId)
         .where('semester', '==', semester)
         .where('status', '==', 'active')
         .limit(1)
-        .get();
+        .get()
+    ));
 
+    for (let i = 0; i < mkIds.length; i++) {
+      const mkId = mkIds[i];
+      const existingSnapshot = enrollmentChecks[i];
       if (existingSnapshot.empty) {
-        // Belum ada, buat baru
         const enrollmentRef = db.collection('enrollment').doc();
         batch.set(enrollmentRef, {
           userId,
@@ -166,7 +233,6 @@ router.post('/:id/approve', async (req, res) => {
           krsId: req.params.id
         });
       } else {
-        // Jika sudah ada, lewati (tidak membuat duplikat)
         console.log(`Enrollment untuk user ${userId} dan mk ${mkId} sudah ada, dilewati.`);
       }
     }
@@ -200,7 +266,6 @@ router.post('/:id/approve', async (req, res) => {
 // ============================================================================
 // REJECT KRS
 // ============================================================================
-
 router.post('/:id/reject', async (req, res) => {
   try {
     await db.collection('krs').doc(req.params.id).update({
@@ -218,11 +283,6 @@ router.post('/:id/reject', async (req, res) => {
 // ============================================================================
 // DELETE KRS (beserta file di Drive dan enrollment terkait)
 // ============================================================================
-
-/**
- * POST /admin/krs/delete/:id
- * Menghapus KRS, file terkait di Google Drive, dan semua enrollment yang berasal dari KRS ini
- */
 router.post('/delete/:id', async (req, res) => {
   try {
     const krsDoc = await db.collection('krs').doc(req.params.id).get();
@@ -238,7 +298,6 @@ router.post('/delete/:id', async (req, res) => {
         console.log('File di Drive berhasil dihapus:', krs.driveFileId);
       } catch (err) {
         console.error('Gagal menghapus file di Drive:', err.message);
-        // Tetap lanjutkan penghapusan dokumen meskipun file gagal dihapus
       }
     }
 
@@ -248,14 +307,10 @@ router.post('/delete/:id', async (req, res) => {
       .get();
 
     const batch = db.batch();
-
     enrollmentSnapshot.docs.forEach(doc => {
       batch.delete(doc.ref);
     });
-
-    // Hapus dokumen KRS
     batch.delete(krsDoc.ref);
-
     await batch.commit();
 
     res.redirect('/admin/krs?success=deleted');

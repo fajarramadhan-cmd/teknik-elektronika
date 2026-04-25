@@ -72,6 +72,13 @@ app.get('/dosen/kurikulum/detail/:id', (req, res) => {
 app.get('/dosen/kurikulum/my-rps', (req, res) => {
     res.render('dosen/kurikulum/my_rps');
 });
+// ===== ROUTE PUBLIK BERITA =====
+const beritaPublicRoutes = require('./routes/berita');   // file untuk publik
+app.use('/berita', beritaPublicRoutes);
+
+// ===== ROUTE ADMIN BERITA =====
+const adminBeritaRoutes = require('./routes/admin/berita');
+app.use('/admin/berita', adminBeritaRoutes);   // mount di /admin/berita
 // ============================================================================
 // ROUTES MAHASISWA
 // ============================================================================
