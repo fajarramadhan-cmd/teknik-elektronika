@@ -57,76 +57,82 @@
   }
 
   /* ===== PROFILE CARD (seperti dashboard mahasiswa) ===== */
-  .profile-card {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-radius: 1.5rem;
-    padding: 1.5rem;
-    color: white;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 15px 30px rgba(30,58,138,0.3);
-    position: relative;
-    overflow: hidden;
-  }
-  .profile-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    transform: rotate(25deg);
-  }
-  .profile-card h2 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-    position: relative;
-    z-index: 1;
-  }
-  .profile-card p {
-    font-size: 0.95rem;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 1;
-  }
-  .profile-avatar {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 4px solid rgba(255,255,255,0.5);
-    object-fit: cover;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  }
-  .profile-avatar i {
-    font-size: 3rem;
-    color: white;
-  }
-  .profile-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem 1.5rem;
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    background: rgba(255,255,255,0.15);
+/* Perbesar profile card 1.5x lipat */
+.profile-card {
+  background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+  border-radius: 3.25rem;   /* 1.5rem * 1.5 */
+  padding: 3.25rem;         /* 1.5rem * 1.5 */
+  margin-bottom: 3.25rem;   /* 1.5rem * 1.5 */
+  color: white;
+  box-shadow: 0 22px 45px rgba(30,58,138,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 450px;            /* 300px * 1.5 */
+  height: 450px;           /* 300px * 1.5 */
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  transform: rotate(25deg);
+}
+
+.profile-card h2 {
+  font-size: 1.5rem;       /* 1.6rem * 1.5 */
+  font-weight: 700;
+  margin-bottom: 0.375rem; /* 0.25rem * 1.5 */
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card p {
+  font-size: 0.95rem;     /* 0.95rem * 1.5 */
+  opacity: 0.9;
+  margin-bottom: 0.75rem;  /* 0.5rem * 1.5 */
+  position: relative;
+  z-index: 1;
+}
+
+/* Foto profil diperbesar 1.5x */
+.profile-avatar {
+  width: 105px !important;   /* 70px * 1.5 */
+  height: 105px !important;  /* 70px * 1.5 */
+  min-width: 105px;
+  border-radius: 50%;
+  border: 6px solid rgba(255,255,255,0.5); /* 4px * 1.5 */
+  object-fit: cover;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+}
+
+.profile-avatar i {
+  font-size: 4.5rem;        /* 3rem * 1.5 */
+  color: white;
+}
+  /* Statistik vertikal - background abu-abu solid, border-radius agak kotak */
+  .profile-stats-vertical {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    border-radius: 20px;
     padding: 0.6rem 1rem;
-    border-radius: 50px;
-    backdrop-filter: blur(4px);
-    position: relative;
-    z-index: 1;
+    margin-top: 0.5rem;
   }
-  .profile-stats span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+  .profile-stats-vertical div {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
   }
-  .profile-stats i {
+  .profile-stats-vertical div:last-child {
+    margin-bottom: 0;
+  }
+  .profile-stats-vertical i {
+    margin-right: 0.5rem;
     font-size: 1rem;
   }
 
-  /* ===== INFO CARD (untuk informasi dosen) ===== */
+  /* ===== INFO CARD (untuk semua card) ===== */
   .info-card {
     background: white;
     border-radius: 1.2rem;
@@ -209,70 +215,6 @@
     box-shadow: 0 5px 10px rgba(30,58,138,0.3);
   }
 
-  /* ===== LOGBOOK PENDING TABLE ===== */
-  .logbook-pending-table {
-    width: 100%;
-    font-size: 0.85rem;
-  }
-  .logbook-pending-table th {
-    background: #f8f9fa;
-    padding: 0.75rem;
-    font-weight: 600;
-    border-bottom: 2px solid #e9ecef;
-  }
-  .logbook-pending-table td {
-    padding: 0.75rem;
-    vertical-align: middle;
-    border-bottom: 1px solid #e9ecef;
-  }
-  .logbook-pending-table tr:hover td {
-    background-color: #f8fafc;
-  }
-  .btn-approve-small {
-    background: #10b981;
-    border: none;
-    color: white;
-    border-radius: 50px;
-    padding: 0.25rem 0.8rem;
-    font-size: 0.7rem;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  .btn-approve-small:hover {
-    background: #059669;
-    transform: translateY(-2px);
-    color: white;
-  }
-  .btn-view-small {
-    background: transparent;
-    border: 1px solid var(--primary-start);
-    color: var(--primary-start);
-    border-radius: 50px;
-    padding: 0.25rem 0.8rem;
-    font-size: 0.7rem;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  .btn-view-small:hover {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-color: transparent;
-    color: white;
-  }
-  .badge-pending-small {
-    background: var(--warning-bg);
-    color: var(--warning-text);
-    padding: 0.2rem 0.5rem;
-    border-radius: 50px;
-    font-size: 0.7rem;
-    font-weight: 500;
-  }
-
   /* ===== QUICK ACTION CARDS ===== */
   .quick-card {
     background: white;
@@ -321,81 +263,59 @@
     margin-bottom: 0;
   }
 
-  /* ===== SECTION TITLE ===== */
-  .section-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 1.5rem 0 1rem;
-    position: relative;
-    padding-left: 1rem;
+  /* ===== PROGRESS BAR CUSTOM ===== */
+  .progress {
+    background-color: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
   }
-  .section-title::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.2rem;
-    bottom: 0.2rem;
-    width: 5px;
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-radius: 5px;
+  .progress-bar {
+    background: linear-gradient(90deg, var(--primary-start), var(--primary-end));
+    border-radius: 10px;
+  }
+  .progress-bar.bg-success {
+    background: #10b981 !important;
+  }
+  /* Circular Progress Bar */
+  .circular-progress {
+    position: relative;
+    width: 90px;
+    height: 90px;
+  }
+  .progress-ring-bg {
+    stroke: #e2e8f0;
+  }
+  .progress-ring-fill {
+    transition: stroke-dashoffset 0.5s ease;
+  }
+  .progress-text {
+    font-family: 'Inter', sans-serif;
+    dominant-baseline: middle;
+    text-anchor: middle;
   }
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
     .profile-card h2 { font-size: 1.4rem; }
-    .profile-avatar { width: 60px; height: 60px; }
+    .profile-avatar { width: 60px !important; height: 60px !important; min-width: 60px; }
     .stat-number { font-size: 1.5rem; }
-    .logbook-pending-table th,
-    .logbook-pending-table td {
-      padding: 0.5rem;
-      font-size: 0.75rem;
-    }
   }
 
   @media (max-width: 576px) {
     html { font-size: 14px; }
-    .profile-stats { flex-direction: column; gap: 0.4rem; border-radius: 20px; padding: 0.5rem 0.8rem; }
-    .profile-stats span { font-size: 0.8rem; }
+    .profile-stats-vertical { padding: 0.4rem 0.8rem; }
     .stat-row { flex-direction: column; align-items: stretch; }
     .stat-item { flex-wrap: wrap; }
     .btn-outline-primary { width: 100%; text-align: center; }
     .quick-icon { width: 55px; height: 55px; font-size: 1.8rem; }
     .quick-card h6 { font-size: 0.85rem; }
-    
-    /* Card view untuk logbook pending */
-    .logbook-pending-table thead {
-      display: none;
-    }
-    .logbook-pending-table tr {
-      display: block;
-      margin-bottom: 1rem;
-      border: 1px solid #e9ecef;
-      border-radius: 0.75rem;
-      padding: 0.75rem;
-    }
-    .logbook-pending-table td {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.4rem 0;
-      border-bottom: 1px dashed #e9ecef;
-    }
-    .logbook-pending-table td:last-child {
-      border-bottom: none;
-    }
-    .logbook-pending-table td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: var(--primary-start);
-      width: 40%;
-    }
+    .info-card .d-flex.flex-wrap.gap-3 > div { width: 100%; }
   }
 </style>
 
 <div class="container mt-4">
-  <!-- Profile Card (seperti dashboard mahasiswa) -->
+  <!-- Profile Card dengan statistik vertikal -->
   <div class="profile-card">
     <div class="d-flex align-items-center flex-wrap">
       <div class="flex-shrink-0">
@@ -413,77 +333,51 @@
       <div class="flex-grow-1 ms-3 mt-2 mt-sm-0">
         <h2 class="fw-bold"><%= dosen.nama %></h2>
         <p class="mb-1"><%= dosen.nip || '-' %> | <%= dosen.email %></p>
-        <!-- Statistik di dalam profile card -->
-        <div class="profile-stats">
-          <span><i class="bi bi-book"></i> Mata Kuliah: <%= mkCount || 0 %></span>
-          <span><i class="bi bi-people"></i> Mahasiswa Bimbingan: <%= totalMahasiswa || 0 %></span>
+        <!-- Statistik vertikal dengan background abu-abu solid & border-radius agak kotak -->
+        <div class="profile-stats-vertical">
+          <div><i class="bi bi-book me-2"></i> Mata Kuliah: <strong><%= mkCount || 0 %></strong></div>
+          <div><i class="bi bi-people me-2"></i> Mahasiswa Bimbingan: <strong><%= totalMahasiswa || 0 %></strong></div>
+          <div><i class="bi bi-calendar-week me-2"></i> Semester: <strong><%= currentSemester.label %></strong></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Card Informasi Dosen (Tugas Aktif & Belum Dinilai + Event + Logbook Pending) -->
+  <!-- ==================== SATU CARD INFORMASI DOSEN + ACARA + INDIKATOR KINERJA + PENGAJARAN & LOGBOOK ==================== -->
   <div class="info-card">
     <div class="card-header">
       <h5><i class="bi bi-info-circle me-2"></i>Informasi Dosen</h5>
     </div>
     <div class="card-body">
+      <!-- BARIS STATISTIK TUGAS & LOGBOOK -->
       <div class="stat-row">
-        <!-- Tugas Aktif -->
         <div class="stat-item">
-          <div class="stat-icon">
-            <i class="bi bi-file-earmark-text"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-label">Tugas Aktif</div>
-            <div class="stat-number"><%= tugasAktif || 0 %></div>
-          </div>
-          <a href="/dosen/tugas" class="btn <%= tugasAktif > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
-            <%= tugasAktif > 0 ? 'Lihat Tugas' : 'Tidak Ada' %>
-          </a>
+          <div class="stat-icon"><i class="bi bi-file-earmark-text"></i></div>
+          <div class="stat-content"><div class="stat-label">Tugas Aktif</div><div class="stat-number"><%= tugasAktif || 0 %></div></div>
+          <a href="/dosen/tugas" class="btn <%= tugasAktif > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4"><%= tugasAktif > 0 ? 'Lihat Tugas' : 'Tidak Ada' %></a>
         </div>
-        <!-- Belum Dinilai -->
         <div class="stat-item">
-          <div class="stat-icon">
-            <i class="bi bi-clock-history"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-label">Belum Dinilai</div>
-            <div class="stat-number"><%= pengumpulanBelumDinilai || 0 %></div>
-          </div>
-          <a href="/dosen/tugas" class="btn <%= pengumpulanBelumDinilai > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
-            <%= pengumpulanBelumDinilai > 0 ? 'Lihat Nilai' : 'Tidak Ada' %>
-          </a>
+          <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+          <div class="stat-content"><div class="stat-label">Belum Dinilai</div><div class="stat-number"><%= pengumpulanBelumDinilai || 0 %></div></div>
+          <a href="/dosen/tugas" class="btn <%= pengumpulanBelumDinilai > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4"><%= pengumpulanBelumDinilai > 0 ? 'Lihat Nilai' : 'Tidak Ada' %></a>
         </div>
-        <!-- Logbook Pending (TAMBAHAN) -->
         <div class="stat-item">
-          <div class="stat-icon">
-            <i class="bi bi-journal-bookmark-fill"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-label">Logbook Pending</div>
-            <div class="stat-number"><%= logbookPendingCount %></div>
-          </div>
-          <a href="/dosen/magang" class="btn <%= logbookPendingCount > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4">
-            <%= logbookPendingCount > 0 ? 'Lihat Logbook' : 'Tidak Ada' %>
-          </a>
+          <div class="stat-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+          <div class="stat-content"><div class="stat-label">Logbook Pending</div><div class="stat-number"><%= logbookPendingCount %></div></div>
+          <a href="/dosen/magang" class="btn <%= logbookPendingCount > 0 ? 'btn-warning' : 'btn-outline-secondary' %> rounded-pill px-4"><%= logbookPendingCount > 0 ? 'Lihat Logbook' : 'Tidak Ada' %></a>
         </div>
       </div>
 
-      
-
-      <!-- Bagian Event (jika ada) -->
+      <!-- ACARA MENDATANG (JIKA ADA) -->
       <% if (events && events.length > 0) { %>
         <hr class="my-4">
         <h6 class="fw-semibold mb-3"><i class="bi bi-calendar-event me-2"></i>Acara Mendatang</h6>
         <div class="d-flex flex-wrap gap-3">
-          <% events.slice(0, 4).forEach(event => { %>
+          <% events.slice(0, 3).forEach(event => { %>
             <div class="flex-grow-1" style="min-width: 200px;">
               <div class="p-3 rounded-3" style="background: rgba(30,58,138,0.05); border-left: 3px solid var(--primary-start);">
                 <div class="fw-semibold"><%= event.judul %></div>
-                <div class="small text-muted">
-                  <i class="bi bi-calendar3 me-1"></i><%= new Date(event.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' }) %>
-                </div>
+                <div class="small text-muted"><i class="bi bi-calendar3 me-1"></i><%= new Date(event.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' }) %></div>
                 <% if (event.deskripsi) { %>
                   <p class="small text-muted mt-1 mb-0"><%= event.deskripsi.substring(0, 100) %><%= event.deskripsi.length > 100 ? '...' : '' %></p>
                 <% } %>
@@ -492,103 +386,149 @@
           <% }) %>
         </div>
       <% } %>
+
+      <!-- INDIKATOR KINERJA DOSEN (SPMP) DENGAN CIRCULAR PROGRESS BAR -->
+      <hr class="my-4">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart-steps me-2"></i>Indikator Kinerja Dosen (SPMP)</h6>
+      <div class="row text-center g-4">
+        <!-- Kehadiran Mengajar (85%) -->
+        <div class="col-6 col-md-3">
+          <div class="card border-0 bg-transparent shadow-none">
+            <div class="circular-progress mx-auto" data-percent="85">
+              <svg class="progress-ring" width="90" height="90" viewBox="0 0 90 90">
+                <circle class="progress-ring-bg" cx="45" cy="45" r="40" fill="none" stroke="#e2e8f0" stroke-width="6"/>
+                <circle class="progress-ring-fill" cx="45" cy="45" r="40" fill="none" stroke="#2563eb" stroke-width="6" stroke-dasharray="251.2" stroke-dashoffset="37.68" stroke-linecap="round"/>
+                <text x="45" y="52" class="progress-text" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="bold">85%</text>
+              </svg>
+            </div>
+            <div class="mt-2 fw-semibold">Kehadiran Mengajar</div>
+          </div>
+        </div>
+        <!-- Evaluasi Mahasiswa (4.8/5 = 96%) -->
+        <div class="col-6 col-md-3">
+          <div class="card border-0 bg-transparent shadow-none">
+            <div class="circular-progress mx-auto" data-percent="96">
+              <svg class="progress-ring" width="90" height="90" viewBox="0 0 90 90">
+                <circle class="progress-ring-bg" cx="45" cy="45" r="40" fill="none" stroke="#e2e8f0" stroke-width="6"/>
+                <circle class="progress-ring-fill" cx="45" cy="45" r="40" fill="none" stroke="#10b981" stroke-width="6" stroke-dasharray="251.2" stroke-dashoffset="10.05" stroke-linecap="round"/>
+                <text x="45" y="52" class="progress-text" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="bold">4.8</text>
+              </svg>
+            </div>
+            <div class="mt-2 fw-semibold">Kesesuaian RPS</div>
+          </div>
+        </div>
+        <!-- Penelitian/Tahun (2 dari target 3 = 66.7%) -->
+        <div class="col-6 col-md-3">
+          <div class="card border-0 bg-transparent shadow-none">
+            <div class="circular-progress mx-auto" data-percent="66.7">
+              <svg class="progress-ring" width="90" height="90" viewBox="0 0 90 90">
+                <circle class="progress-ring-bg" cx="45" cy="45" r="40" fill="none" stroke="#e2e8f0" stroke-width="6"/>
+                <circle class="progress-ring-fill" cx="45" cy="45" r="40" fill="none" stroke="#f59e0b" stroke-width="6" stroke-dasharray="251.2" stroke-dashoffset="83.6" stroke-linecap="round"/>
+                <text x="45" y="52" class="progress-text" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="bold">2</text>
+              </svg>
+            </div>
+            <div class="mt-2 fw-semibold">Penelitian</div>
+          </div>
+        </div>
+        <!-- Pengabdian/Tahun (1 dari target 2 = 50%) -->
+        <div class="col-6 col-md-3">
+          <div class="card border-0 bg-transparent shadow-none">
+            <div class="circular-progress mx-auto" data-percent="50">
+              <svg class="progress-ring" width="90" height="90" viewBox="0 0 90 90">
+                <circle class="progress-ring-bg" cx="45" cy="45" r="40" fill="none" stroke="#e2e8f0" stroke-width="6"/>
+                <circle class="progress-ring-fill" cx="45" cy="45" r="40" fill="none" stroke="#ef4444" stroke-width="6" stroke-dasharray="251.2" stroke-dashoffset="125.6" stroke-linecap="round"/>
+                <text x="45" y="52" class="progress-text" text-anchor="middle" fill="#1e293b" font-size="16" font-weight="bold">1</text>
+              </svg>
+            </div>
+            <div class="mt-2 fw-semibold">Pengabdian</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== INFORMASI PENGAJARAN & PROGRESS LOGBOOK ===== -->
+      <hr class="my-4">
+      <h6 class="fw-semibold mb-3"><i class="bi bi-journal-bookmark-fill me-2"></i>Pengajaran & Progress Logbook</h6>
+      <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span><i class="bi bi-calendar-check me-1"></i> Progress Perkuliahan</span>
+          <span><%= totalPertemuanTerlaksana %> / <%= totalPertemuanMax %> pertemuan (<%= persentasePengajaran %>%)</span>
+        </div>
+        <div class="progress mb-2">
+          <div class="progress-bar" role="progressbar" style="width: <%= persentasePengajaran %>%;" aria-valuenow="<%= persentasePengajaran %>" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="d-flex justify-content-between mb-1">
+          <span><i class="bi bi-check-circle me-1"></i> Logbook Di-ACC</span>
+          <span><%= totalLogbookApproved || 0 %> / <%= totalLogbookAll || 0 %> (<%= logbookPersentase || 0 %>%)</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar bg-success" role="progressbar" style="width: <%= logbookPersentase || 0 %>%;" aria-valuenow="<%= logbookPersentase || 0 %>" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-   <!-- Aksi Cepat (Fitur Dosen) -->
-  <h4 class="section-title">Fitur Dosen</h4>
-  <div class="row g-4 mb-4">
-    <!-- Buat Tugas -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/tugas/create" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-plus-circle"></i></div>
-        <h6>Buat Tugas</h6>
-        <p>Buat tugas baru</p>
-      </a>
+  <!-- ==================== CARD PENGAJARAN & PENGABDIAN ==================== -->
+  <div class="info-card">
+    <div class="card-header">
+      <h5><i class="bi bi-briefcase me-2"></i>Pengajaran & Pengabdian</h5>
     </div>
-    <!-- Daftar Tugas -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/tugas" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-list-task"></i></div>
-        <h6>Daftar Tugas</h6>
-        <p>Lihat semua tugas</p>
-      </a>
-    </div>
-    <!-- Mata Kuliah -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/mk" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-book"></i></div>
-        <h6>Mata Kuliah</h6>
-        <p>Lihat progress</p>
-      </a>
-    </div>
-    <!-- Monitoring Magang -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/magang" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
-        <h6>Monitoring Magang</h6>
-        <p>Lihat logbook</p>
-      </a>
-    </div>
-    <!-- Input Nilai -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/nilai" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-bar-chart"></i></div>
-        <h6>Input Nilai</h6>
-        <p>Rekap nilai</p>
-      </a>
-    </div>
-    <!-- ELK Library -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/artikel" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-journal-richtext"></i></div>
-        <h6>ELK Library</h6>
-        <p>Kelola artikel</p>
-      </a>
-    </div>
-    <!-- Kalender Akademik -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/kalender" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-calendar-event"></i></div>
-        <h6>Kalender Akademik</h6>
-        <p>Jadwal penting</p>
-      </a>
-    </div>
-    <!-- MyRPS -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/kurikulum" class="quick-card">
-      <div class="quick-icon"><i class="bi bi-file-text"></i></div>
-      <h6>MyRPS</h6>
-      <p>Kurikulum & RPS</p>
-    </a>
-    </div>
-    <!-- Laporan Magang -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/laporan-magang" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-        <h6>Laporan Magang</h6>
-        <p>Lihat laporan mahasiswa</p>
-      </a>
-    </div>
-    <!-- SK Saya (Surat Keputusan) -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/sk" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-file-earmark-text"></i></div>
-        <h6>SK Saya</h6>
-        <p>Surat Keputusan</p>
-      </a>
-    </div>
-    <!-- Biodata -->
-    <div class="col-6 col-md-3">
-      <a href="/dosen/biodata" class="quick-card">
-        <div class="quick-icon"><i class="bi bi-person"></i></div>
-        <h6>Biodata</h6>
-        <p>Edit profil</p>
-      </a>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-6 col-md-3"><a href="/dosen/tugas/create" class="quick-card"><div class="quick-icon"><i class="bi bi-plus-circle"></i></div><h6>Buat Tugas</h6><p>Buat tugas baru</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/tugas" class="quick-card"><div class="quick-icon"><i class="bi bi-list-task"></i></div><h6>Daftar Tugas</h6><p>Lihat semua tugas</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/mk" class="quick-card"><div class="quick-icon"><i class="bi bi-book"></i></div><h6>Mata Kuliah</h6><p>Lihat progress</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/nilai" class="quick-card"><div class="quick-icon"><i class="bi bi-bar-chart"></i></div><h6>Input Nilai</h6><p>Rekap nilai</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/penelitian" class="quick-card"><div class="quick-icon"><i class="bi bi-mortarboard"></i></div><h6>Penelitian</h6><p>Kelola penelitian</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/pengabdian" class="quick-card"><div class="quick-icon"><i class="bi bi-people"></i></div><h6>Pengabdian</h6><p>Kelola pengabdian</p></a></div>
+      </div>
     </div>
   </div>
 
-  <!-- Pengumuman atau Berita (opsional) -->
+  <!-- ==================== CARD MONITORING MAGANG ==================== -->
+  <div class="info-card">
+    <div class="card-header">
+      <h5><i class="bi bi-binoculars me-2"></i>Monitoring Magang Mahasiswa</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-6 col-md-3"><a href="/dosen/magang" class="quick-card"><div class="quick-icon"><i class="bi bi-journal-bookmark-fill"></i></div><h6>Monitoring Magang</h6><p>Lihat logbook</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/laporan-magang" class="quick-card"><div class="quick-icon"><i class="bi bi-file-earmark-pdf"></i></div><h6>Laporan Magang</h6><p>Lihat laporan mahasiswa</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/artikel" class="quick-card"><div class="quick-icon"><i class="bi bi-journal-richtext"></i></div><h6>ELK Library</h6><p>Kelola artikel</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/nilai" class="quick-card"><div class="quick-icon"><i class="bi bi-bar-chart"></i></div><h6>Nilai Magang</h6><p>Rekap nilai</p></a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CARD PERSURATAN & DOKUMEN DIGITAL ==================== -->
+  <div class="info-card">
+    <div class="card-header">
+      <h5><i class="bi bi-envelope-paper me-2"></i>Persuratan dan Dokumen Digital</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-6 col-md-3"><a href="/dosen/surat" class="quick-card"><div class="quick-icon"><i class="bi bi-files"></i></div><h6>Daftar Pengajuan Surat</h6><p>Status pengajuan</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/sk" class="quick-card"><div class="quick-icon"><i class="bi bi-file-earmark-text"></i></div><h6>SK Saya</h6><p>Surat Keputusan</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/kurikulum" class="quick-card"><div class="quick-icon"><i class="bi bi-file-text"></i></div><h6>RPS Saya</h6><p>RPS mata kuliah</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/sertifikat" class="quick-card"><div class="quick-icon"><i class="bi bi-award"></i></div><h6>Sertifikat</h6><p>Sertifikat kompetensi</p></a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CARD LAINNYA ==================== -->
+  <div class="info-card">
+    <div class="card-header">
+      <h5><i class="bi bi-grid-3x3-gap-fill me-2"></i>Lainnya</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-6 col-md-3"><a href="/dosen/biodata" class="quick-card"><div class="quick-icon"><i class="bi bi-person"></i></div><h6>Biodata</h6><p>Edit profil</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/edom" class="quick-card"><div class="quick-icon"><i class="bi bi-clipboard-data"></i></div><h6>Edom</h6><p>Evaluasi dosen</p></a></div>
+        <div class="col-6 col-md-3"><a href="/dosen/evaluasi-spmp" class="quick-card"><div class="quick-icon"><i class="bi bi-bar-chart"></i></div><h6>Evaluasi SPMP</h6><p>Input capaian IKU</p></a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PENGUMUMAN ATAU BERITA (opsional) -->
   <% if (berita.length > 0) { %>
     <div class="info-card">
       <div class="card-header">
