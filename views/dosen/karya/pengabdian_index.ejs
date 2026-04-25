@@ -1,0 +1,36 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-people-fill"></i> Pengabdian Saya</h2>
+    <a href="/dosen/pengabdian/tambah" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Tambah Pengabdian</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr><th>Judul / Kegiatan</th><th>Mitra</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        <% list.forEach(item => { %>
+          <tr>
+            <td><%= item.judul || item.namaKegiatan %></td>
+            <td><%= item.mitra || '-' %></td>
+            <td><%= item.tahun %></td>
+            <td><span class="badge bg-<%= item.status === 'pending' ? 'warning' : (item.status === 'approved' ? 'success' : 'danger') %>"><%= item.status %></span></td>
+            <td>
+              <a href="/dosen/pengabdian/<%= item.id %>" class="btn btn-sm btn-info">Detail</a>
+              <% if (item.status === 'pending') { %>
+                <form method="POST" action="/dosen/pengabdian/<%= item.id %>/hapus" style="display:inline" onsubmit="return confirm('Yakin hapus?')">
+                  <button class="btn btn-sm btn-danger">Hapus</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (list.length === 0) { %>
+          <tr><td colspan="5" class="text-center">Belum ada data pengabdian.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

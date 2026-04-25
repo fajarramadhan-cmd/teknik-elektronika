@@ -2,11 +2,24 @@
 
 <style>
   .detail-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-radius: 1rem;
     padding: 2rem;
     color: white;
     margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-header::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -5%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(30px);
   }
   .info-card {
     background: white;
@@ -14,18 +27,19 @@
     box-shadow: 0 5px 20px rgba(0,0,0,0.05);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    border: 1px solid rgba(30,58,138,0.1);
   }
   .badge-status {
     padding: 0.4rem 1rem;
     border-radius: 50px;
     font-weight: 500;
   }
-  .badge-pending { background: #ffc107; color: #212529; }
-  .badge-completed { background: #17a2b8; color: white; }
-  .badge-rejected { background: #dc3545; color: white; }
-  .badge-cancelled { background: #6c757d; color: white; }
+  .badge-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .badge-completed { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+  .badge-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  .badge-cancelled { background: #e9ecef; color: #495057; border: 1px solid #ced4da; }
   .btn-gradient {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     font-weight: 600;
@@ -35,21 +49,30 @@
   }
   .btn-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.3);
     color: white;
   }
   .btn-outline-gradient {
     background: transparent;
-    border: 2px solid #2193b0;
-    color: #2193b0;
+    border: 2px solid var(--primary-start);
+    color: var(--primary-start);
     font-weight: 600;
     padding: 0.6rem 2rem;
     border-radius: 50px;
     transition: all 0.3s;
   }
   .btn-outline-gradient:hover {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-color: transparent;
+    color: white;
+  }
+  .btn-danger-outline {
+    background: transparent;
+    border: 2px solid #dc2626;
+    color: #dc2626;
+  }
+  .btn-danger-outline:hover {
+    background: #dc2626;
     color: white;
   }
 </style>
@@ -64,17 +87,17 @@
     </a>
   </div>
 
-  <!-- Info Mahasiswa -->
+  <!-- Info Pemohon -->
   <div class="info-card">
-    <h5 class="fw-bold mb-3">Data Mahasiswa</h5>
+    <h5 class="fw-bold mb-3"><i class="bi bi-person-circle me-2"></i>Data <%= role === 'mahasiswa' ? 'Mahasiswa' : 'Dosen' %></h5>
     <div class="row">
       <div class="col-md-6">
-        <p><strong>Nama:</strong> <%= mahasiswa.nama %></p>
-        <p><strong>NIM:</strong> <%= mahasiswa.nim %></p>
+        <p><strong>Nama:</strong> <%= pemohon.nama %></p>
+        <p><strong><%= role === 'mahasiswa' ? 'NIM' : 'NIP' %>:</strong> <%= pemohon.nim || pemohon.nip %></p>
       </div>
       <div class="col-md-6">
-        <p><strong>Email:</strong> <%= mahasiswa.email %></p>
-        <p><strong>No HP:</strong> <%= mahasiswa.noHp || '-' %></p>
+        <p><strong>Email:</strong> <%= pemohon.email %></p>
+        <p><strong>No HP:</strong> <%= pemohon.noHp || '-' %></p>
       </div>
     </div>
   </div>
@@ -83,7 +106,7 @@
   <div class="info-card">
     <div class="row">
       <div class="col-md-6">
-        <p><strong>Jenis Surat:</strong> <%= surat.jenis %></p>
+        <p><strong>Jenis Surat:</strong> <%= surat.jenis || surat.jenisSurat %></p>
         <p><strong>Tanggal Pengajuan:</strong> <%= new Date(surat.createdAt).toLocaleString('id-ID') %></p>
         <p><strong>Status:</strong> 
           <% if (surat.status === 'pending') { %>
@@ -98,7 +121,9 @@
         </p>
       </div>
       <div class="col-md-6">
-        <p><strong>Kode Validasi:</strong> <%= surat.kodeValidasi %></p>
+        <p><strong>Kode Validasi:</strong> 
+          <code><%= surat.kodeValidasi %></code>
+        </p>
         <% if (surat.semester) { %>
           <p><strong>Semester:</strong> <%= surat.semester %></p>
         <% } %>
@@ -112,14 +137,16 @@
     <% if (surat.keterangan) { %>
       <p><strong>Keterangan Tambahan:</strong> <%= surat.keterangan %></p>
     <% } %>
+    <% if (surat.tujuan) { %>
+      <p><strong>Tujuan:</strong> <%= surat.tujuan %></p>
+    <% } %>
   </div>
 
-  <!-- File yang sudah diupload (jika ada) -->
+  <!-- File yang sudah diupload -->
   <% if (surat.fileUrl) { %>
     <div class="info-card">
       <h5 class="fw-bold mb-3">File Surat</h5>
-      <p>File telah diupload:</p>
-      <a href="<%= surat.fileUrl %>" target="_blank" class="btn btn-info">
+      <a href="<%= surat.fileUrl %>" target="_blank" class="btn btn-info btn-sm">
         <i class="bi bi-eye me-2"></i>Lihat File
       </a>
     </div>
@@ -142,13 +169,13 @@
     </div>
   <% } %>
 
-  <!-- Form Aksi (untuk pending) -->
+  <!-- Aksi admin -->
   <% if (surat.status === 'pending') { %>
     <div class="row">
       <div class="col-md-6 mb-3">
         <div class="info-card">
           <h5 class="fw-bold mb-3">Upload Surat Jadi</h5>
-          <form method="POST" action="/admin/surat/<%= surat.id %>/upload" enctype="multipart/form-data">
+          <form method="POST" action="/admin/surat/<%= surat.id %>/<%= role %>/upload" enctype="multipart/form-data">
             <div class="mb-3">
               <input type="file" class="form-control" name="file" accept=".pdf,.doc,.docx" required>
             </div>
@@ -159,7 +186,7 @@
       <div class="col-md-6 mb-3">
         <div class="info-card">
           <h5 class="fw-bold mb-3">Tolak Surat</h5>
-          <form method="POST" action="/admin/surat/<%= surat.id %>/reject">
+          <form method="POST" action="/admin/surat/<%= surat.id %>/<%= role %>/reject">
             <div class="mb-3">
               <textarea class="form-control" name="alasan" rows="3" placeholder="Alasan penolakan" required></textarea>
             </div>
@@ -170,11 +197,11 @@
     </div>
   <% } %>
 
-  <!-- Jika sudah selesai, bisa upload ulang? Tergantung kebijakan. Kita bisa tambahkan opsi. -->
+  <!-- Jika sudah selesai, bisa ganti file (upload ulang) -->
   <% if (surat.status === 'completed') { %>
     <div class="info-card">
-      <h5 class="fw-bold mb-3">Upload Ulang Surat (Jika perlu)</h5>
-      <form method="POST" action="/admin/surat/<%= surat.id %>/upload" enctype="multipart/form-data">
+      <h5 class="fw-bold mb-3">Upload Ulang / Ganti File Surat</h5>
+      <form method="POST" action="/admin/surat/<%= surat.id %>/<%= role %>/upload" enctype="multipart/form-data">
         <div class="mb-3">
           <input type="file" class="form-control" name="file" accept=".pdf,.doc,.docx">
         </div>
@@ -182,6 +209,14 @@
       </form>
     </div>
   <% } %>
+
+  <!-- Opsi Hapus (untuk semua status) -->
+  <div class="info-card">
+    <h5 class="fw-bold mb-3 text-danger">Hapus Surat</h5>
+    <form method="POST" action="/admin/surat/<%= surat.id %>/<%= role %>/delete" onsubmit="return confirm('Yakin menghapus surat ini? Semua data terkait akan hilang.')">
+      <button type="submit" class="btn btn-danger-outline btn-outline-gradient">Hapus Surat</button>
+    </form>
+  </div>
 </div>
 
 <%- include('../../partials/footer') %>

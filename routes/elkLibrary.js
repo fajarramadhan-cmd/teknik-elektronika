@@ -27,31 +27,50 @@ router.get('/', async (req, res) => {
       };
     });
 
-    // Ambil artikel dosen yang sudah disetujui
-    const artikelSnapshot = await db.collection('artikelDosen')
+    // Ambil penelitian dosen yang sudah disetujui
+    const penelitianSnapshot = await db.collection('penelitian')
       .where('status', '==', 'approved')
       .orderBy('createdAt', 'desc')
       .get();
-    const artikelList = artikelSnapshot.docs.map(doc => {
+    const penelitianList = penelitianSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
         ...data,
-        _type: 'artikel',
-        tahun: data.publicationYear || null,
-        judulPencarian: data.title || '',
-        penulisPencarian: data.penulis || (data.authors ? data.authors.join(', ') : ''),
-        abstrakPencarian: data.abstrak || data.abstract || ''
+        _type: 'penelitian',
+        tahun: data.tahun || null,
+        judulPencarian: data.judul || '',
+        penulisPencarian: data.dosenNama || (data.penulis ? data.penulis.join(', ') : ''),
+        abstrakPencarian: data.abstrak || data.deskripsi || ''
       };
     });
 
-    // === HITUNG STATISTIK GLOBAL (sebelum filtering) ===
-    const totalLaporanGlobal = laporanList.length;
-    const totalArtikelGlobal = artikelList.length;
-    const totalItemsGlobal = totalLaporanGlobal + totalArtikelGlobal;
+    // Ambil pengabdian dosen yang sudah disetujui
+    const pengabdianSnapshot = await db.collection('pengabdian')
+      .where('status', '==', 'approved')
+      .orderBy('createdAt', 'desc')
+      .get();
+    const pengabdianList = pengabdianSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        _type: 'pengabdian',
+        tahun: data.tahun || null,
+        judulPencarian: data.judul || data.namaKegiatan || '',
+        penulisPencarian: data.dosenNama || (data.penulis ? data.penulis.join(', ') : ''),
+        abstrakPencarian: data.abstrak || data.deskripsi || ''
+      };
+    });
 
-    // Gabungkan untuk keperluan filter & pagination
-    let allItems = [...laporanList, ...artikelList];
+    // Statistik global
+    const totalLaporanGlobal = laporanList.length;
+    const totalPenelitianGlobal = penelitianList.length;
+    const totalPengabdianGlobal = pengabdianList.length;
+    const totalItemsGlobal = totalLaporanGlobal + totalPenelitianGlobal + totalPengabdianGlobal;
+
+    // Gabungkan semua
+    let allItems = [...laporanList, ...penelitianList, ...pengabdianList];
 
     // Filter berdasarkan search
     if (search && search.trim() !== '') {
@@ -62,10 +81,12 @@ router.get('/', async (req, res) => {
         item.abstrakPencarian.toLowerCase().includes(lowerSearch)
       );
     }
+    // Filter tahun
     if (tahun && tahun.trim() !== '') {
       const tahunNum = parseInt(tahun);
       allItems = allItems.filter(item => item.tahun === tahunNum);
     }
+    // Filter pembimbing (khusus laporan)
     if (pembimbing && pembimbing.trim() !== '') {
       const lowerPembimbing = pembimbing.toLowerCase();
       allItems = allItems.filter(item => 
@@ -74,6 +95,7 @@ router.get('/', async (req, res) => {
         item.pembimbing.toLowerCase().includes(lowerPembimbing)
       );
     }
+    // Filter tipe
     if (type && type !== 'all') {
       allItems = allItems.filter(item => item._type === type);
     }
@@ -94,7 +116,8 @@ router.get('/', async (req, res) => {
     // Daftar tahun unik (untuk filter dropdown)
     const tahunSet = new Set();
     laporanList.forEach(item => { if (item.tahun) tahunSet.add(item.tahun); });
-    artikelList.forEach(item => { if (item.tahun) tahunSet.add(item.tahun); });
+    penelitianList.forEach(item => { if (item.tahun) tahunSet.add(item.tahun); });
+    pengabdianList.forEach(item => { if (item.tahun) tahunSet.add(item.tahun); });
     const tahunList = Array.from(tahunSet).sort((a, b) => b - a);
 
     // Hapus field sementara
@@ -115,11 +138,12 @@ router.get('/', async (req, res) => {
       tahunList,
       currentPage,
       totalPages,
-      // Kirim statistik global (total semua laporan & artikel yang disetujui)
       totalItems: totalItemsGlobal,
       totalLaporan: totalLaporanGlobal,
-      totalArtikel: totalArtikelGlobal
+      totalPenelitian: totalPenelitianGlobal,
+      totalPengabdian: totalPengabdianGlobal
     });
+
   } catch (error) {
     console.error('Error ELK Library:', error);
     res.status(500).render('error', { 
@@ -129,5 +153,48 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ... route /:id (tidak berubah)
+// Route detail :id (tetap sama seperti aslinya - mencoba laporanMagang dulu lalu artikelDosen)
+// Jika ingin mendukung detail penelitian/pengabdian, Anda bisa tambahkan logika di sini.
+router.get('/:id', async (req, res) => {
+  try {
+    let doc = await db.collection('laporanMagang').doc(req.params.id).get();
+    let type = 'laporan';
+    if (!doc.exists) {
+      doc = await db.collection('artikelDosen').doc(req.params.id).get();
+      type = 'artikel';
+    }
+    if (!doc.exists) {
+      // Coba cari di penelitian
+      doc = await db.collection('penelitian').doc(req.params.id).get();
+      if (doc.exists) type = 'penelitian';
+    }
+    if (!doc.exists) {
+      doc = await db.collection('pengabdian').doc(req.params.id).get();
+      if (doc.exists) type = 'pengabdian';
+    }
+    if (!doc.exists) {
+      return res.status(404).render('error', { 
+        title: 'Tidak Ditemukan', 
+        message: 'Item tidak ditemukan' 
+      });
+    }
+    const data = doc.data();
+    const item = { id: doc.id, ...data, _type: type };
+
+    // Increment views jika ada field views
+    await doc.ref.update({ views: (data.views || 0) + 1 });
+
+    res.render('elkLibrary/detail', {
+      title: item.judul || item.judulPublik || item.title || 'Detail',
+      item
+    });
+  } catch (error) {
+    console.error('Error detail:', error);
+    res.status(500).render('error', { 
+      title: 'Error', 
+      message: 'Gagal memuat detail' 
+    });
+  }
+});
+
 module.exports = router;

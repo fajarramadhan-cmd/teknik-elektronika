@@ -1,0 +1,39 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h4>Ajukan Surat ke Prodi</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/dosen/surat/ajukan">
+        <div class="mb-3">
+          <label class="form-label">Jenis Surat</label>
+          <select name="jenisSurat" class="form-select" required>
+            <option value="">Pilih Jenis Surat</option>
+            <option value="Surat Tugas">Surat Tugas</option>
+            <option value="Surat Keterangan">Surat Keterangan</option>
+            <option value="Surat Rekomendasi">Surat Rekomendasi</option>
+            <option value="Surat Pengantar">Surat Pengantar</option>
+            <option value="Surat Undangan">Surat Undangan</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tujuan (jika ada)</label>
+          <input type="text" name="tujuan" class="form-control" placeholder="Nama instansi/orang">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Keperluan / Isi Surat</label>
+          <textarea name="keperluan" class="form-control" rows="4" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Informasi Tambahan (opsional)</label>
+          <textarea name="isiLain" class="form-control" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Kirim Pengajuan</button>
+        <a href="/dosen/surat" class="btn btn-secondary">Batal</a>
+      </form>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

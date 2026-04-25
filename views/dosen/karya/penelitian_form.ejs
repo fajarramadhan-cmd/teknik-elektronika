@@ -1,0 +1,48 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Tambah Penelitian</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST" enctype="multipart/form-data">
+        <div class="row">
+          <div class="col-12 mb-3">
+            <label class="form-label">Judul Penelitian *</label>
+            <input type="text" name="judul" class="form-control" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nama Jurnal</label>
+            <input type="text" name="namaJurnal" class="form-control">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Link Jurnal (URL)</label>
+            <input type="url" name="linkJurnal" class="form-control">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Status Submit</label>
+            <select name="statusSubmit" class="form-select">
+              <option value="belum_submit">Belum Submit</option>
+              <option value="sudah_submit">Sudah Submit</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tahun *</label>
+            <input type="number" name="tahun" class="form-control" value="<%= new Date().getFullYear() %>" required>
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">URL Surat Tugas (jika ada)</label>
+            <input type="url" name="suratTugasUrl" class="form-control">
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">File Penelitian (PDF maks 5MB)</label>
+            <input type="file" name="file" class="form-control" accept=".pdf">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+        <a href="/dosen/penelitian" class="btn btn-secondary">Batal</a>
+      </form>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

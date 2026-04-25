@@ -3,7 +3,7 @@
 <%
   // Default values
   if (typeof suratList === 'undefined') suratList = [];
-  if (typeof filters === 'undefined') filters = { status: '', search: '' };
+  if (typeof filters === 'undefined') filters = { status: '', role: '', search: '' };
 %>
 
 <style>
@@ -26,10 +26,7 @@
     --font-base: 16px;
   }
 
-  html {
-    font-size: 16px;
-  }
-
+  html { font-size: 16px; }
   body {
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     background-color: #f8fafc;
@@ -126,7 +123,7 @@
     transform: translateY(-2px);
   }
 
-  /* Tabel Container */
+  /* Table Container */
   .table-container {
     background: white;
     border-radius: 1.5rem;
@@ -179,7 +176,8 @@
     color: var(--warning-text);
     border: 1px solid #fde68a;
   }
-  .badge-approved {
+  .badge-approved,
+  .badge-completed {
     background: var(--success-bg);
     color: var(--success-text);
     border: 1px solid #a7f3d0;
@@ -194,13 +192,7 @@
     color: var(--secondary-text);
     border: 1px solid #ced4da;
   }
-  .badge-completed {
-    background: var(--info-bg);
-    color: var(--info-text);
-    border: 1px solid #bfdbfe;
-  }
 
-  /* Tombol Aksi */
   .btn-detail {
     background: transparent;
     border: 1.5px solid var(--primary-start);
@@ -223,7 +215,6 @@
     box-shadow: 0 5px 10px rgba(30,58,138,0.3);
   }
 
-  /* Empty State */
   .empty-state {
     padding: 4rem 2rem;
     text-align: center;
@@ -235,12 +226,15 @@
     color: #adb5bd;
     margin-bottom: 1rem;
   }
-  .empty-state p {
-    color: #6c757d;
-    font-size: 1.1rem;
+  .role-badge {
+    background: #e9ecef;
+    color: #495057;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
   }
 
-  /* Responsif */
   @media (max-width: 768px) {
     html { font-size: 15px; }
     .page-header h2 { font-size: 1.6rem; }
@@ -257,17 +251,23 @@
 </style>
 
 <div class="container mt-4">
-  <!-- Page Header -->
   <div class="page-header">
-    <h2><i class="bi bi-envelope-paper me-2"></i>Manajemen Surat Mahasiswa</h2>
+    <h2><i class="bi bi-envelope-paper me-2"></i>Manajemen Surat (Mahasiswa & Dosen)</h2>
   </div>
 
-  <!-- Filter -->
   <div class="filter-card">
     <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label fw-semibold"><i class="bi bi-person-badge me-1"></i>Role</label>
+        <select name="role" class="form-select">
+          <option value="">Semua</option>
+          <option value="mahasiswa" <%= filters.role === 'mahasiswa' ? 'selected' : '' %>>Mahasiswa</option>
+          <option value="dosen" <%= filters.role === 'dosen' ? 'selected' : '' %>>Dosen</option>
+        </select>
+      </div>
       <div class="col-md-3">
-        <label for="status" class="form-label fw-semibold"><i class="bi bi-funnel me-1"></i>Filter Status</label>
-        <select class="form-select" id="status" name="status">
+        <label class="form-label fw-semibold"><i class="bi bi-funnel me-1"></i>Status</label>
+        <select name="status" class="form-select">
           <option value="">Semua</option>
           <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
           <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Selesai</option>
@@ -276,29 +276,29 @@
         </select>
       </div>
       <div class="col-md-4">
-        <label for="search" class="form-label fw-semibold"><i class="bi bi-search me-1"></i>Cari Mahasiswa / Keperluan</label>
-        <input type="text" class="form-control" id="search" name="search" value="<%= filters.search || '' %>">
+        <label class="form-label fw-semibold"><i class="bi bi-search me-1"></i>Cari (Nama / Identitas / Keperluan)</label>
+        <input type="text" class="form-control" name="search" value="<%= filters.search || '' %>" placeholder="Nama, NIM/NIP, keperluan...">
       </div>
       <div class="col-md-2">
         <button type="submit" class="btn-filter">Filter</button>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-1">
         <a href="/admin/surat" class="btn-reset">Reset</a>
       </div>
     </form>
   </div>
 
-  <!-- Tabel -->
   <div class="table-container">
     <div class="table-responsive">
       <table class="table surat-table">
         <thead>
           <tr>
             <th>No</th>
-            <th>Mahasiswa</th>
+            <th>Role</th>
+            <th>Pemohon</th>
             <th>Jenis Surat</th>
             <th>Keperluan</th>
-            <th>Tanggal Pengajuan</th>
+            <th>Tgl Pengajuan</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr>
@@ -306,23 +306,30 @@
         <tbody>
           <% if (suratList.length === 0) { %>
             <tr>
-              <td colspan="7" class="text-center py-5">
+              <td colspan="8" class="text-center py-5">
                 <div class="empty-state">
                   <i class="bi bi-inbox"></i>
                   <p>Tidak ada surat.</p>
                 </div>
-              </td>
+               </td>
             </tr>
           <% } else { %>
-            <% suratList.forEach((surat, index) => { %>
+            <% suratList.forEach((surat, idx) => { %>
               <tr>
-                <td class="text-center fw-bold"><%= index + 1 %></td>
-                <td>
-                  <strong><%= surat.mahasiswa.nama %></strong><br>
-                  <small class="text-muted"><%= surat.mahasiswa.nim %></small>
+                <td class="text-center"><%= idx+1 %></td>
+                <td class="text-center">
+                  <% if (surat.role === 'mahasiswa') { %>
+                    <span class="role-badge"><i class="bi bi-mortarboard"></i> Mahasiswa</span>
+                  <% } else { %>
+                    <span class="role-badge"><i class="bi bi-person-badge"></i> Dosen</span>
+                  <% } %>
                 </td>
-                <td><%= surat.jenis %></td>
-                <td><%= surat.keperluan.length > 50 ? surat.keperluan.substring(0,50) + '...' : surat.keperluan %></td>
+                <td>
+                  <strong><%= surat.pemohon %></strong><br>
+                  <small class="text-muted"><%= surat.identitas %></small>
+                </td>
+                <td><%= surat.jenis || surat.jenisSurat %></td>
+                <td><%= surat.keperluan && surat.keperluan.length > 50 ? surat.keperluan.substring(0,50)+'...' : surat.keperluan %></td>
                 <td><%= new Date(surat.createdAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) %></td>
                 <td>
                   <% if (surat.status === 'pending') { %>
@@ -336,7 +343,7 @@
                   <% } %>
                 </td>
                 <td>
-                  <a href="/admin/surat/<%= surat.id %>" class="btn-detail">
+                  <a href="/admin/surat/<%= surat.id %>/<%= surat.role %>" class="btn-detail">
                     <i class="bi bi-eye"></i> Detail
                   </a>
                 </td>

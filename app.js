@@ -89,6 +89,12 @@ app.use('/mahasiswa', mahasiswaRoutes);
 // ROUTES DOSEN
 // ============================================================================
 // Route SK untuk dosen
+const dosenSuratRouter = require('./routes/dosen/surat');
+app.use('/dosen/surat', dosenSuratRouter);
+const penelitianRouter = require('./routes/dosen/penelitian');
+const pengabdianRouter = require('./routes/dosen/pengabdian');
+app.use('/dosen/penelitian', penelitianRouter);
+app.use('/dosen/pengabdian', pengabdianRouter);
 const dosenSkRouter = require('./routes/dosen/sk');
 app.use('/dosen/sk', dosenSkRouter);
 const dosenRoutes = require('./routes/dosen/index');

@@ -1,0 +1,45 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between">
+    <h2>📬 Daftar Surat Saya</h2>
+    <a href="/dosen/surat/ajukan" class="btn btn-primary">+ Ajukan Surat Baru</a>
+  </div>
+  <div class="table-responsive mt-3">
+    <table class="table table-bordered">
+      <thead>
+        <tr><th>No.</th><th>Jenis Surat</th><th>Keperluan</th><th>Status</th><th>Tanggal Pengajuan</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        <% if (suratList.length === 0) { %>
+          <tr><td colspan="6" class="text-center">Belum ada surat</td></tr>
+        <% } else { %>
+          <% suratList.forEach((s, idx) => { %>
+          <tr>
+            <td><%= idx+1 %></td>
+            <td><%= s.jenisSurat %></td>
+            <td><%= s.keperluan %></td>
+            <td>
+              <span class="badge <%= s.status === 'pending' ? 'bg-warning' : (s.status === 'completed' ? 'bg-success' : 'bg-danger') %>">
+                <%= s.status === 'pending' ? 'Menunggu' : (s.status === 'completed' ? 'Selesai' : 'Ditolak') %>
+              </span>
+            </td>
+            <td><%= new Date(s.createdAt).toLocaleDateString() %></td>
+            <td>
+              <a href="/dosen/surat/<%= s.id %>" class="btn btn-sm btn-info">Detail</a>
+              <% if (s.status === 'pending') { %>
+                <form method="POST" action="/dosen/surat/<%= s.id %>/batal" style="display:inline;" onsubmit="return confirm('Batalkan pengajuan ini?')">
+                  <button class="btn btn-sm btn-danger">Batal</button>
+                </form>
+              <% } %>
+              <% if (s.status === 'completed' && s.fileUrl) { %>
+                <a href="/dosen/surat/<%= s.id %>/download" class="btn btn-sm btn-success" target="_blank">Unduh</a>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../../partials/footer') %>

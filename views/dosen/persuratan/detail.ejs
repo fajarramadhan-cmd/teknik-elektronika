@@ -1,0 +1,27 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <h4>Detail Surat</h4>
+      <a href="/dosen/surat" class="btn btn-light">Kembali</a>
+    </div>
+    <div class="card-body">
+      <table class="table">
+        <tr><th style="width:200px">Jenis Surat</th><td><%= surat.jenisSurat %></td></tr>
+        <tr><th>Tujuan</th><td><%= surat.tujuan || '-' %></td></tr>
+        <tr><th>Keperluan</th><td><%= surat.keperluan %></td></tr>
+        <tr><th>Informasi Tambahan</th><td><%= surat.isiLain || '-' %></td></tr>
+        <tr><th>Kode Validasi</th><td><code><%= surat.kodeValidasi %></code></td></tr>
+        <tr><th>Status</th><td><span class="badge <%= surat.status === 'pending' ? 'bg-warning' : (surat.status === 'completed' ? 'bg-success' : 'bg-danger') %>"><%= surat.status %></span></td></tr>
+        <tr><th>Tanggal Pengajuan</th><td><%= new Date(surat.createdAt).toLocaleString() %></td></tr>
+        <% if (surat.status === 'completed' && surat.fileUrl) { %>
+        <tr><th>File Surat</th><td><a href="/dosen/surat/<%= surat.id %>/download" target="_blank" class="btn btn-sm btn-success">Unduh Surat (PDF)</a></td></tr>
+        <% } %>
+        <% if (surat.history && surat.history.length) { %>
+        <tr><th>Riwayat</th><td><ul><% surat.history.forEach(h => { %><li><%= h.timestamp %> - <%= h.catatan %></li><% }) %></ul></td></tr>
+        <% } %>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../../partials/footer') %>
