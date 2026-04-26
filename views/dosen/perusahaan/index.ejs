@@ -1,0 +1,130 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+  }
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 35px -10px rgba(30,58,138,0.3);
+  }
+  .perusahaan-card {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s;
+    overflow: hidden;
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .perusahaan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  }
+  .card-header {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+  }
+  .card-header h4 {
+    margin: 0;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+  .info-row {
+    display: flex;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .info-label {
+    width: 130px;
+    font-weight: 600;
+    color: #475569;
+  }
+  .info-value {
+    flex: 1;
+    color: #1e293b;
+  }
+  .badge-mahasiswa {
+    background: #eef2ff;
+    color: #1e3a8a;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    display: inline-block;
+    margin: 0.2rem;
+  }
+  .table-mahasiswa {
+    width: 100%;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  .table-mahasiswa th {
+    background: #f1f5f9;
+    padding: 0.5rem;
+  }
+  .table-mahasiswa td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  @media (max-width: 768px) {
+    .info-label { width: 100%; margin-bottom: 0.2rem; }
+    .info-value { margin-bottom: 0.8rem; }
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-building me-2"></i> Daftar Perusahaan Magang</h2>
+    <p>Seluruh perusahaan tempat mahasiswa melaksanakan magang</p>
+  </div>
+
+  <% if (perusahaanList.length === 0) { %>
+    <div class="alert alert-info">Belum ada data perusahaan magang.</div>
+  <% } else { %>
+    <div class="row g-4">
+      <% perusahaanList.forEach(p => { %>
+        <div class="col-lg-6">
+          <div class="perusahaan-card">
+            <div class="card-header">
+              <h4><i class="bi bi-building me-2"></i> <%= p.nama %></h4>
+            </div>
+            <div class="card-body">
+              <div class="info-row">
+                <div class="info-label">Alamat</div>
+                <div class="info-value"><%= p.alamat %></div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Kontak</div>
+                <div class="info-value"><%= p.kontak %></div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Pembimbing Lapangan</div>
+                <div class="info-value"><%= p.pembimbingLapangan %></div>
+              </div>
+              <hr>
+              <strong><i class="bi bi-people-fill me-1"></i> Mahasiswa yang magang:</strong>
+              <div class="mt-2">
+                <% p.mahasiswaList.forEach(m => { %>
+                  <span class="badge-mahasiswa">
+                    <%= m.nama %> (<%= m.pdkKode || 'PDK' %>)
+                  </span>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../../partials/footer') %>

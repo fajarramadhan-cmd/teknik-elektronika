@@ -1,0 +1,14 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4"><div class="page-header bg-primary text-white p-4 rounded-4"><h2>Evaluasi SPMP</h2><p>Indikator Kinerja IKU</p></div>
+<% if (message) { %><div class="alert alert-warning"><%= message %></div><% } %>
+<% if (activePeriod) { %>
+  <div class="mb-3">Periode: <strong><%= activePeriod.nama %></strong> (<%= activePeriod.tanggalMulai %> – <%= activePeriod.tanggalSelesai %>)</div>
+  <div class="card"><div class="card-body">
+    <div class="display-4 text-primary text-center"><%= finalScore %>%</div>
+    <p class="text-center">Skor Capaian IKU</p>
+    <a href="/dosen/spmp/isi" class="btn btn-primary w-100">Isi / Edit Capaian</a>
+  </div></div>
+<% } else { %>
+  <div class="alert alert-info">Belum ada periode penilaian aktif.</div>
+<% } %>
+</div><%- include('../../partials/footer') %>

@@ -1,0 +1,25 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between">
+    <h2>Periode EDOM</h2>
+    <a href="/admin/edom/periods/create" class="btn btn-primary">+ Tambah Periode</a>
+  </div>
+  <table class="table table-bordered mt-3">
+    <thead>
+      <tr><th>Nama</th><th>Semester</th><th>Tanggal Mulai</th><th>Tanggal Selesai</th><th>Status</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      <% periods.forEach(p => { %>
+        <tr>
+          <td><%= p.nama %></td><td><%= p.semester %></td><td><%= p.tanggalMulai %></td><td><%= p.tanggalSelesai %></td>
+          <td><span class="badge bg-<%= p.status === 'active' ? 'success' : 'secondary' %>"><%= p.status %></span></td>
+          <td>
+            <a href="/admin/edom/periods/<%= p.id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+            <form method="POST" action="/admin/edom/periods/<%= p.id %>/delete" style="display:inline" onsubmit="return confirm('Hapus periode?')"><button class="btn btn-sm btn-danger">Hapus</button></form>
+           </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../../partials/footer') %>

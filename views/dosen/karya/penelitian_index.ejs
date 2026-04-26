@@ -1,44 +1,217 @@
 <%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.1);
+    --warning: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --info: #0dcaf0;
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(30,58,138,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transform: rotate(25deg);
+  }
+  .page-header h2 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-header p {
+    margin: 0.5rem 0 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  .table-card {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .penelitian-table {
+    width: 100%;
+    margin-bottom: 0;
+  }
+  .penelitian-table thead th {
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .penelitian-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .penelitian-table tbody tr:hover {
+    background: #fefce8;
+    transition: background 0.2s;
+  }
+  .badge-status {
+    padding: 0.3rem 0.9rem;
+    border-radius: 60px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .badge-pending {
+    background: #fef3c7;
+    color: #b45309;
+  }
+  .badge-approved {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .badge-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    border-radius: 60px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+    color: white;
+  }
+  .btn-outline-custom {
+    border: 1.5px solid var(--primary-start);
+    color: var(--primary-start);
+    background: transparent;
+    border-radius: 60px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+  }
+  .btn-outline-custom:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+  }
+</style>
+
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-mortarboard-fill"></i> Penelitian Saya</h2>
-    <a href="/dosen/penelitian/tambah" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Tambah Penelitian</a>
+  <div class="page-header">
+    <h2><i class="bi bi-mortarboard-fill me-2"></i> Penelitian Saya</h2>
+    <p>Kelola daftar penelitian yang telah diajukan. Status menunggu verifikasi admin.</p>
   </div>
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>Judul</th>
-          <th>Jurnal</th>
-          <th>Tahun</th>
-          <th>Status Submit</th>
-          <th>Status Verifikasi</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% list.forEach(item => { %>
+
+  <div class="d-flex justify-content-end mb-3">
+    <a href="/dosen/penelitian/tambah" class="btn-primary-custom">
+      <i class="bi bi-plus-circle me-1"></i> Tambah Penelitian
+    </a>
+  </div>
+
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="penelitian-table">
+        <thead>
           <tr>
-            <td><%= item.judul %></td>
-            <td><%= item.namaJurnal || '-' %></td>
-            <td><%= item.tahun %></td>
-            <td><%= item.statusSubmit === 'sudah_submit' ? 'Sudah Submit' : 'Belum Submit' %></td>
-            <td><span class="badge bg-<%= item.status === 'pending' ? 'warning' : (item.status === 'approved' ? 'success' : 'danger') %>"><%= item.status %></span></td>
-            <td>
-              <a href="/dosen/penelitian/<%= item.id %>" class="btn btn-sm btn-info">Detail</a>
-              <% if (item.status === 'pending') { %>
-                <form method="POST" action="/dosen/penelitian/<%= item.id %>/hapus" style="display:inline" onsubmit="return confirm('Yakin hapus?')">
-                  <button class="btn btn-sm btn-danger">Hapus</button>
-                </form>
-              <% } %>
-             </td>
-           </tr>
-        <% }) %>
-        <% if (list.length === 0) { %>
-          <tr><td colspan="6" class="text-center">Belum ada data penelitian.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
+            <th>Judul</th>
+            <th>Jurnal</th>
+            <th>Tahun</th>
+            <th>Status Submit</th>
+            <th>Verifikasi</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (list.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="mt-2 mb-0 text-muted">Belum ada data penelitian.</p>
+              </td>
+            </tr>
+          <% } else { %>
+            <% list.forEach(item => { %>
+              <tr>
+                <td class="fw-semibold"><%= item.judul %></td>
+                <td><%= item.namaJurnal || '-' %></td>
+                <td><%= item.tahun %></td>
+                <td>
+                  <% if (item.statusSubmit === 'sudah_submit') { %>
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill">
+                      <i class="bi bi-check-circle-fill me-1"></i> Sudah Submit
+                    </span>
+                  <% } else { %>
+                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1 rounded-pill">
+                      <i class="bi bi-clock-history me-1"></i> Belum Submit
+                    </span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="badge-status 
+                    <%= item.status === 'pending' ? 'badge-pending' : (item.status === 'approved' ? 'badge-approved' : 'badge-rejected') %>">
+                    <%= item.status === 'pending' ? 'Menunggu' : (item.status === 'approved' ? 'Disetujui' : 'Ditolak') %>
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <a href="/dosen/penelitian/<%= item.id %>" class="btn-outline-custom btn-sm">
+                      <i class="bi bi-eye me-1"></i> Detail
+                    </a>
+                    <% if (item.status === 'pending') { %>
+                      <form method="POST" action="/dosen/penelitian/<%= item.id %>/hapus" onsubmit="return confirm('Yakin hapus penelitian ini?')" class="d-inline">
+                        <button class="btn-outline-custom btn-sm text-danger border-danger" style="border-color: #dc3545 !important; color: #dc3545 !important;">
+                          <i class="bi bi-trash me-1"></i> Hapus
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
 <%- include('../../partials/footer') %>

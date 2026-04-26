@@ -1,0 +1,56 @@
+<%- include('../../partials/header') %>
+<style>
+  .rating-star { font-size: 1.5rem; cursor: pointer; color: #ddd; transition: 0.2s; }
+  .rating-star.active { color: #ffc107; }
+  .question-card { border-left: 4px solid #1e3a8a; }
+</style>
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4>Evaluasi: <%= mk.kode %> - <%= mk.nama %></h4>
+      <small>Periode: <%= activePeriod.nama %></small>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <% questions.forEach((q, idx) => { %>
+          <div class="card question-card mb-3">
+            <div class="card-body">
+              <div class="fw-bold"><%= idx+1 %>. <%= q.pertanyaan %></div>
+              <div class="mt-2">
+                <div class="rating-input" data-question="<%= q.id %>">
+                  <% for (let i=1; i<=5; i++) { %>
+                    <i class="bi bi-star rating-star" data-value="<%= i %>"></i>
+                  <% } %>
+                </div>
+                <input type="hidden" name="nilai_<%= q.id %>" id="nilai_<%= q.id %>" required>
+              </div>
+              <div class="mt-2">
+                <textarea name="komentar_<%= q.id %>" class="form-control" rows="2" placeholder="Komentar (opsional)"></textarea>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary">Kirim Evaluasi</button>
+          <a href="/mahasiswa/edom" class="btn btn-secondary">Batal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.rating-input').forEach(container => {
+    const stars = container.querySelectorAll('.rating-star');
+    const inputHidden = container.parentElement.parentElement.querySelector('input[type="hidden"]');
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        const value = star.getAttribute('data-value');
+        inputHidden.value = value;
+        stars.forEach(s => s.classList.remove('active'));
+        star.classList.add('active');
+        for (let i = 0; i < value; i++) stars[i].classList.add('active');
+      });
+    });
+  });
+</script>
+<%- include('../../partials/footer') %>

@@ -1,15 +1,66 @@
 <%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+  }
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .form-card {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(30,58,138,0.1);
+    overflow: hidden;
+  }
+  .form-card .card-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+  }
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    border-radius: 60px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+  }
+</style>
+
 <div class="container mt-4">
-  <div class="card">
-    <div class="card-header bg-primary text-white">
-      <h4>Ajukan Surat ke Prodi</h4>
+  <div class="page-header">
+    <h2><i class="bi bi-envelope-paper me-2"></i>Ajukan Surat ke Prodi</h2>
+    <p>Isi form berikut untuk mengajukan surat. Admin akan memproses dan mengunggah file surat.</p>
+  </div>
+
+  <div class="form-card">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Form Pengajuan Surat</h5>
     </div>
     <div class="card-body">
       <form method="POST" action="/dosen/surat/ajukan">
         <div class="mb-3">
-          <label class="form-label">Jenis Surat</label>
+          <label class="form-label fw-semibold">Jenis Surat <span class="text-danger">*</span></label>
           <select name="jenisSurat" class="form-select" required>
-            <option value="">Pilih Jenis Surat</option>
+            <option value="">-- Pilih Jenis Surat --</option>
             <option value="Surat Tugas">Surat Tugas</option>
             <option value="Surat Keterangan">Surat Keterangan</option>
             <option value="Surat Rekomendasi">Surat Rekomendasi</option>
@@ -19,21 +70,24 @@
           </select>
         </div>
         <div class="mb-3">
-          <label class="form-label">Tujuan (jika ada)</label>
-          <input type="text" name="tujuan" class="form-control" placeholder="Nama instansi/orang">
+          <label class="form-label fw-semibold">Tujuan (instansi/orang)</label>
+          <input type="text" name="tujuan" class="form-control" placeholder="Contoh: Kepala Desa Sukamaju">
         </div>
         <div class="mb-3">
-          <label class="form-label">Keperluan / Isi Surat</label>
-          <textarea name="keperluan" class="form-control" rows="4" required></textarea>
+          <label class="form-label fw-semibold">Keperluan / Isi Surat <span class="text-danger">*</span></label>
+          <textarea name="keperluan" class="form-control" rows="4" required placeholder="Jelaskan secara singkat maksud dan tujuan surat..."></textarea>
         </div>
         <div class="mb-3">
-          <label class="form-label">Informasi Tambahan (opsional)</label>
-          <textarea name="isiLain" class="form-control" rows="2"></textarea>
+          <label class="form-label fw-semibold">Informasi Tambahan (opsional)</label>
+          <textarea name="isiLain" class="form-control" rows="2" placeholder="Catatan lain yang perlu diketahui admin"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Kirim Pengajuan</button>
-        <a href="/dosen/surat" class="btn btn-secondary">Batal</a>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary-custom"><i class="bi bi-send me-2"></i>Kirim Pengajuan</button>
+          <a href="/dosen/surat" class="btn btn-secondary">Batal</a>
+        </div>
       </form>
     </div>
   </div>
 </div>
+
 <%- include('../../partials/footer') %>

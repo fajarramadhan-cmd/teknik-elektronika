@@ -1,45 +1,158 @@
 <%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+  }
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .table-card {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(30,58,138,0.1);
+    overflow: hidden;
+  }
+  .surat-table {
+    width: 100%;
+    margin-bottom: 0;
+  }
+  .surat-table thead th {
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .surat-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .surat-table tbody tr:hover {
+    background: #fefce8;
+  }
+  .badge-status {
+    padding: 0.3rem 0.9rem;
+    border-radius: 60px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-pending { background: #fef3c7; color: #b45309; }
+  .badge-completed { background: #d1fae5; color: #065f46; }
+  .badge-rejected { background: #fee2e2; color: #991b1b; }
+  .badge-cancelled { background: #e2e8f0; color: #475569; }
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    border-radius: 60px;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+  }
+  .btn-outline-custom {
+    border: 1.5px solid var(--primary-start);
+    color: var(--primary-start);
+    background: transparent;
+    border-radius: 60px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+  }
+  .btn-outline-custom:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+  }
+</style>
+
 <div class="container mt-4">
-  <div class="d-flex justify-content-between">
-    <h2>📬 Daftar Surat Saya</h2>
-    <a href="/dosen/surat/ajukan" class="btn btn-primary">+ Ajukan Surat Baru</a>
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-envelope-paper me-2"></i>Daftar Pengajuan Surat</h2>
+      <p>Semua surat yang pernah Anda ajukan ke prodi</p>
+    </div>
+    <a href="/dosen/surat/ajukan" class="btn-primary-custom"><i class="bi bi-plus-circle me-2"></i>Ajukan Surat Baru</a>
   </div>
-  <div class="table-responsive mt-3">
-    <table class="table table-bordered">
-      <thead>
-        <tr><th>No.</th><th>Jenis Surat</th><th>Keperluan</th><th>Status</th><th>Tanggal Pengajuan</th><th>Aksi</th></tr>
-      </thead>
-      <tbody>
-        <% if (suratList.length === 0) { %>
-          <tr><td colspan="6" class="text-center">Belum ada surat</td></tr>
-        <% } else { %>
-          <% suratList.forEach((s, idx) => { %>
+
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="surat-table">
+        <thead>
           <tr>
-            <td><%= idx+1 %></td>
-            <td><%= s.jenisSurat %></td>
-            <td><%= s.keperluan %></td>
-            <td>
-              <span class="badge <%= s.status === 'pending' ? 'bg-warning' : (s.status === 'completed' ? 'bg-success' : 'bg-danger') %>">
-                <%= s.status === 'pending' ? 'Menunggu' : (s.status === 'completed' ? 'Selesai' : 'Ditolak') %>
-              </span>
-            </td>
-            <td><%= new Date(s.createdAt).toLocaleDateString() %></td>
-            <td>
-              <a href="/dosen/surat/<%= s.id %>" class="btn btn-sm btn-info">Detail</a>
-              <% if (s.status === 'pending') { %>
-                <form method="POST" action="/dosen/surat/<%= s.id %>/batal" style="display:inline;" onsubmit="return confirm('Batalkan pengajuan ini?')">
-                  <button class="btn btn-sm btn-danger">Batal</button>
-                </form>
-              <% } %>
-              <% if (s.status === 'completed' && s.fileUrl) { %>
-                <a href="/dosen/surat/<%= s.id %>/download" class="btn btn-sm btn-success" target="_blank">Unduh</a>
-              <% } %>
-            </td>
+            <th>No</th>
+            <th>Jenis Surat</th>
+            <th>Keperluan</th>
+            <th>Status</th>
+            <th>Tgl Pengajuan</th>
+            <th>Aksi</th>
           </tr>
-          <% }) %>
-        <% } %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (suratList.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="mt-2 mb-0 text-muted">Belum ada pengajuan surat.</p>
+                <a href="/dosen/surat/ajukan" class="btn-primary-custom mt-2">Ajukan Surat Sekarang</a>
+              </td>
+            </tr>
+          <% } else { %>
+            <% suratList.forEach((s, idx) => { %>
+              <tr>
+                <td class="fw-bold"><%= idx + 1 %></td>
+                <td><%= s.jenisSurat %></td>
+                <td><%= s.keperluan.substring(0, 50) + (s.keperluan.length > 50 ? '...' : '') %></td>
+                <td>
+                  <span class="badge-status 
+                    <%= s.status === 'pending' ? 'badge-pending' : (s.status === 'completed' ? 'badge-completed' : (s.status === 'rejected' ? 'badge-rejected' : 'badge-cancelled')) %>">
+                    <%= s.status === 'pending' ? 'Menunggu' : (s.status === 'completed' ? 'Selesai' : (s.status === 'rejected' ? 'Ditolak' : 'Dibatalkan')) %>
+                  </span>
+                </td>
+                <td><%= new Date(s.createdAt).toLocaleDateString('id-ID') %></td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <a href="/dosen/surat/<%= s.id %>" class="btn-outline-custom btn-sm"><i class="bi bi-eye me-1"></i>Detail</a>
+                    <% if (s.status === 'pending') { %>
+                      <form method="POST" action="/dosen/surat/<%= s.id %>/batal" onsubmit="return confirm('Batalkan pengajuan surat ini?')" class="d-inline">
+                        <button class="btn-outline-custom btn-sm" style="border-color: #dc3545 !important; color: #dc3545 !important;">
+                          <i class="bi bi-x-circle me-1"></i>Batal
+                        </button>
+                      </form>
+                    <% } %>
+                    <% if (s.status === 'completed' && s.fileUrl) { %>
+                      <a href="/dosen/surat/<%= s.id %>/download" target="_blank" class="btn-outline-custom btn-sm" style="border-color: #10b981 !important; color: #10b981 !important;">
+                        <i class="bi bi-download me-1"></i>Unduh
+                      </a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
 <%- include('../../partials/footer') %>

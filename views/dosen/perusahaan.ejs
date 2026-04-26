@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<style>
+  .card-perusahaan { border: none; border-radius: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+  .card-perusahaan .card-header { background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border-radius: 1rem 1rem 0 0; font-weight: bold; }
+</style>
+<div class="container mt-4">
+  <div class="page-header bg-primary text-white p-4 rounded-4 mb-4">
+    <h2><i class="bi bi-building"></i> Perusahaan Magang Mahasiswa Bimbingan</h2>
+    <p>Data perusahaan dari mahasiswa yang Anda bimbing</p>
+  </div>
+  <div class="row g-4">
+    <% if (perusahaanList.length === 0) { %>
+      <div class="col-12 text-center py-5">Belum ada data perusahaan</div>
+    <% } else { %>
+      <% perusahaanList.forEach(p => { %>
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-perusahaan h-100">
+            <div class="card-header"><i class="bi bi-building me-2"></i> <%= p.nama %></div>
+            <div class="card-body">
+              <p><i class="bi bi-geo-alt"></i> <strong>Alamat:</strong> <%= p.alamat || '-' %></p>
+              <p><i class="bi bi-telephone"></i> <strong>Kontak HP:</strong> <%= p.kontakHp || '-' %></p>
+              <p><i class="bi bi-person-badge"></i> <strong>Pembimbing Lapangan:</strong> <%= p.pembimbingLapangan || '-' %></p>
+              <p><i class="bi bi-briefcase"></i> <strong>Jabatan:</strong> <%= p.jabatan || '-' %></p>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

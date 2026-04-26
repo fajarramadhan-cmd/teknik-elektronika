@@ -1,0 +1,6 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between"><h2>Periode SPMP</h2><a href="/admin/spmp/periods/create" class="btn btn-primary">+ Periode</a></div>
+  <table class="table table-bordered mt-3"><thead><tr><th>Nama</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+  <tbody><% periods.forEach(p => { %><tr><td><%= p.nama %></td><td><%= p.tanggalMulai %> s/d <%= p.tanggalSelesai %></td><td><%= p.status %></td><td><a href="/admin/spmp/periods/<%= p.id %>/edit" class="btn btn-sm btn-warning">Edit</a><form method="POST" action="/admin/spmp/periods/<%= p.id %>/delete" style="display:inline"><button class="btn btn-sm btn-danger">Hapus</button></form></td></tr><% }) %></tbody></table>
+</div><%- include('../../partials/footer') %>

@@ -12,73 +12,101 @@ router.use(isAdmin);
 // ============================================================================
 
 /**
- * Menampilkan halaman daftar dengan filter jenis dan status
+ * Update status dokumen di koleksi tertentu
  */
-router.get('/', async (req, res) => {
-  try {
-    const { type = 'all', status = 'approved' } = req.query; // status: approved, pending, rejected, all
-    let laporanList = [], artikelList = [], penelitianList = [], pengabdianList = [];
-
-    if (type === 'all' || type === 'laporan') {
-      let query = db.collection('laporanMagang');
-      if (status !== 'all') query = query.where('status', '==', status);
-      const snap = await query.orderBy('createdAt', 'desc').get();
-      laporanList = snap.docs.map(d => ({ id: d.id, ...d.data(), kategori: 'laporan' }));
-    }
-    if (type === 'all' || type === 'artikel') {
-      let query = db.collection('artikelDosen');
-      if (status !== 'all') query = query.where('status', '==', status);
-      const snap = await query.orderBy('createdAt', 'desc').get();
-      artikelList = snap.docs.map(d => ({ id: d.id, ...d.data(), kategori: 'artikel' }));
-    }
-    if (type === 'all' || type === 'penelitian') {
-      let query = db.collection('penelitian');
-      if (status !== 'all') query = query.where('status', '==', status);
-      const snap = await query.orderBy('createdAt', 'desc').get();
-      penelitianList = snap.docs.map(d => ({ id: d.id, ...d.data(), kategori: 'penelitian' }));
-    }
-    if (type === 'all' || type === 'pengabdian') {
-      let query = db.collection('pengabdian');
-      if (status !== 'all') query = query.where('status', '==', status);
-      const snap = await query.orderBy('createdAt', 'desc').get();
-      pengabdianList = snap.docs.map(d => ({ id: d.id, ...d.data(), kategori: 'pengabdian' }));
-    }
-
-    const allItems = [...laporanList, ...artikelList, ...penelitianList, ...pengabdianList];
-    allItems.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    res.render('admin/elkLibrary_list', {
-      title: 'Kelola E-Library',
-      items: allItems,
-      currentType: type,
-      currentStatus: status
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat data' });
-  }
-});
-
-// ============================================================================
-// FUNGSI UMUM APPROVE / REJECT (untuk semua koleksi)
-// ============================================================================
-
-async function updateStatus(collection, id, status, approvedBy = null) {
+async function updateStatus(collection, id, status, userId) {
   const ref = db.collection(collection).doc(id);
   const doc = await ref.get();
   if (!doc.exists) throw new Error('Dokumen tidak ditemukan');
   const updateData = { status, updatedAt: new Date().toISOString() };
   if (status === 'approved') {
     updateData.approvedAt = new Date().toISOString();
-    updateData.approvedBy = approvedBy;
+    updateData.approvedBy = userId;
   } else if (status === 'rejected') {
     updateData.rejectedAt = new Date().toISOString();
-    updateData.rejectedBy = approvedBy;
+    updateData.rejectedBy = userId;
   }
   await ref.update(updateData);
 }
 
-// LAPORAN
+/**
+ * Hapus dokumen dan file di Drive
+ */
+async function deleteItem(collection, id) {
+  const ref = db.collection(collection).doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) throw new Error('Dokumen tidak ditemukan');
+  const data = doc.data();
+  if (data.fileId) {
+    try {
+      await drive.files.delete({ fileId: data.fileId });
+    } catch (err) {
+      console.error('Gagal hapus file Drive:', err.message);
+    }
+  }
+  await ref.delete();
+}
+
+// ============================================================================
+// HALAMAN UTAMA (Daftar semua konten)
+// ============================================================================
+router.get('/', async (req, res) => {
+  try {
+    const { type = 'all', status = 'all' } = req.query; // default: tampilkan semua status
+
+    let laporanList = [];
+    let artikelList = [];
+    let penelitianList = [];
+    let pengabdianList = [];
+
+    // Ambil data berdasarkan type
+    if (type === 'all' || type === 'laporan') {
+      let query = db.collection('laporanMagang');
+      if (status !== 'all') query = query.where('status', '==', status);
+      const snap = await query.orderBy('createdAt', 'desc').get();
+      laporanList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    if (type === 'all' || type === 'artikel') {
+      let query = db.collection('artikelDosen');
+      if (status !== 'all') query = query.where('status', '==', status);
+      const snap = await query.orderBy('createdAt', 'desc').get();
+      artikelList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    if (type === 'all' || type === 'penelitian') {
+      let query = db.collection('penelitian');
+      if (status !== 'all') query = query.where('status', '==', status);
+      const snap = await query.orderBy('createdAt', 'desc').get();
+      penelitianList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    if (type === 'all' || type === 'pengabdian') {
+      let query = db.collection('pengabdian');
+      if (status !== 'all') query = query.where('status', '==', status);
+      const snap = await query.orderBy('createdAt', 'desc').get();
+      pengabdianList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    res.render('admin/elkLibrary_list', {
+      title: 'Kelola E-Library',
+      laporanList,
+      artikelList,
+      penelitianList,
+      pengabdianList,
+      currentType: type,
+      currentStatus: status
+    });
+  } catch (error) {
+    console.error('Error ELK Library admin:', error);
+    res.status(500).render('error', { title: 'Error', message: 'Gagal memuat data' });
+  }
+});
+
+// ============================================================================
+// APPROVE / REJECT
+// ============================================================================
+// Laporan
 router.post('/laporan/:id/approve', async (req, res) => {
   try {
     await updateStatus('laporanMagang', req.params.id, 'approved', req.user.id);
@@ -91,8 +119,7 @@ router.post('/laporan/:id/reject', async (req, res) => {
     res.redirect('/admin/elk-library?type=laporan&status=pending');
   } catch (err) { res.status(500).send(err.message); }
 });
-
-// ARTIKEL
+// Artikel
 router.post('/artikel/:id/approve', async (req, res) => {
   try {
     await updateStatus('artikelDosen', req.params.id, 'approved', req.user.id);
@@ -105,8 +132,7 @@ router.post('/artikel/:id/reject', async (req, res) => {
     res.redirect('/admin/elk-library?type=artikel&status=pending');
   } catch (err) { res.status(500).send(err.message); }
 });
-
-// PENELITIAN
+// Penelitian
 router.post('/penelitian/:id/approve', async (req, res) => {
   try {
     await updateStatus('penelitian', req.params.id, 'approved', req.user.id);
@@ -119,8 +145,7 @@ router.post('/penelitian/:id/reject', async (req, res) => {
     res.redirect('/admin/elk-library?type=penelitian&status=pending');
   } catch (err) { res.status(500).send(err.message); }
 });
-
-// PENGABDIAN
+// Pengabdian
 router.post('/pengabdian/:id/approve', async (req, res) => {
   try {
     await updateStatus('pengabdian', req.params.id, 'approved', req.user.id);
@@ -135,9 +160,8 @@ router.post('/pengabdian/:id/reject', async (req, res) => {
 });
 
 // ============================================================================
-// EDIT (HANYA METADATA, TIDAK UBAH FILE)
+// EDIT METADATA
 // ============================================================================
-
 // Laporan
 router.get('/laporan/:id/edit', async (req, res) => {
   try {
@@ -156,7 +180,6 @@ router.post('/laporan/:id/edit', async (req, res) => {
     res.redirect('/admin/elk-library?type=laporan');
   } catch (err) { res.status(500).send(err.message); }
 });
-
 // Artikel
 router.get('/artikel/:id/edit', async (req, res) => {
   try {
@@ -178,7 +201,6 @@ router.post('/artikel/:id/edit', async (req, res) => {
     res.redirect('/admin/elk-library?type=artikel');
   } catch (err) { res.status(500).send(err.message); }
 });
-
 // Penelitian
 router.get('/penelitian/:id/edit', async (req, res) => {
   try {
@@ -198,7 +220,6 @@ router.post('/penelitian/:id/edit', async (req, res) => {
     res.redirect('/admin/elk-library?type=penelitian');
   } catch (err) { res.status(500).send(err.message); }
 });
-
 // Pengabdian
 router.get('/pengabdian/:id/edit', async (req, res) => {
   try {
@@ -220,29 +241,31 @@ router.post('/pengabdian/:id/edit', async (req, res) => {
 });
 
 // ============================================================================
-// HAPUS (BESERTA FILE DI DRIVE)
+// HAPUS
 // ============================================================================
-async function deleteItem(collection, id) {
-  const ref = db.collection(collection).doc(id);
-  const doc = await ref.get();
-  if (!doc.exists) throw new Error('Dokumen tidak ditemukan');
-  const data = doc.data();
-  if (data.fileId) {
-    try { await drive.files.delete({ fileId: data.fileId }); } catch (e) { console.error('Gagal hapus file Drive:', e.message); }
-  }
-  await ref.delete();
-}
 router.post('/laporan/:id/delete', async (req, res) => {
-  try { await deleteItem('laporanMagang', req.params.id); res.redirect('/admin/elk-library?type=laporan'); } catch (err) { res.status(500).send(err.message); }
+  try {
+    await deleteItem('laporanMagang', req.params.id);
+    res.redirect('/admin/elk-library?type=laporan');
+  } catch (err) { res.status(500).send(err.message); }
 });
 router.post('/artikel/:id/delete', async (req, res) => {
-  try { await deleteItem('artikelDosen', req.params.id); res.redirect('/admin/elk-library?type=artikel'); } catch (err) { res.status(500).send(err.message); }
+  try {
+    await deleteItem('artikelDosen', req.params.id);
+    res.redirect('/admin/elk-library?type=artikel');
+  } catch (err) { res.status(500).send(err.message); }
 });
 router.post('/penelitian/:id/delete', async (req, res) => {
-  try { await deleteItem('penelitian', req.params.id); res.redirect('/admin/elk-library?type=penelitian'); } catch (err) { res.status(500).send(err.message); }
+  try {
+    await deleteItem('penelitian', req.params.id);
+    res.redirect('/admin/elk-library?type=penelitian');
+  } catch (err) { res.status(500).send(err.message); }
 });
 router.post('/pengabdian/:id/delete', async (req, res) => {
-  try { await deleteItem('pengabdian', req.params.id); res.redirect('/admin/elk-library?type=pengabdian'); } catch (err) { res.status(500).send(err.message); }
+  try {
+    await deleteItem('pengabdian', req.params.id);
+    res.redirect('/admin/elk-library?type=pengabdian');
+  } catch (err) { res.status(500).send(err.message); }
 });
 
 module.exports = router;

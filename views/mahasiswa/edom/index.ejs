@@ -1,0 +1,49 @@
+<%- include('../../partials/header') %>
+<style>
+  .period-badge { background: #e0e7ff; color: #1e3a8a; }
+  .card-mk { transition: 0.2s; }
+  .card-mk:hover { transform: translateY(-4px); box-shadow: 0 12px 20px rgba(0,0,0,0.1); }
+</style>
+<div class="container mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-star-fill"></i> Evaluasi Dosen (EDOM)</h2>
+    <% if (activePeriod) { %>
+      <p>Periode: <strong><%= activePeriod.nama %></strong> (<%= new Date(activePeriod.tanggalMulai).toLocaleDateString() %> s/d <%= new Date(activePeriod.tanggalSelesai).toLocaleDateString() %>)</p>
+    <% } else { %>
+      <p class="text-warning">Tidak ada periode evaluasi aktif saat ini.</p>
+    <% } %>
+  </div>
+
+  <% if (message) { %>
+    <div class="alert alert-info"><%= message %></div>
+  <% } %>
+
+  <% if (mkList.length === 0) { %>
+    <div class="alert alert-secondary">Tidak ada mata kuliah yang perlu dievaluasi pada semester ini.</div>
+  <% } else { %>
+    <div class="row g-4">
+      <% mkList.forEach(mk => { %>
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-mk h-100 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <span class="badge period-badge"><%= mk.semester %></span>
+                <span class="badge <%= mk.sudahIsi ? 'bg-success' : 'bg-secondary' %>">
+                  <%= mk.sudahIsi ? 'Sudah Dinilai' : 'Belum Dinilai' %>
+                </span>
+              </div>
+              <h5 class="mt-2"><%= mk.kode %> - <%= mk.nama %></h5>
+              <p class="small text-muted">Dosen: <%= mk.dosen %></p>
+              <% if (!mk.sudahIsi && activePeriod) { %>
+                <a href="/mahasiswa/edom/mk/<%= mk.id %>" class="btn btn-primary btn-sm mt-2">Isi Evaluasi</a>
+              <% } else if (mk.sudahIsi) { %>
+                <button class="btn btn-outline-secondary btn-sm mt-2" disabled>Terima kasih</button>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('../../partials/footer') %>

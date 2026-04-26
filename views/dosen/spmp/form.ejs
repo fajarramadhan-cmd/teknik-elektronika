@@ -1,0 +1,19 @@
+<%- include('../../partials/header') %>
+<div class="container mt-4"><div class="card"><div class="card-header bg-primary text-white">Isi Capaian IKU – <%= activePeriod.nama %></div><div class="card-body"><form method="POST" enctype="multipart/form-data">
+  <% indicators.forEach((ind, idx) => { 
+     const jawab = jawaban.find(j => j.indikatorId === ind.id) || {};
+  %>
+    <div class="border rounded p-3 mb-3">
+      <h5><%= idx+1 %>. <%= ind.nama %></h5>
+      <p class="text-muted">Target: <%= ind.target %> <%= ind.satuan %> | Bobot: <%= ind.bobot %>%</p>
+      <div class="row">
+        <div class="col-md-6"><label class="form-label">Capaian (realisasi)</label><input type="number" step="0.01" name="capaian_<%= ind.id %>" class="form-control" value="<%= jawab.capaian || '' %>" required></div>
+        <div class="col-md-6"><label class="form-label">Upload Bukti (opsional)</label><input type="file" name="file_<%= ind.id %>" class="form-control" accept=".pdf,.jpg,.png"></div>
+      </div>
+      <% if (jawab.fileUrl) { %><div class="mt-2"><a href="<%= jawab.fileUrl %>" target="_blank">Lihat bukti sebelumnya</a></div><% } %>
+    </div>
+  <% }) %>
+  <button type="submit" class="btn btn-primary">Simpan Capaian</button>
+  <a href="/dosen/spmp" class="btn btn-secondary">Batal</a>
+</form></div></div></div>
+<%- include('../../partials/footer') %>

@@ -63,6 +63,25 @@ app.get('/api/current-user', verifyToken, (req, res) => {
     nim: req.user.nim || ''
   });
 });
+// SPMP
+const adminSpmpRouter = require('./routes/admin/spmp');
+const dosenSpmpRouter = require('./routes/dosen/spmp');
+app.use('/admin/spmp', adminSpmpRouter);
+app.use('/dosen/spmp', dosenSpmpRouter);
+// Perusahaan magang
+const adminPerusahaanRouter = require('./routes/admin/perusahaan');
+const dosenPerusahaanRouter = require('./routes/dosen/perusahaan');
+
+app.use('/admin/perusahaan', adminPerusahaanRouter);
+app.use('/dosen/perusahaan', dosenPerusahaanRouter);
+// EDOM
+const mahasiswaEdomRouter = require('./routes/mahasiswa/edom');
+const dosenEdomRouter = require('./routes/dosen/edom');
+const adminEdomRouter = require('./routes/admin/edom');
+
+app.use('/mahasiswa/edom', mahasiswaEdomRouter);
+app.use('/dosen/edom', dosenEdomRouter);
+app.use('/admin/edom', adminEdomRouter);
 // Mengakses halaman detail kurikulum (misal untuk mata kuliah tertentu)
 app.get('/dosen/kurikulum/detail/:id', (req, res) => {
     res.render('dosen/kurikulum/detail', { id: req.params.id });
