@@ -4,197 +4,313 @@
   :root {
     --primary-start: #2193b0;
     --primary-end: #6dd5ed;
-    --primary-light: rgba(33,147,176,0.1);
+    --primary-light: #e0f4f9;
     --primary-dark: #1a7a8f;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --bg-surface: #ffffff;
   }
+
+  /* Animasi Fade In */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
   .page-header {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-radius: 1.5rem;
-    padding: 2rem;
+    border-radius: 1.25rem;
+    padding: 2.5rem 2rem;
     color: white;
     margin-bottom: 2rem;
-    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
+    box-shadow: 0 10px 25px rgba(33, 147, 176, 0.2);
     position: relative;
     overflow: hidden;
   }
+
   .page-header::before {
     content: '';
     position: absolute;
     top: -50%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255,255,255,0.1);
+    right: -5%;
+    width: 350px;
+    height: 350px;
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 50%;
     transform: rotate(25deg);
+    pointer-events: none;
   }
+
   .page-header h2 {
     font-weight: 700;
     margin-bottom: 0.5rem;
     position: relative;
     z-index: 1;
+    letter-spacing: -0.5px;
   }
+
   .page-header p {
     margin-bottom: 0;
+    font-size: 1.05rem;
     opacity: 0.9;
     position: relative;
     z-index: 1;
   }
+
+  /* Custom Tabs (Pills style) */
   .nav-tabs-custom {
-    border-bottom: 2px solid var(--primary-light);
-    margin-bottom: 2rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding: 0.5rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
   }
+
   .nav-tabs-custom .nav-link {
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 50px 50px 0 0;
-    transition: all 0.2s;
+    padding: 0.6rem 1.25rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
     background: transparent;
     text-decoration: none;
+    font-size: 0.95rem;
   }
+
   .nav-tabs-custom .nav-link:hover {
     color: var(--primary-dark);
     background: var(--primary-light);
   }
+
   .nav-tabs-custom .nav-link.active {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
-    box-shadow: 0 5px 15px rgba(33,147,176,0.3);
+    box-shadow: 0 4px 12px rgba(33, 147, 176, 0.25);
   }
+
+  .filter-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-bar select {
+    width: auto;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem 0.5rem 1rem;
+    border: 1px solid #cbd5e1;
+    color: var(--text-dark);
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: border-color 0.2s;
+  }
+  
+  .filter-bar select:focus {
+    border-color: var(--primary-start);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
   .section-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #1e293b;
-    margin: 1.5rem 0 1rem;
+    color: var(--text-dark);
+    margin: 2rem 0 1rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
+  
   .section-title i {
     color: var(--primary-start);
   }
+
+  /* Table Container & Styling */
   .table-container {
-    background: white;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    background: var(--bg-surface);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     overflow: hidden;
-    border: 1px solid rgba(33,147,176,0.1);
-    margin-bottom: 2rem;
+    border: 1px solid #f1f5f9;
+    margin-bottom: 2.5rem;
   }
+
+  .table {
+    margin-bottom: 0;
+  }
+
   .table thead th {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    color: white;
+    background: #f8fafc;
+    color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border: none;
-    padding: 1rem 0.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1.2rem 1rem;
     white-space: nowrap;
   }
+
   .table tbody td {
     vertical-align: middle;
-    padding: 1rem 0.75rem;
-    border-bottom: 1px solid #e9ecef;
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-dark);
+    font-size: 0.95rem;
   }
+
+  .table tbody tr {
+    transition: background-color 0.2s;
+  }
+
   .table tbody tr:hover {
-    background-color: var(--primary-light);
+    background-color: #f8fafc;
   }
+
+  /* Badges */
   .badge-status {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 1rem;
+    gap: 0.3rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 50px;
-    font-weight: 500;
-    font-size: 0.85rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
   }
-  .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-  .badge-approved { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-  .badge-rejected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-  .btn-action {
+
+  .badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+  .badge-approved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+  /* Buttons */
+  .btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
+    gap: 0.3rem;
     transition: all 0.2s;
-    color: white;
-    margin: 0 2px;
   }
-  .btn-action i { font-size: 1rem; }
-  .btn-edit { background: #ffc107; }
-  .btn-edit:hover { background: #e0a800; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(255,193,7,0.3); }
-  .btn-delete { background: #dc3545; }
-  .btn-delete:hover { background: #c82333; transform: translateY(-2px); box-shadow: 0 5px 10px rgba(220,53,69,0.3); }
-  .btn-view { background: var(--primary-start); }
-  .btn-view:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 10px rgba(33,147,176,0.3); }
+
+  .btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
   .empty-state {
-    padding: 3rem;
+    padding: 4rem 2rem;
     text-align: center;
-    background: #f8f9fa;
-    border-radius: 1rem;
-    color: #6c757d;
+    background: var(--bg-surface);
+    color: var(--text-muted);
   }
+
   .empty-state i {
-    font-size: 3rem;
-    color: #adb5bd;
+    font-size: 3.5rem;
+    color: #cbd5e1;
     margin-bottom: 1rem;
+    display: block;
   }
 </style>
 
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-4 fade-in">
   <div class="page-header">
     <h2><i class="bi bi-journal-richtext me-2"></i>Kelola E-Library</h2>
-    <p class="mb-0 opacity-75">Atur konten laporan magang, artikel dosen, penelitian, dan pengabdian</p>
+    <p>Atur konten laporan magang, artikel dosen, penelitian, dan pengabdian dalam satu pintasan.</p>
   </div>
 
-  <!-- Tab navigasi -->
   <div class="nav-tabs-custom">
-    <a class="nav-link <%= currentType === 'all' ? 'active' : '' %>" href="/admin/elk-library?type=all">Semua</a>
-    <a class="nav-link <%= currentType === 'laporan' ? 'active' : '' %>" href="/admin/elk-library?type=laporan">Laporan Magang</a>
-    <a class="nav-link <%= currentType === 'artikel' ? 'active' : '' %>" href="/admin/elk-library?type=artikel">Artikel Dosen</a>
-    <a class="nav-link <%= currentType === 'penelitian' ? 'active' : '' %>" href="/admin/elk-library?type=penelitian">Penelitian</a>
-    <a class="nav-link <%= currentType === 'pengabdian' ? 'active' : '' %>" href="/admin/elk-library?type=pengabdian">Pengabdian</a>
+    <a class="nav-link <%= currentType === 'all' ? 'active' : '' %>" href="/admin/elk-library?type=all&status=<%= currentStatus || 'all' %>">
+      <i class="bi bi-grid-fill me-1"></i> Semua
+    </a>
+    <a class="nav-link <%= currentType === 'laporan' ? 'active' : '' %>" href="/admin/elk-library?type=laporan&status=<%= currentStatus || 'all' %>">
+      <i class="bi bi-file-earmark-pdf-fill me-1"></i> Laporan Magang
+    </a>
+    <a class="nav-link <%= currentType === 'artikel' ? 'active' : '' %>" href="/admin/elk-library?type=artikel&status=<%= currentStatus || 'all' %>">
+      <i class="bi bi-file-text-fill me-1"></i> Artikel Dosen
+    </a>
+    <a class="nav-link <%= currentType === 'penelitian' ? 'active' : '' %>" href="/admin/elk-library?type=penelitian&status=<%= currentStatus || 'all' %>">
+      <i class="bi bi-mortarboard-fill me-1"></i> Penelitian
+    </a>
+    <a class="nav-link <%= currentType === 'pengabdian' ? 'active' : '' %>" href="/admin/elk-library?type=pengabdian&status=<%= currentStatus || 'all' %>">
+      <i class="bi bi-people-fill me-1"></i> Pengabdian
+    </a>
   </div>
 
-  <!-- Laporan Magang -->
+  <div class="filter-bar fade-in" style="animation-delay: 0.1s;">
+    <form method="GET" class="d-inline">
+      <input type="hidden" name="type" value="<%= currentType %>">
+      <select name="status" class="form-select" onchange="this.form.submit()">
+        <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>Semua Status</option>
+        <option value="pending" <%= currentStatus === 'pending' ? 'selected' : '' %>>Menunggu Persetujuan</option>
+        <option value="approved" <%= currentStatus === 'approved' ? 'selected' : '' %>>Disetujui</option>
+        <option value="rejected" <%= currentStatus === 'rejected' ? 'selected' : '' %>>Ditolak</option>
+      </select>
+    </form>
+  </div>
+
   <% if (currentType === 'all' || currentType === 'laporan') { %>
-    <div class="section-title"><i class="bi bi-file-earmark-pdf-fill"></i> Laporan Magang</div>
-    <div class="table-container">
+    <div class="section-title fade-in" style="animation-delay: 0.2s;">
+      <i class="bi bi-file-earmark-pdf-fill"></i> Laporan Magang
+    </div>
+    <div class="table-container fade-in" style="animation-delay: 0.3s;">
       <div class="table-responsive">
-        <table class="table mb-0">
+        <table class="table">
           <thead>
-            <tr><th>Judul</th><th>Mahasiswa</th><th>Pembimbing</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr>
+            <tr>
+              <th>Judul & Tanggal</th>
+              <th>Mahasiswa</th>
+              <th>Pembimbing</th>
+              <th>Tahun</th>
+              <th>Status</th>
+              <th class="text-center">Aksi</th>
+            </tr>
           </thead>
           <tbody>
-            <% if (laporanList.length === 0) { %>
-              <tr><td colspan="6" class="empty-state">Belum ada laporan magang.</td></tr>
-            <% } else { %>
+            <% if (laporanList && laporanList.length === 0) { %>
+              <tr><td colspan="6" class="empty-state"><i class="bi bi-folder-x"></i> Belum ada laporan magang yang diajukan.</td></tr>
+            <% } else if (laporanList && laporanList.length > 0) { %>
               <% laporanList.forEach(l => { %>
-                <tr><td><%= l.judulPublik || '-' %></td>
-                  <td><%= l.nama %> (<%= l.nim %>)</td>
+                <tr>
+                  <td>
+                    <strong><%= l.judulPublik || '-' %></strong><br>
+                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i><%= l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '' %></small>
+                  </td>
+                  <td><%= l.nama %><br><small class="text-muted"><%= l.nim %></small></td>
                   <td><%= l.pembimbing || '-' %></td>
                   <td><%= l.tahun || '-' %></td>
-                  <td><span class="badge-status <%= l.status === 'pending' ? 'badge-pending' : (l.status === 'approved' ? 'badge-approved' : 'badge-rejected') %>"><%= l.status %></span></td>
+                  <td><span class="badge-status badge-<%= l.status %>"><%= l.status === 'pending' ? 'Pending' : (l.status === 'approved' ? 'Disetujui' : 'Ditolak') %></span></td>
                   <td>
-                    <div class="d-flex gap-1">
-                      <a href="/admin/elk-library/laporan/<%= l.id %>" class="btn-action btn-view"><i class="bi bi-eye"></i></a>
-                      <a href="/admin/elk-library/laporan/<%= l.id %>/edit" class="btn-action btn-edit"><i class="bi bi-pencil"></i></a>
-                      <form method="POST" action="/admin/elk-library/laporan/<%= l.id %>/delete" style="display:inline;" onsubmit="return confirm('Hapus?')">
-                        <button class="btn-action btn-delete"><i class="bi bi-trash"></i></button>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                      <a href="/admin/elk-library/laporan/<%= l.id %>" class="btn btn-sm btn-info text-white" title="Detail"><i class="bi bi-eye"></i> Detail</a>
+                      <a href="/admin/elk-library/laporan/<%= l.id %>/edit" class="btn btn-sm btn-warning text-dark" title="Edit"><i class="bi bi-pencil-square"></i> Edit</a>
+                      <% if (l.status === 'pending') { %>
+                        <form method="POST" action="/admin/elk-library/laporan/<%= l.id %>/approve" style="display:inline" onsubmit="return confirm('Setujui laporan ini?')">
+                          <button class="btn btn-sm btn-success" title="Approve"><i class="bi bi-check-lg"></i></button>
+                        </form>
+                        <form method="POST" action="/admin/elk-library/laporan/<%= l.id %>/reject" style="display:inline" onsubmit="return confirm('Tolak laporan ini?')">
+                          <button class="btn btn-sm btn-danger" title="Reject"><i class="bi bi-x-lg"></i></button>
+                        </form>
+                      <% } %>
+                      <form method="POST" action="/admin/elk-library/laporan/<%= l.id %>/delete" style="display:inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini secara permanen?')">
+                        <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
                       </form>
                     </div>
                   </td>
                 </tr>
               <% }) %>
+            <% } else { %>
+               <tr><td colspan="6" class="empty-state"><i class="bi bi-folder-x"></i> Belum ada laporan magang.</td></tr>
             <% } %>
           </tbody>
         </table>
@@ -202,31 +318,56 @@
     </div>
   <% } %>
 
-  <!-- Artikel Dosen -->
   <% if (currentType === 'all' || currentType === 'artikel') { %>
-    <div class="section-title"><i class="bi bi-file-text-fill"></i> Artikel Dosen</div>
-    <div class="table-container">
+    <div class="section-title fade-in" style="animation-delay: 0.2s;">
+      <i class="bi bi-file-text-fill"></i> Artikel Dosen
+    </div>
+    <div class="table-container fade-in" style="animation-delay: 0.3s;">
       <div class="table-responsive">
-        <table class="table mb-0">
+        <table class="table">
           <thead>
-            <td><th>Judul</th><th>Penulis</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr>
+            <tr>
+              <th>Judul Artikel</th>
+              <th>Penulis</th>
+              <th>Tahun</th>
+              <th>Status</th>
+              <th class="text-center">Aksi</th>
+            </tr>
           </thead>
           <tbody>
-            <% if (artikelList.length === 0) { %>
-              <tr><td colspan="5" class="empty-state">Belum ada artikel dosen.</td></tr>
-            <% } else { %>
+            <% if (artikelList && artikelList.length === 0) { %>
+               <tr><td colspan="5" class="empty-state"><i class="bi bi-file-earmark-x"></i> Belum ada artikel dosen.</td></tr>
+            <% } else if (artikelList && artikelList.length > 0) { %>
               <% artikelList.forEach(a => { %>
-                <tr><td><%= a.judul %></td>
-                  <td><%= a.penulis || (a.authors ? a.authors.join(', ') : '-') %></td>
-                  <td><%= a.publicationYear || a.tahun || '-' %></td>
-                  <td><span class="badge-status <%= a.status === 'pending' ? 'badge-pending' : (a.status === 'approved' ? 'badge-approved' : 'badge-rejected') %>"><%= a.status %></span></td>
-                  <td>
-                    <a href="/admin/elk-library/artikel/<%= a.id %>" class="btn-action btn-view"><i class="bi bi-eye"></i></a>
-                    <a href="/admin/elk-library/artikel/<%= a.id %>/edit" class="btn-action btn-edit"><i class="bi bi-pencil"></i></a>
-                    <form method="POST" action="/admin/elk-library/artikel/<%= a.id %>/delete" style="display:inline"><button class="btn-action btn-delete"><i class="bi bi-trash"></i></button></form>
-                  </td>
-                </tr>
+                 <tr>
+                   <td>
+                     <strong><%= a.judul %></strong><br>
+                     <small class="text-muted"><i class="bi bi-calendar3 me-1"></i><%= a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '' %></small>
+                   </td>
+                   <td><%= a.penulis || (a.authors ? a.authors.join(', ') : '-') %></td>
+                   <td><%= a.publicationYear || a.tahun || '-' %></td>
+                   <td><span class="badge-status badge-<%= a.status %>"><%= a.status === 'pending' ? 'Pending' : (a.status === 'approved' ? 'Disetujui' : 'Ditolak') %></span></td>
+                   <td>
+                     <div class="d-flex flex-wrap gap-2 justify-content-center">
+                       <a href="/admin/elk-library/artikel/<%= a.id %>" class="btn btn-sm btn-info text-white"><i class="bi bi-eye"></i> Detail</a>
+                       <a href="/admin/elk-library/artikel/<%= a.id %>/edit" class="btn btn-sm btn-warning text-dark"><i class="bi bi-pencil-square"></i> Edit</a>
+                       <% if (a.status === 'pending') { %>
+                         <form method="POST" action="/admin/elk-library/artikel/<%= a.id %>/approve" style="display:inline" onsubmit="return confirm('Setujui artikel ini?')">
+                           <button class="btn btn-sm btn-success" title="Approve"><i class="bi bi-check-lg"></i></button>
+                         </form>
+                         <form method="POST" action="/admin/elk-library/artikel/<%= a.id %>/reject" style="display:inline" onsubmit="return confirm('Tolak artikel ini?')">
+                           <button class="btn btn-sm btn-danger" title="Reject"><i class="bi bi-x-lg"></i></button>
+                         </form>
+                       <% } %>
+                       <form method="POST" action="/admin/elk-library/artikel/<%= a.id %>/delete" style="display:inline" onsubmit="return confirm('Hapus artikel ini secara permanen?')">
+                         <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+                       </form>
+                     </div>
+                   </td>
+                 </tr>
               <% }) %>
+            <% } else { %>
+               <tr><td colspan="5" class="empty-state"><i class="bi bi-file-earmark-x"></i> Belum ada artikel dosen.</td></tr>
             <% } %>
           </tbody>
         </table>
@@ -234,32 +375,58 @@
     </div>
   <% } %>
 
-  <!-- Penelitian -->
   <% if (currentType === 'all' || currentType === 'penelitian') { %>
-    <div class="section-title"><i class="bi bi-mortarboard-fill"></i> Penelitian Dosen</div>
-    <div class="table-container">
+    <div class="section-title fade-in" style="animation-delay: 0.2s;">
+      <i class="bi bi-mortarboard-fill"></i> Penelitian Dosen
+    </div>
+    <div class="table-container fade-in" style="animation-delay: 0.3s;">
       <div class="table-responsive">
-        <table class="table mb-0">
+        <table class="table">
           <thead>
-            <tr><th>Judul</th><th>Peneliti</th><th>Tahun</th><th>Jurnal</th><th>Status</th><th>Aksi</th></tr>
+            <tr>
+              <th>Judul Penelitian</th>
+              <th>Peneliti</th>
+              <th>Tahun</th>
+              <th>Jurnal</th>
+              <th>Status</th>
+              <th class="text-center">Aksi</th>
+            </tr>
           </thead>
           <tbody>
-            <% if (penelitianList.length === 0) { %>
-              <tr><td colspan="6" class="empty-state">Belum ada penelitian.</td></tr>
-            <% } else { %>
+            <% if (penelitianList && penelitianList.length === 0) { %>
+               <tr><td colspan="6" class="empty-state"><i class="bi bi-search"></i> Belum ada data penelitian.</td></tr>
+            <% } else if (penelitianList && penelitianList.length > 0) { %>
               <% penelitianList.forEach(p => { %>
-                <tr><td><%= p.judul %></td>
-                  <td><%= p.dosenNama %></td>
-                  <td><%= p.tahun %></td>
-                  <td><%= p.namaJurnal || '-' %></td>
-                  <td><span class="badge-status <%= p.status === 'pending' ? 'badge-pending' : (p.status === 'approved' ? 'badge-approved' : 'badge-rejected') %>"><%= p.status %></span></td>
-                  <td>
-                    <a href="/admin/elk-library/penelitian/<%= p.id %>" class="btn-action btn-view"><i class="bi bi-eye"></i></a>
-                    <a href="/admin/elk-library/penelitian/<%= p.id %>/edit" class="btn-action btn-edit"><i class="bi bi-pencil"></i></a>
-                    <form method="POST" action="/admin/elk-library/penelitian/<%= p.id %>/delete" style="display:inline"><button class="btn-action btn-delete"><i class="bi bi-trash"></i></button></form>
-                  </td>
-                </tr>
+                 <tr>
+                   <td>
+                     <strong><%= p.judul %></strong><br>
+                     <small class="text-muted"><i class="bi bi-calendar3 me-1"></i><%= p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '' %></small>
+                   </td>
+                   <td><%= p.dosenNama %></td>
+                   <td><%= p.tahun %></td>
+                   <td><span class="text-muted"><%= p.namaJurnal || '-' %></span></td>
+                   <td><span class="badge-status badge-<%= p.status %>"><%= p.status === 'pending' ? 'Pending' : (p.status === 'approved' ? 'Disetujui' : 'Ditolak') %></span></td>
+                   <td>
+                     <div class="d-flex flex-wrap gap-2 justify-content-center">
+                       <a href="/admin/elk-library/penelitian/<%= p.id %>" class="btn btn-sm btn-info text-white"><i class="bi bi-eye"></i> Detail</a>
+                       <a href="/admin/elk-library/penelitian/<%= p.id %>/edit" class="btn btn-sm btn-warning text-dark"><i class="bi bi-pencil-square"></i> Edit</a>
+                       <% if (p.status === 'pending') { %>
+                         <form method="POST" action="/admin/elk-library/penelitian/<%= p.id %>/approve" style="display:inline" onsubmit="return confirm('Setujui penelitian ini?')">
+                           <button class="btn btn-sm btn-success" title="Approve"><i class="bi bi-check-lg"></i></button>
+                         </form>
+                         <form method="POST" action="/admin/elk-library/penelitian/<%= p.id %>/reject" style="display:inline" onsubmit="return confirm('Tolak penelitian ini?')">
+                           <button class="btn btn-sm btn-danger" title="Reject"><i class="bi bi-x-lg"></i></button>
+                         </form>
+                       <% } %>
+                       <form method="POST" action="/admin/elk-library/penelitian/<%= p.id %>/delete" style="display:inline" onsubmit="return confirm('Hapus penelitian ini secara permanen?')">
+                         <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+                       </form>
+                     </div>
+                   </td>
+                 </tr>
               <% }) %>
+            <% } else { %>
+               <tr><td colspan="6" class="empty-state"><i class="bi bi-search"></i> Belum ada data penelitian.</td></tr>
             <% } %>
           </tbody>
         </table>
@@ -267,32 +434,58 @@
     </div>
   <% } %>
 
-  <!-- Pengabdian -->
   <% if (currentType === 'all' || currentType === 'pengabdian') { %>
-    <div class="section-title"><i class="bi bi-people-fill"></i> Pengabdian Dosen</div>
-    <div class="table-container">
+    <div class="section-title fade-in" style="animation-delay: 0.2s;">
+      <i class="bi bi-people-fill"></i> Pengabdian Dosen
+    </div>
+    <div class="table-container fade-in" style="animation-delay: 0.3s;">
       <div class="table-responsive">
-        <table class="table mb-0">
+        <table class="table">
           <thead>
-            <tr><th>Judul / Kegiatan</th><th>Penanggung Jawab</th><th>Tahun</th><th>Mitra</th><th>Status</th><th>Aksi</th></tr>
+            <tr>
+              <th>Nama Kegiatan</th>
+              <th>Penanggung Jawab</th>
+              <th>Tahun</th>
+              <th>Mitra</th>
+              <th>Status</th>
+              <th class="text-center">Aksi</th>
+            </tr>
           </thead>
           <tbody>
-            <% if (pengabdianList.length === 0) { %>
-              <tr><td colspan="6" class="empty-state">Belum ada pengabdian.</td></tr>
-            <% } else { %>
+            <% if (pengabdianList && pengabdianList.length === 0) { %>
+               <tr><td colspan="6" class="empty-state"><i class="bi bi-box-seam"></i> Belum ada data pengabdian.</td></tr>
+            <% } else if (pengabdianList && pengabdianList.length > 0) { %>
               <% pengabdianList.forEach(p => { %>
-                <tr><td><%= p.judul || p.namaKegiatan %></td>
-                  <td><%= p.dosenNama %></td>
-                  <td><%= p.tahun %></td>
-                  <td><%= p.mitra || '-' %></td>
-                  <td><span class="badge-status <%= p.status === 'pending' ? 'badge-pending' : (p.status === 'approved' ? 'badge-approved' : 'badge-rejected') %>"><%= p.status %></span></td>
-                  <td>
-                    <a href="/admin/elk-library/pengabdian/<%= p.id %>" class="btn-action btn-view"><i class="bi bi-eye"></i></a>
-                    <a href="/admin/elk-library/pengabdian/<%= p.id %>/edit" class="btn-action btn-edit"><i class="bi bi-pencil"></i></a>
-                    <form method="POST" action="/admin/elk-library/pengabdian/<%= p.id %>/delete" style="display:inline"><button class="btn-action btn-delete"><i class="bi bi-trash"></i></button></form>
-                  </td>
-                </tr>
+                 <tr>
+                   <td>
+                     <strong><%= p.judul || p.namaKegiatan %></strong><br>
+                     <small class="text-muted"><i class="bi bi-calendar3 me-1"></i><%= p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '' %></small>
+                   </td>
+                   <td><%= p.dosenNama %></td>
+                   <td><%= p.tahun %></td>
+                   <td><%= p.mitra || '-' %></td>
+                   <td><span class="badge-status badge-<%= p.status %>"><%= p.status === 'pending' ? 'Pending' : (p.status === 'approved' ? 'Disetujui' : 'Ditolak') %></span></td>
+                   <td>
+                     <div class="d-flex flex-wrap gap-2 justify-content-center">
+                       <a href="/admin/elk-library/pengabdian/<%= p.id %>" class="btn btn-sm btn-info text-white"><i class="bi bi-eye"></i> Detail</a>
+                       <a href="/admin/elk-library/pengabdian/<%= p.id %>/edit" class="btn btn-sm btn-warning text-dark"><i class="bi bi-pencil-square"></i> Edit</a>
+                       <% if (p.status === 'pending') { %>
+                         <form method="POST" action="/admin/elk-library/pengabdian/<%= p.id %>/approve" style="display:inline" onsubmit="return confirm('Setujui pengabdian ini?')">
+                           <button class="btn btn-sm btn-success" title="Approve"><i class="bi bi-check-lg"></i></button>
+                         </form>
+                         <form method="POST" action="/admin/elk-library/pengabdian/<%= p.id %>/reject" style="display:inline" onsubmit="return confirm('Tolak pengabdian ini?')">
+                           <button class="btn btn-sm btn-danger" title="Reject"><i class="bi bi-x-lg"></i></button>
+                         </form>
+                       <% } %>
+                       <form method="POST" action="/admin/elk-library/pengabdian/<%= p.id %>/delete" style="display:inline" onsubmit="return confirm('Hapus pengabdian ini secara permanen?')">
+                         <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+                       </form>
+                     </div>
+                   </td>
+                 </tr>
               <% }) %>
+            <% } else { %>
+               <tr><td colspan="6" class="empty-state"><i class="bi bi-box-seam"></i> Belum ada data pengabdian.</td></tr>
             <% } %>
           </tbody>
         </table>

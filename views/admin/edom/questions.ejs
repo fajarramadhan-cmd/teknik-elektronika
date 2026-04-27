@@ -1,0 +1,257 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+  }
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(30,58,138,0.25);
+  }
+  .page-header h2 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+  }
+  .page-header p {
+    opacity: 0.9;
+    margin-bottom: 0;
+  }
+  .filter-bar {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .btn-primary-custom {
+    background: linear-gradient(105deg, var(--primary-start), var(--primary-end));
+    border: none;
+    border-radius: 60px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    color: white;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+    color: white;
+  }
+  .table-container {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    overflow-x: auto;
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .table th {
+    background: #f8fafc;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem;
+  }
+  .table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .table tr:hover td {
+    background: #fefce8;
+  }
+  .badge-active {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.3rem 0.9rem;
+    border-radius: 60px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-inactive {
+    background: #e2e8f0;
+    color: #475569;
+    padding: 0.3rem 0.9rem;
+    border-radius: 60px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .modal-header-custom {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    color: white;
+    border-bottom: none;
+  }
+  .modal-header-custom .btn-close {
+    filter: brightness(0) invert(1);
+  }
+  .form-label {
+    font-weight: 600;
+  }
+  @media (max-width: 768px) {
+    .page-header { padding: 1.2rem; }
+    .page-header h2 { font-size: 1.4rem; }
+    .table th, .table td { padding: 0.75rem; font-size: 0.85rem; }
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-question-circle me-2"></i>Kelola Kuisioner EDOM</h2>
+    <p>Atur pertanyaan yang akan ditampilkan saat mahasiswa mengevaluasi dosen</p>
+  </div>
+
+  <div class="filter-bar">
+    <div>
+      <i class="bi bi-info-circle-fill text-primary me-2"></i>
+      <span>Pertanyaan hanya akan muncul jika status <strong>Aktif</strong> dan <strong>urutan</strong> menentukan posisi tampil.</span>
+    </div>
+    <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#questionModal" onclick="clearQuestionForm()">
+      <i class="bi bi-plus-circle me-2"></i>Tambah Pertanyaan
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Pertanyaan</th>
+          <th>Tipe</th>
+          <th>Skala</th>
+          <th>Bobot</th>
+          <th>Urutan</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (questions && questions.length) { %>
+          <% questions.forEach((q, idx) => { %>
+            <tr>
+              <td class="text-center"><%= idx + 1 %></td>
+              <td><%= q.pertanyaan %></td>
+              <td><%= q.tipe === 'rating' ? 'Rating (1-5)' : 'Teks' %></td>
+              <td><%= q.skala %></td>
+              <td><%= q.bobot %></td>
+              <td><%= q.urutan %></td>
+              <td>
+                <span class="<%= q.aktif === true ? 'badge-active' : 'badge-inactive' %>">
+                  <%= q.aktif === true ? 'Aktif' : 'Tidak Aktif' %>
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" onclick="editQuestion('<%= q.id %>', '<%= q.pertanyaan.replace(/'/g, "\\'") %>', '<%= q.tipe %>', '<%= q.skala %>', '<%= q.bobot %>', '<%= q.urutan %>', <%= q.aktif === true ? 'true' : 'false' %>)">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+                <form method="POST" action="/admin/edom/questions/<%= q.id %>/delete" style="display:inline;" onsubmit="return confirm('Hapus pertanyaan ini? Data respon terkait akan hilang.')">
+                  <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Hapus</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="8" class="text-center py-5">
+              <i class="bi bi-inbox fs-1 text-muted"></i>
+              <p class="mt-2 mb-0">Belum ada pertanyaan. Klik "Tambah Pertanyaan" untuk mulai.</p>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Form Pertanyaan (Tambah / Edit) -->
+<div class="modal fade" id="questionModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title" id="modalTitle"><i class="bi bi-plus-circle me-2"></i>Tambah Pertanyaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="questionForm" action="/admin/edom/questions">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Pertanyaan <span class="text-danger">*</span></label>
+            <textarea name="pertanyaan" id="questionText" class="form-control" rows="2" required></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tipe</label>
+              <select name="tipe" id="questionTipe" class="form-select">
+                <option value="rating">Rating (1-5)</option>
+                <option value="text">Teks (opsional)</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Skala (maks nilai)</label>
+              <input type="number" name="skala" id="questionSkala" class="form-control" min="1" max="10" value="5">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Bobot</label>
+              <input type="number" name="bobot" id="questionBobot" class="form-control" step="0.1" min="0" value="1">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Urutan</label>
+              <input type="number" name="urutan" id="questionUrutan" class="form-control" min="0" value="0">
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="questionAktif" name="aktif" checked>
+              <label class="form-check-label" for="questionAktif">Aktif (ditampilkan saat evaluasi)</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function clearQuestionForm() {
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Tambah Pertanyaan';
+    document.getElementById('questionForm').reset();
+    document.getElementById('questionForm').action = '/admin/edom/questions';
+    document.getElementById('questionForm').method = 'POST';
+    document.getElementById('questionAktif').checked = true;
+  }
+
+  function editQuestion(id, pertanyaan, tipe, skala, bobot, urutan, aktif) {
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Edit Pertanyaan';
+    document.getElementById('questionText').value = pertanyaan;
+    document.getElementById('questionTipe').value = tipe;
+    document.getElementById('questionSkala').value = skala;
+    document.getElementById('questionBobot').value = bobot;
+    document.getElementById('questionUrutan').value = urutan;
+    document.getElementById('questionAktif').checked = aktif === true;
+    const form = document.getElementById('questionForm');
+    form.action = `/admin/edom/questions/${id}/edit`;
+    form.method = 'POST';
+    const modal = new bootstrap.Modal(document.getElementById('questionModal'));
+    modal.show();
+  }
+</script>
+
+<%- include('../../partials/footer') %>

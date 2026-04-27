@@ -1,0 +1,76 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+  }
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+  }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .menu-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s;
+    border: 1px solid rgba(30,58,138,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  .menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(30,58,138,0.1);
+  }
+  .menu-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-start);
+  }
+  .menu-title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+  .menu-desc {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-star-fill me-2"></i>Evaluasi Dosen (EDOM)</h2>
+    <p>Kelola evaluasi dosen oleh mahasiswa – periode, kuisioner, dan rekap hasil</p>
+  </div>
+
+  <div class="menu-grid">
+    <a href="/admin/edom/periods" class="menu-card">
+      <div class="menu-icon"><i class="bi bi-calendar-week"></i></div>
+      <h5 class="menu-title">Periode Evaluasi</h5>
+      <p class="menu-desc">Buat, edit, atau hapus periode penilaian</p>
+    </a>
+    <a href="/admin/edom/questions" class="menu-card">
+      <div class="menu-icon"><i class="bi bi-question-circle"></i></div>
+      <h5 class="menu-title">Kuisioner</h5>
+      <p class="menu-desc">Atur pertanyaan, bobot, dan urutan</p>
+    </a>
+    <a href="/admin/edom/rekap" class="menu-card">
+      <div class="menu-icon"><i class="bi bi-bar-chart-steps"></i></div>
+      <h5 class="menu-title">Rekap Hasil</h5>
+      <p class="menu-desc">Lihat ringkasan penilaian per dosen</p>
+    </a>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>

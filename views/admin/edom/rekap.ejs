@@ -1,0 +1,175 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+  }
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(30,58,138,0.25);
+  }
+  .page-header h2 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+  }
+  .page-header p {
+    opacity: 0.9;
+    margin-bottom: 0;
+  }
+  .filter-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .filter-card label {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .filter-card select {
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    min-width: 240px;
+  }
+  .table-container {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    overflow-x: auto;
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .table th {
+    background: #f8fafc;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem;
+  }
+  .table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .table tr:hover td {
+    background: #fefce8;
+  }
+  .badge-rating {
+    background: #d1fae5;
+    color: #065f46;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+  }
+  .rating-stars {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    color: #6c757d;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 768px) {
+    .page-header { padding: 1.2rem; }
+    .page-header h2 { font-size: 1.4rem; }
+    .table th, .table td { padding: 0.75rem; font-size: 0.85rem; }
+    .filter-card { flex-direction: column; align-items: stretch; }
+    .filter-card select { width: 100%; }
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="page-header">
+    <h2><i class="bi bi-bar-chart-steps me-2"></i>Rekap Hasil EDOM</h2>
+    <p>Rekapitulasi evaluasi dosen per periode</p>
+  </div>
+
+  <!-- Filter periode -->
+  <div class="filter-card">
+    <label for="periodeSelect"><i class="bi bi-calendar-week me-1"></i> Pilih Periode:</label>
+    <form method="GET" action="/admin/edom/rekap" id="periodeForm">
+      <select name="periodeId" id="periodeSelect" class="form-select" onchange="this.form.submit()">
+        <option value="">-- Pilih Periode --</option>
+        <% periods.forEach(p => { %>
+          <option value="<%= p.id %>" <%= selectedPeriod === p.id ? 'selected' : '' %>><%= p.nama %> (<%= p.semester %>)</option>
+        <% }) %>
+      </select>
+    </form>
+  </div>
+
+  <% if (selectedPeriod) { %>
+    <% if (results && results.length > 0) { %>
+      <div class="table-container">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Dosen</th>
+              <th>Jumlah MK Diampu</th>
+              <th>Jumlah Respon</th>
+              <th>Rata-rata Nilai</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% results.forEach((dosen, idx) => { 
+               let nilai = parseFloat(dosen.average);
+               let bintang = '';
+               let fullStars = Math.floor(nilai);
+               let halfStar = (nilai % 1) >= 0.5;
+               for (let i = 1; i <= 5; i++) {
+                 if (i <= fullStars) bintang += '<i class="bi bi-star-fill text-warning"></i>';
+                 else if (i === fullStars+1 && halfStar) bintang += '<i class="bi bi-star-half text-warning"></i>';
+                 else bintang += '<i class="bi bi-star text-muted"></i>';
+               }
+            %>
+              <tr>
+                <td class="text-center"><%= idx+1 %></td>
+                <td class="fw-semibold"><%= dosen.dosenNama %></td>
+                <td class="text-center"><%= dosen.jumlahMk %></td>
+                <td class="text-center"><%= dosen.count %></td>
+                <td class="text-center fw-bold"><%= dosen.average %></td>
+                <td class="rating-stars"><%- bintang %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Belum ada data respon untuk periode yang dipilih.</p>
+      </div>
+    <% } %>
+  <% } else { %>
+    <div class="empty-state">
+      <i class="bi bi-funnel"></i>
+      <p>Silakan pilih periode untuk melihat rekap hasil evaluasi.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top right, #1a3a4a, #030a10);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    .tv-screen {
+      width: 100%;
+      max-width: 1600px;
+      height: 92vh;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      padding: 25px;
+      position: relative;
+    }
+
+    /* Header Styling */
+    .tv-header {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px 30px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 217, 102, 0.3);
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 15px; }
+    .logo-area img { height: 55px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+    .title h1 { font-size: 1.1rem; letter-spacing: 1px; color: #ffd966; text-transform: uppercase; }
+    .title p { font-size: 0.7rem; opacity: 0.7; }
+
+    .center-title h2 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(to bottom, #fff, #ffd966);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .clock-container { text-align: right; }
+    .clock {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #ffd966;
+      text-shadow: 0 0 15px rgba(255, 217, 102, 0.5);
+    }
+
+    /* Layout Main */
+    .main-content {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    /* Side Panels */
+    .panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .col-left { flex: 1.3; border-left: 4px solid #ffd966; }
+    .col-right { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+
+    /* Student Info Card */
+    .info-group { margin-bottom: 20px; transition: all 0.5s ease; }
+    .info-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .info-label { font-size: 0.7rem; color: #ffd966; text-transform: uppercase; font-weight: 600; }
+    .info-value { font-size: 1rem; color: #eee; }
+    .name-value { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+
+    /* Middle Slide */
+    .col-middle {
+      flex: 2.5;
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .slide-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 1s ease;
+    }
+    .active .slide-image { transform: scale(1.05); }
+
+    /* Stats Cards */
+    .stat-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+      padding: 15px;
+      border-radius: 18px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+    .stat-card i { color: #ffd966; font-size: 1.2rem; margin-bottom: 5px; }
+    .stat-number { font-family: 'Orbitron', sans-serif; font-size: 2rem; color: #fff; }
+    .stat-label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
+
+    /* Progress Bar */
+    .progress-wrapper { margin-top: 15px; }
+    .progress-bg { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #ffd966, #ffb700); box-shadow: 0 0 10px #ffd966; transition: width 1s ease; }
+
+    /* Footer */
+    .footer-ticker {
+      margin-top: 20px;
+      background: rgba(255, 217, 102, 0.1);
+      border: 1px solid rgba(255, 217, 102, 0.3);
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* Animation */
+    .fade-up { animation: fadeUp 0.8s ease forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="tv-screen">
+  <header class="tv-header">
+    <div class="logo-area">
+      <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo">
+      <div class="title">
+        <h1>TEKNIK ELEKTRONIKA</h1>
+        <p>POLITEKNIK DEWANTARA</p>
+      </div>
+    </div>
+    <div class="center-title">
+      <h2>DASHBOARD MONITORING MAGANG</h2>
+    </div>
+    <div class="clock-container">
+      <div class="clock" id="liveClock">00:00:00</div>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <aside class="panel col-left" id="infoMahasiswa">
+      <div class="info-group fade-up">
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-user-graduate"></i> Nama Mahasiswa</span>
+            <span class="name-value" id="slideNama">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-id-badge"></i> Nomor Induk Mahasiswa</span>
+            <span class="info-value" id="slideNim">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-building"></i> Penempatan Perusahaan</span>
+            <span class="info-value" id="slidePerusahaan">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-chalkboard-teacher"></i> Dosen Pembimbing</span>
+            <span class="info-value" id="slidePembimbing1">-</span>
+            <span class="info-value" id="slidePembimbing2">-</span>
+        </div>
+        
+        <div class="progress-wrapper">
+            <span class="info-label"><i class="fas fa-chart-line"></i> Progress Logbook: <span id="slideProgress">-</span></span>
+            <div class="progress-bg">
+                <div id="slideProgressBar" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="info-row" style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;">
+            <span class="info-label">Kegiatan Hari Ini:</span>
+            <span class="info-value" id="slideKegiatan">-</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="col-middle" id="slidesWrapper">
+      </main>
+
+    <aside class="panel col-right">
+      <div class="stat-card">
+        <i class="fas fa-folder-open"></i>
+        <div class="stat-number"><%= stats.totalLogbook %></div>
+        <div class="stat-label">Total Logbook</div>
+      </div>
+      <div class="stat-card" style="border-color: #ff444455;">
+        <i class="fas fa-hourglass-half" style="color: #ff4444;"></i>
+        <div class="stat-number"><%= stats.logbookPending %></div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-users"></i>
+        <div class="stat-number"><%= stats.totalMahasiswaMagangAktif %></div>
+        <div class="stat-label">Mahasiswa Aktif</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-clipboard-check"></i>
+        <div class="stat-number"><%= stats.tugasAktif %></div>
+        <div class="stat-label">Tugas Perlu Dinilai</div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="footer-ticker">
+    <marquee scrollamount="6">
+      <i class="fas fa-info-circle"></i> Sistem Monitoring Real-time Magang Program Studi Teknik Elektronika (D3) • 
+      Akses Logbook Digital: elk-magang.polidewa.ac.id • 
+      Powered by Fajar Elektrik v.2.0 • Data diperbarui setiap 8 detik secara otomatis.
+    </marquee>
+  </footer>
+</div>
+
+<script>
+  const slides = <%- JSON.stringify(slides) %>;
+  let currentIndex = 0;
+
+  function updateDisplay(index) {
+    const data = slides[index];
+    if (!data) return;
+
+    // Update Text with simple animation reset
+    const panel = document.getElementById('infoMahasiswa');
+    panel.style.opacity = 0;
+    
+    setTimeout(() => {
+      document.getElementById('slideNama').innerText = data.mahasiswa || '-';
+      document.getElementById('slideNim').innerText = data.nim || '-';
+      document.getElementById('slidePerusahaan').innerText = data.perusahaan || '-';
+      document.getElementById('slidePembimbing1').innerText = `1. ${data.pembimbing1 || '-'}`;
+      document.getElementById('slidePembimbing2').innerText = `2. ${data.pembimbing2 || '-'}`;
+      document.getElementById('slideKegiatan').innerText = data.caption || '-';
+      
+      const percent = data.progressPercent || 0;
+      document.getElementById('slideProgress').innerText = `${percent}% (${data.progressUploaded}/${data.progressTotal} Hari)`;
+      document.getElementById('slideProgressBar').style.width = `${percent}%`;
+      
+      panel.style.opacity = 1;
+    }, 400);
+
+    // Update Image
+    const wrapper = document.getElementById('slidesWrapper');
+    wrapper.innerHTML = `
+      <img src="${data.imageUrl}" class="slide-image fade-up" 
+           onerror="this.src='https://via.placeholder.com/1200x800?text=Dokumentasi+Magang'">
+    `;
+  }
+
+  function rotate() {
+    currentIndex = (currentIndex + 1) % slides.length;
+    updateDisplay(currentIndex);
+  }
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false 
+    });
+  }
+
+  window.onload = () => {
+    if(slides.length > 0) updateDisplay(0);
+    setInterval(rotate, 8000);
+    setInterval(updateClock, 1000);
+    updateClock();
+  };
+</script>
+</body>
+</html>

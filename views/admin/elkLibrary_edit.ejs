@@ -1,0 +1,128 @@
+<%- include('../partials/header') %>
+
+<style>
+  .form-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .form-header {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    padding: 1rem 1.5rem;
+    color: white;
+    border-radius: 1rem 1rem 0 0;
+  }
+  .form-body {
+    padding: 2rem;
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.6rem 2rem;
+    border-radius: 50px;
+    transition: 0.3s;
+  }
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="form-card">
+    <div class="form-header">
+      <h3><i class="bi bi-pencil-square me-2"></i> <%= title %></h3>
+    </div>
+    <div class="form-body">
+      <form method="POST">
+        <% if (type === 'laporan') { %>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Judul Publik</label>
+            <input type="text" name="judulPublik" class="form-control" value="<%= item.judulPublik || '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Abstrak</label>
+            <textarea name="abstrak" class="form-control" rows="4" required><%= item.abstrak || '' %></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Pembimbing</label>
+            <input type="text" name="pembimbing" class="form-control" value="<%= item.pembimbing || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tahun</label>
+            <input type="number" name="tahun" class="form-control" value="<%= item.tahun || new Date().getFullYear() %>">
+          </div>
+        <% } else if (type === 'artikel') { %>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Judul Artikel</label>
+            <input type="text" name="judul" class="form-control" value="<%= item.judul || '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Abstrak</label>
+            <textarea name="abstrak" class="form-control" rows="4" required><%= item.abstrak || '' %></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Penulis (pisahkan dengan koma)</label>
+            <input type="text" name="authors" class="form-control" value="<%= (item.authors ? item.authors.join(', ') : '') || item.penulis || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tahun Publikasi</label>
+            <input type="number" name="tahun" class="form-control" value="<%= item.publicationYear || item.tahun || new Date().getFullYear() %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Jurnal</label>
+            <input type="text" name="metadataJurnal" class="form-control" value="<%= (item.metadata && item.metadata.jurnal) || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">DOI</label>
+            <input type="text" name="metadataDoi" class="form-control" value="<%= (item.metadata && item.metadata.doi) || '' %>">
+          </div>
+        <% } else if (type === 'penelitian') { %>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Judul Penelitian</label>
+            <input type="text" name="judul" class="form-control" value="<%= item.judul || '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nama Jurnal</label>
+            <input type="text" name="namaJurnal" class="form-control" value="<%= item.namaJurnal || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Link Jurnal</label>
+            <input type="url" name="linkJurnal" class="form-control" value="<%= item.linkJurnal || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tahun</label>
+            <input type="number" name="tahun" class="form-control" value="<%= item.tahun || new Date().getFullYear() %>">
+          </div>
+        <% } else if (type === 'pengabdian') { %>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Judul / Kegiatan</label>
+            <input type="text" name="judul" class="form-control" value="<%= item.judul || item.namaKegiatan || '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nama Kegiatan</label>
+            <input type="text" name="namaKegiatan" class="form-control" value="<%= item.namaKegiatan || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mitra</label>
+            <input type="text" name="mitra" class="form-control" value="<%= item.mitra || '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tahun</label>
+            <input type="number" name="tahun" class="form-control" value="<%= item.tahun || new Date().getFullYear() %>">
+          </div>
+        <% } %>
+        <div class="d-flex justify-content-between mt-4">
+          <a href="/admin/elk-library?type=<%= type %>" class="btn btn-secondary">Batal</a>
+          <button type="submit" class="btn-gradient">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

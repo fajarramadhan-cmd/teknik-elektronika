@@ -1,44 +1,97 @@
 <%- include('../../partials/header') %>
+
 <style>
-  .period-badge { background: #e0e7ff; color: #1e3a8a; }
-  .card-mk { transition: 0.2s; }
-  .card-mk:hover { transform: translateY(-4px); box-shadow: 0 12px 20px rgba(0,0,0,0.1); }
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+  }
+  .header-edom {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 30px rgba(30,58,138,0.2);
+  }
+  .period-badge {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+  }
+  .card-mk {
+    border: none;
+    border-radius: 1.2rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    height: 100%;
+  }
+  .card-mk:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+  }
+  .btn-evaluate {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    border-radius: 2rem;
+    padding: 0.3rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-evaluate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(30,58,138,0.3);
+  }
 </style>
+
 <div class="container mt-4">
-  <div class="page-header">
-    <h2><i class="bi bi-star-fill"></i> Evaluasi Dosen (EDOM)</h2>
+  <div class="header-edom">
+    <h2><i class="bi bi-star-fill me-2"></i> Evaluasi Dosen oleh Mahasiswa (EDOM)</h2>
     <% if (activePeriod) { %>
-      <p>Periode: <strong><%= activePeriod.nama %></strong> (<%= new Date(activePeriod.tanggalMulai).toLocaleDateString() %> s/d <%= new Date(activePeriod.tanggalSelesai).toLocaleDateString() %>)</p>
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-2">
+        <div>
+          <span class="period-badge"><i class="bi bi-calendar-week me-1"></i> <%= activePeriod.nama %></span>
+          <span class="period-badge ms-2"><i class="bi bi-calendar-range me-1"></i> <%= new Date(activePeriod.tanggalMulai).toLocaleDateString() %> – <%= new Date(activePeriod.tanggalSelesai).toLocaleDateString() %></span>
+        </div>
+      </div>
     <% } else { %>
-      <p class="text-warning">Tidak ada periode evaluasi aktif saat ini.</p>
+      <p class="mb-0 mt-2 text-warning"><i class="bi bi-exclamation-triangle"></i> Tidak ada periode evaluasi aktif saat ini.</p>
     <% } %>
   </div>
 
   <% if (message) { %>
-    <div class="alert alert-info"><%= message %></div>
+    <div class="alert alert-info border-0 rounded-4 shadow-sm"><%= message %></div>
   <% } %>
 
   <% if (mkList.length === 0) { %>
-    <div class="alert alert-secondary">Tidak ada mata kuliah yang perlu dievaluasi pada semester ini.</div>
+    <div class="alert alert-light text-center p-5 rounded-4 shadow-sm">
+      <i class="bi bi-inbox fs-1 text-muted"></i>
+      <p class="mt-2">Belum ada mata kuliah yang perlu dievaluasi pada semester ini.</p>
+    </div>
   <% } else { %>
     <div class="row g-4">
       <% mkList.forEach(mk => { %>
         <div class="col-md-6 col-lg-4">
-          <div class="card card-mk h-100 shadow-sm">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <span class="badge period-badge"><%= mk.semester %></span>
-                <span class="badge <%= mk.sudahIsi ? 'bg-success' : 'bg-secondary' %>">
+          <div class="card card-mk">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start">
+                <span class="badge bg-light text-dark rounded-pill px-3 py-1"><%= mk.semester %></span>
+                <span class="badge <%= mk.sudahIsi ? 'bg-success' : 'bg-secondary' %> rounded-pill px-3 py-1">
+                  <i class="bi <%= mk.sudahIsi ? 'bi-check-circle-fill' : 'bi-clock-history' %> me-1"></i>
                   <%= mk.sudahIsi ? 'Sudah Dinilai' : 'Belum Dinilai' %>
                 </span>
               </div>
-              <h5 class="mt-2"><%= mk.kode %> - <%= mk.nama %></h5>
-              <p class="small text-muted">Dosen: <%= mk.dosen %></p>
-              <% if (!mk.sudahIsi && activePeriod) { %>
-                <a href="/mahasiswa/edom/mk/<%= mk.id %>" class="btn btn-primary btn-sm mt-2">Isi Evaluasi</a>
-              <% } else if (mk.sudahIsi) { %>
-                <button class="btn btn-outline-secondary btn-sm mt-2" disabled>Terima kasih</button>
-              <% } %>
+              <h5 class="mt-3 fw-bold"><%= mk.kode %> - <%= mk.nama %></h5>
+              <p class="text-muted small"><i class="bi bi-person-badge me-1"></i> <%= mk.dosen %></p>
+              <div class="mt-auto">
+                <% if (!mk.sudahIsi && activePeriod) { %>
+                  <a href="/mahasiswa/edom/mk/<%= mk.id %>" class="btn btn-evaluate text-white w-100 py-2">Isi Evaluasi</a>
+                <% } else if (mk.sudahIsi) { %>
+                  <button class="btn btn-outline-secondary w-100 py-2" disabled>Terima kasih</button>
+                <% } %>
+              </div>
             </div>
           </div>
         </div>
@@ -46,4 +99,5 @@
     </div>
   <% } %>
 </div>
+
 <%- include('../../partials/footer') %>

@@ -7,7 +7,12 @@ const { getCurrentAcademicSemester } = require('../../helpers/academicHelper');
 router.use(verifyToken);
 router.use(isAdmin);
 
-// ------------------- PERIODE -------------------
+// ==================== HALAMAN UTAMA (INDEX) ====================
+router.get('/', (req, res) => {
+  res.render('admin/edom/index', { title: 'EDOM - Admin' });
+});
+
+// ==================== PERIODE ====================
 router.get('/periods', async (req, res) => {
   try {
     const snapshot = await db.collection('edom_periode').orderBy('tanggalMulai', 'desc').get();
@@ -64,7 +69,7 @@ router.post('/periods/:id/delete', async (req, res) => {
   res.redirect('/admin/edom/periods');
 });
 
-// ------------------- KUISIONER -------------------
+// ==================== KUISIONER ====================
 router.get('/questions', async (req, res) => {
   const snapshot = await db.collection('edom_kuisioner').orderBy('urutan', 'asc').get();
   const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -97,10 +102,10 @@ router.get('/questions/:id/edit', async (req, res) => {
 });
 
 router.post('/questions/:id/edit', async (req, res) => {
-  const { pertanyaan, tipe, skala, bobot, urutan, aktift } = req.body;
+  const { pertanyaan, tipe, skala, bobot, urutan, aktif } = req.body;
   await db.collection('edom_kuisioner').doc(req.params.id).update({
     pertanyaan, tipe, skala: parseInt(skala), bobot: parseFloat(bobot), urutan: parseInt(urutan),
-    aktif: aktift === 'on',
+    aktif: aktif === 'on',
     updatedAt: new Date().toISOString()
   });
   res.redirect('/admin/edom/questions');
@@ -111,7 +116,7 @@ router.post('/questions/:id/delete', async (req, res) => {
   res.redirect('/admin/edom/questions');
 });
 
-// ------------------- REKAP -------------------
+// ==================== REKAP HASIL ====================
 router.get('/rekap', async (req, res) => {
   const { periodeId } = req.query;
   const periodsSnap = await db.collection('edom_periode').orderBy('tanggalMulai', 'desc').get();
