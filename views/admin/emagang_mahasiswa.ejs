@@ -310,6 +310,15 @@
       <div class="mt-2">
         <strong><i class="bi bi-building"></i> Perusahaan:</strong> <%= (selectedPeriod.perusahaan && selectedPeriod.perusahaan.nama) ? selectedPeriod.perusahaan.nama : 'Belum diisi' %>
       </div>
+      <div class="mt-2">
+        <strong><i class="bi bi-person-badge"></i> Pembimbing 1:</strong> <%= selectedPeriod.pembimbing1Nama || '-' %> &nbsp;|&nbsp;
+        <strong><i class="bi bi-person-badge"></i> Pembimbing 2:</strong> <%= selectedPeriod.pembimbing2Nama || '-' %>
+      </div>
+    </div>
+  <% } else if (bimbingan && bimbingan.pembimbing1Nama) { %>
+    <div class="info-period">
+      <strong><i class="bi bi-person-badge"></i> Pembimbing 1:</strong> <%= bimbingan.pembimbing1Nama %> &nbsp;|&nbsp;
+      <strong><i class="bi bi-person-badge"></i> Pembimbing 2:</strong> <%= bimbingan.pembimbing2Nama || '-' %>
     </div>
   <% } %>
 
@@ -336,11 +345,21 @@
     <div class="table-responsive">
       <table class="table logbook-table">
         <thead>
-          <tr><th>No</th><th>Tanggal</th><th>Kegiatan</th><th>Durasi</th><th>Lokasi</th><th>Semester</th><th>Gambar</th><th>Status</th><th>Aksi</th></tr>
+          <tr>
+            <th>No</th>
+            <th>Tanggal</th>
+            <th>Kegiatan</th>
+            <th>Durasi</th>
+            <th>Lokasi</th>
+            <th>Semester</th>
+            <th>Gambar</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
         </thead>
         <tbody>
           <% if (logbookList.length === 0) { %>
-            <tr><td colspan="9" class="text-center py-5">Belum ada logbook untuk periode ini.</td></tr>
+            <tr><td colspan="9" class="text-center py-5">Belum ada logbook untuk periode ini.ERB</td></td>
           <% } else { %>
             <% logbookList.forEach(function(item, idx) { %>
               <tr>
@@ -361,8 +380,14 @@
                 <td>
                   <% if (item.status === 'approved') { %>
                     <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                    <% if (item.approvedByNama) { %>
+                      <div class="small text-muted mt-1">Oleh: <%= item.approvedByNama %></div>
+                    <% } %>
                   <% } else if (item.status === 'rejected') { %>
                     <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                    <% if (item.rejectedByNama) { %>
+                      <div class="small text-muted mt-1">Oleh: <%= item.rejectedByNama %></div>
+                    <% } %>
                   <% } else { %>
                     <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
                   <% } %>
@@ -742,5 +767,31 @@
     return null;
   }
 </script>
+
+<!-- Modal Gallery (harus ada di footer tapi tidak ada dalam kode asli, saya tambahkan) -->
+<div class="modal fade" id="galleryModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title">Dokumentasi Aktivitas</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner" id="galleryCarouselInner">
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <%- include('../partials/footer') %>

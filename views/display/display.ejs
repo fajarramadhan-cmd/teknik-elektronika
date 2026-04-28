@@ -28,7 +28,7 @@
       color: var(--text-main);
       height: 100vh;
       width: 100vw;
-      overflow: hidden; /* Mengunci layar utama */
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       padding: 1.5vh;
@@ -62,10 +62,10 @@
       flex: 1;
       display: flex;
       gap: 1.5vw;
-      min-height: 0; /* Penting untuk mencegah overflow child */
+      min-height: 0;
     }
 
-    /* KOLOM KIRI (Stats & List) */
+    /* KOLOM KIRI */
     .col-left {
       flex: 1;
       display: flex;
@@ -147,13 +147,13 @@
     .student-item:hover { background: #334155; }
     .student-item.active { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.1); }
     
-    .st-name { font-size: 1.6vh; font-weight: 700; color: var(--accent-gold); }
+    .st-name { font-size: 1.6vh; font-weight: 700; color: var(--accent-gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .st-company { font-size: 1.3vh; color: var(--text-muted); margin-bottom: 1vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .mini-progress-bg { height: 0.8vh; background: rgba(255,255,255,0.1); border-radius: 1vh; overflow: hidden; }
     .mini-progress-fill { height: 100%; background: var(--accent-blue); }
 
-    /* KOLOM KANAN (Visualisasi Utama) */
+    /* KOLOM KANAN */
     .col-right {
       flex: 2.2;
       background: var(--bg-panel);
@@ -170,15 +170,19 @@
       height: 100%;
       object-fit: cover;
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       z-index: 1;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.4s ease;
+      opacity: 0;
     }
+    .slide-img.loaded { opacity: 1; }
 
-    /* Overlay Gradient & Detail */
     .slide-overlay {
       position: absolute;
-      bottom: 0; left: 0; width: 100%;
+      bottom: 0;
+      left: 0;
+      width: 100%;
       background: linear-gradient(to top, rgba(2,6,23,1) 0%, rgba(2,6,23,0.8) 50%, transparent 100%);
       z-index: 2;
       padding: 4vh 3vw 3vh 3vw;
@@ -194,15 +198,15 @@
     
     .d-caption { font-size: 1.8vh; font-style: italic; color: #cbd5e1; border-left: 3px solid var(--accent-blue); padding-left: 1vw; margin: 1vh 0; }
 
-    .d-stats { display: flex; gap: 2vw; font-size: 1.5vh; color: var(--text-muted); }
+    .d-stats { display: flex; gap: 2vw; font-size: 1.5vh; color: var(--text-muted); flex-wrap: wrap; }
     .d-stats span { display: flex; align-items: center; gap: 0.5vw; }
 
     .main-progress-container { margin-top: 1vh; }
     .prog-text { display: flex; justify-content: space-between; font-size: 1.4vh; font-weight: 600; margin-bottom: 0.5vh; color: var(--accent-blue);}
     .main-progress-bg { height: 1.5vh; background: rgba(255,255,255,0.2); border-radius: 1vh; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);}
-    .main-progress-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); box-shadow: 0 0 10px rgba(56,189,248,0.5); transition: width 1s; }
+    .main-progress-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); box-shadow: 0 0 10px rgba(56,189,248,0.5); transition: width 0.5s ease; }
 
-    /* ================= FOOTER TICKER ================= */
+    /* Footer */
     .footer {
       background: var(--bg-panel);
       border: 1px solid var(--border-light);
@@ -215,232 +219,286 @@
     }
     marquee { font-size: 1.6vh; font-weight: 600; color: var(--text-main); }
 
-    /* Scrollbar Styling */
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-panel); }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      .d-name { font-size: 2.5vh; }
+      .d-caption { font-size: 1.5vh; }
+      .d-stats { font-size: 1.2vh; gap: 1vw; }
+      .col-left { min-width: 280px; }
+    }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="header-logo">
-      <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo" onerror="this.src='https://placehold.co/100?text=PD'">
-      <div class="header-text">
-        <p>POLITEKNIK DEWANTARA</p>
-        <p>TEKNIK ELEKTRONIKA</p>
-      </div>
+<header class="header">
+  <div class="header-logo">
+    <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo" onerror="this.src='https://placehold.co/100?text=PD'">
+    <div class="header-text">
+      <p>POLITEKNIK DEWANTARA</p>
+      <p>TEKNIK ELEKTRONIKA</p>
     </div>
-    <div class="header-title">
-      <h1>Dashboard Eksplorasi Magang</h1>
-    </div>
-    <div class="clock" id="liveClock">00:00:00</div>
-  </header>
+  </div>
+  <div class="header-title">
+    <h1>Dashboard Eksplorasi Magang</h1>
+  </div>
+  <div class="clock" id="liveClock">--:--:--</div>
+</header>
 
-  <div class="main-wrapper">
-    
-    <div class="col-left">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <i class="fas fa-folder-open"></i>
-          <div class="stat-info">
-            <span class="stat-num"><%= stats.totalLogbook %></span>
-            <span class="stat-lbl">Total Logbook</span>
-          </div>
-        </div>
-        <div class="stat-card warning">
-          <i class="fas fa-history"></i>
-          <div class="stat-info">
-            <span class="stat-num"><%= stats.logbookPending %></span>
-            <span class="stat-lbl">Logbook Pending</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <i class="fas fa-users"></i>
-          <div class="stat-info">
-            <span class="stat-num"><%= stats.totalMahasiswaMagangAktif %></span>
-            <span class="stat-lbl">Mhs Magang Aktif</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <i class="fas fa-clipboard-check"></i>
-          <div class="stat-info">
-            <span class="stat-num"><%= stats.tugasAktif %></span>
-            <span class="stat-lbl">Tugas Aktif</span>
-          </div>
+<div class="main-wrapper">
+  <div class="col-left">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <i class="fas fa-folder-open"></i>
+        <div class="stat-info">
+          <span class="stat-num"><%= stats.totalLogbook || 0 %></span>
+          <span class="stat-lbl">Total Logbook</span>
         </div>
       </div>
-
-      <div class="list-container">
-        <div class="list-header">
-          <input type="text" id="searchInput" class="search-box" placeholder="Cari nama atau NIM mahasiswa..." onkeyup="filterList()">
+      <div class="stat-card warning">
+        <i class="fas fa-history"></i>
+        <div class="stat-info">
+          <span class="stat-num"><%= stats.logbookPending || 0 %></span>
+          <span class="stat-lbl">Logbook Pending</span>
         </div>
-        <div class="student-list" id="studentListContainer">
-          </div>
       </div>
-    </div>
-
-    <div class="col-right">
-      <img id="mainImage" class="slide-img" src="" alt="Dokumentasi">
-      
-      <div class="slide-overlay">
-        <div class="detail-top">
-          <div>
-            <div class="d-name" id="mainName">-</div>
-            <div class="d-company"><i class="fas fa-building text-accent"></i> <span id="mainCompany">-</span></div>
-          </div>
-          <div class="d-nim" id="mainNim">-</div>
+      <div class="stat-card">
+        <i class="fas fa-users"></i>
+        <div class="stat-info">
+          <span class="stat-num"><%= stats.totalMahasiswaMagangAktif || 0 %></span>
+          <span class="stat-lbl">Mhs Magang Aktif</span>
         </div>
-
-        <div class="d-caption" id="mainCaption">"Memuat kegiatan..."</div>
-
-        <div class="d-stats">
-          <span><i class="fas fa-calendar-alt"></i> <span id="mainDate">-</span></span>
-          <span><i class="fas fa-map-marker-alt"></i> <span id="mainLocation">-</span></span>
-          <span><i class="fas fa-chalkboard-teacher"></i> <span id="mainDospem">-</span></span>
-        </div>
-
-        <div class="main-progress-container">
-          <div class="prog-text">
-            <span>Progress Logbook</span>
-            <span id="mainProgressText">0% (0/0 Hari)</span>
-          </div>
-          <div class="main-progress-bg">
-            <div class="main-progress-fill" id="mainProgressBar" style="width: 0%;"></div>
-          </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-clipboard-check"></i>
+        <div class="stat-info">
+          <span class="stat-num"><%= stats.tugasAktif || 0 %></span>
+          <span class="stat-lbl">Tugas Aktif</span>
         </div>
       </div>
     </div>
 
+    <div class="list-container">
+      <div class="list-header">
+        <input type="text" id="searchInput" class="search-box" placeholder="Cari nama atau NIM mahasiswa..." autocomplete="off">
+      </div>
+      <div class="student-list" id="studentListContainer">
+        <!-- Daftar mahasiswa akan diisi JS -->
+      </div>
+    </div>
   </div>
 
-  <footer class="footer">
-    <marquee behavior="scroll" direction="left" scrollamount="6">
-      Sistem Monitoring Realtime Magang Mahasiswa Prodi Teknik Elektronika Politeknik Dewantara | Database terintegrasi dari Logbook Digital ELK-Magang | Design by Fajar Elektrik v.2.0.
-    </marquee>
-  </footer>
+  <div class="col-right">
+    <img id="mainImage" class="slide-img" src="" alt="Dokumentasi" loading="lazy">
+    
+    <div class="slide-overlay">
+      <div class="detail-top">
+        <div>
+          <div class="d-name" id="mainName">-</div>
+          <div class="d-company"><i class="fas fa-building"></i> <span id="mainCompany">-</span></div>
+        </div>
+        <div class="d-nim" id="mainNim">-</div>
+      </div>
 
-  <script>
-    // Menyimpan data dari server ke variabel JS
-    const rawSlides = <%- JSON.stringify(slides) %>;
-    let filteredSlides = [...rawSlides];
-    let currentIndex = 0;
-    let autoPlayInterval;
+      <div class="d-caption" id="mainCaption">"Memuat kegiatan..."</div>
 
-    // --- 1. Fungsi Generate List Mahasiswa di Kiri ---
-    function renderStudentList() {
-      const container = document.getElementById('studentListContainer');
-      container.innerHTML = '';
+      <div class="d-stats">
+        <span><i class="fas fa-calendar-alt"></i> <span id="mainDate">-</span></span>
+        <span><i class="fas fa-map-marker-alt"></i> <span id="mainLocation">-</span></span>
+        <span><i class="fas fa-chalkboard-teacher"></i> <span id="mainDospem">-</span></span>
+      </div>
 
-      if (filteredSlides.length === 0) {
-        container.innerHTML = '<div style="padding: 2vh; text-align: center; color: #94a3b8;">Tidak ada data ditemukan.</div>';
-        return;
-      }
+      <div class="main-progress-container">
+        <div class="prog-text">
+          <span>Progress Logbook</span>
+          <span id="mainProgressText">0% (0/0 Hari)</span>
+        </div>
+        <div class="main-progress-bg">
+          <div class="main-progress-fill" id="mainProgressBar" style="width: 0%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-      filteredSlides.forEach((student, index) => {
-        const item = document.createElement('div');
-        item.className = `student-item ${index === currentIndex ? 'active' : ''}`;
-        item.onclick = () => selectStudent(index);
-        
-        const progress = student.progressPercent || 0;
-        
-        item.innerHTML = `
-          <div class="st-name">${student.mahasiswa || 'Tanpa Nama'}</div>
-          <div class="st-company">${student.perusahaan || '-'} | ${student.nim || '-'}</div>
-          <div class="mini-progress-bg">
-            <div class="mini-progress-fill" style="width: ${progress}%"></div>
-          </div>
-        `;
-        container.appendChild(item);
-      });
+<footer class="footer">
+  <marquee behavior="scroll" direction="left" scrollamount="6">
+    Sistem Monitoring Realtime Magang Mahasiswa Prodi Teknik Elektronika Politeknik Dewantara | Database terintegrasi dari Logbook Digital ELK-Magang | Design by Fajar Elektrik v.2.0.
+  </marquee>
+</footer>
+
+<script>
+  // Data dari server (EJS)
+  var slides = <%- JSON.stringify(slides || []) %>;
+  var stats = <%- JSON.stringify(stats || {}) %>;
+
+  // Variabel global
+  let filteredSlides = [...slides];
+  let currentIndex = 0;
+  let autoPlayInterval;
+
+  // Fungsi render daftar mahasiswa
+  function renderStudentList() {
+    const container = document.getElementById('studentListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (filteredSlides.length === 0) {
+      container.innerHTML = '<div style="padding: 2vh; text-align: center; color: #94a3b8;">Tidak ada data ditemukan.</div>';
+      return;
     }
 
-    // --- 2. Fungsi Filter Pencarian ---
-    function filterList() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      filteredSlides = rawSlides.filter(s => 
-        (s.mahasiswa && s.mahasiswa.toLowerCase().includes(query)) || 
+    filteredSlides.forEach((student, idx) => {
+      const item = document.createElement('div');
+      item.className = `student-item ${idx === currentIndex ? 'active' : ''}`;
+      item.onclick = () => selectStudent(idx);
+      const progress = student.progressPercent || 0;
+      item.innerHTML = `
+        <div class="st-name">${escapeHtml(student.mahasiswa || 'Tanpa Nama')}</div>
+        <div class="st-company">${escapeHtml(student.perusahaan || '-')} | ${escapeHtml(student.nim || '-')}</div>
+        <div class="mini-progress-bg">
+          <div class="mini-progress-fill" style="width: ${progress}%"></div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  // Escape HTML untuk mencegah XSS
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Filter pencarian
+  function filterList() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (query === '') {
+      filteredSlides = [...slides];
+    } else {
+      filteredSlides = slides.filter(s => 
+        (s.mahasiswa && s.mahasiswa.toLowerCase().includes(query)) ||
         (s.nim && s.nim.toLowerCase().includes(query))
       );
-      currentIndex = 0; // Reset ke index 0 setiap kali mencari
-      renderStudentList();
-      updateMainVisual();
     }
+    currentIndex = 0;
+    renderStudentList();
+    updateMainVisual();
+    resetAutoPlay();
+  }
 
-    // --- 3. Fungsi Saat Mahasiswa Diklik (Manual Override) ---
-    function selectStudent(index) {
-      currentIndex = index;
-      updateMainVisual();
-      renderStudentList(); // Re-render untuk memindahkan class 'active'
-      resetAutoPlay(); // Reset timer agar tidak langsung ganti
-    }
+  // Pilih mahasiswa manual
+  function selectStudent(index) {
+    if (index < 0 || index >= filteredSlides.length) return;
+    currentIndex = index;
+    updateMainVisual();
+    renderStudentList();
+    resetAutoPlay();
+  }
 
-    // --- 4. Fungsi Update Tampilan Kanan ---
-    function updateMainVisual() {
-      if (filteredSlides.length === 0) return;
-      const data = filteredSlides[currentIndex];
-
+  // Update tampilan kanan (gambar & info)
+  function updateMainVisual() {
+    if (filteredSlides.length === 0) {
+      // tampilkan placeholder kosong
+      document.getElementById('mainName').innerText = '-';
+      document.getElementById('mainNim').innerText = '-';
+      document.getElementById('mainCompany').innerText = '-';
+      document.getElementById('mainCaption').innerText = 'Tidak ada data logbook.';
+      document.getElementById('mainDate').innerText = '-';
+      document.getElementById('mainLocation').innerText = '-';
+      document.getElementById('mainDospem').innerText = '-';
+      document.getElementById('mainProgressText').innerText = '0% (0/0 Hari)';
+      document.getElementById('mainProgressBar').style.width = '0%';
       const img = document.getElementById('mainImage');
-      img.style.opacity = 0; // Efek fade out
-
-      setTimeout(() => {
-        document.getElementById('mainName').innerText = data.mahasiswa || '-';
-        document.getElementById('mainNim').innerText = `NIM: ${data.nim || '-'}`;
-        document.getElementById('mainCompany').innerText = data.perusahaan || '-';
-        document.getElementById('mainCaption').innerText = `"${data.caption || 'Tidak ada keterangan kegiatan'}"`;
-        document.getElementById('mainDate').innerText = data.tanggal || '-';
-        document.getElementById('mainLocation').innerText = data.lokasi || '-';
-        document.getElementById('mainDospem').innerText = `${data.pembimbing1 || '-'} & ${data.pembimbing2 || '-'}`;
-        
-        const p = data.progressPercent || 0;
-        document.getElementById('mainProgressText').innerText = `${p}% (${data.progressUploaded || 0}/${data.progressTotal || 0} Hari)`;
-        document.getElementById('mainProgressBar').style.width = `${p}%`;
-        
-        img.src = data.imageUrl || 'https://placehold.co/1280x720/1e293b/38bdf8?text=Tidak+Ada+Dokumentasi';
-        img.style.opacity = 1; // Efek fade in
-      }, 300); // 300ms transisi
+      img.src = 'https://placehold.co/1280x720/1e293b/38bdf8?text=Belum+Ada+Dokumentasi';
+      img.classList.remove('loaded');
+      setTimeout(() => img.classList.add('loaded'), 50);
+      return;
     }
 
-    // --- 5. Fungsi Auto Play (Slideshow) ---
-    function nextSlide() {
-      if (filteredSlides.length > 0) {
-        currentIndex = (currentIndex + 1) % filteredSlides.length;
-        updateMainVisual();
-        renderStudentList(); // Update yang aktif di list
-        
-        // Auto-scroll list ke item yang aktif
-        const activeItem = document.querySelector('.student-item.active');
-        if (activeItem) {
-          activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+    const data = filteredSlides[currentIndex];
+    const img = document.getElementById('mainImage');
+    img.classList.remove('loaded'); // fade out
+    
+    // Tunggu sebentar lalu ganti src dan fade in
+    setTimeout(() => {
+      document.getElementById('mainName').innerText = data.mahasiswa || '-';
+      document.getElementById('mainNim').innerText = data.nim || '-';
+      document.getElementById('mainCompany').innerText = data.perusahaan || '-';
+      document.getElementById('mainCaption').innerText = `"${data.caption || 'Tidak ada keterangan kegiatan'}"`;
+      document.getElementById('mainDate').innerText = data.tanggal || '-';
+      document.getElementById('mainLocation').innerText = data.lokasi || '-';
+      const dosen = `${data.pembimbing1 || '-'} & ${data.pembimbing2 || '-'}`;
+      document.getElementById('mainDospem').innerText = dosen;
+      
+      const p = data.progressPercent || 0;
+      const uploaded = data.progressUploaded || 0;
+      const total = data.progressTotal || 0;
+      document.getElementById('mainProgressText').innerText = `${p}% (${uploaded}/${total} Hari)`;
+      document.getElementById('mainProgressBar').style.width = `${p}%`;
+      
+      const imgUrl = data.imageUrl || 'https://placehold.co/1280x720/1e293b/38bdf8?text=Gambar+Tidak+Tersedia';
+      if (img.src !== imgUrl) {
+        img.src = imgUrl;
       }
-    }
+      // Event load untuk fade in
+      img.onload = () => img.classList.add('loaded');
+      // Jika gambar sudah di cache, mungkin onload tidak terpanggil, kita set timeout
+      if (img.complete) img.classList.add('loaded');
+      else img.classList.add('loaded'); // tetap coba, tapi onload akan override
+    }, 200);
+  }
 
-    function startAutoPlay() {
-      autoPlayInterval = setInterval(nextSlide, 8000); // Ganti tiap 8 detik
-    }
+  // Auto slide
+  function nextSlide() {
+    if (filteredSlides.length === 0) return;
+    currentIndex = (currentIndex + 1) % filteredSlides.length;
+    updateMainVisual();
+    renderStudentList();
+    // Scroll ke item aktif
+    const activeItem = document.querySelector('.student-item.active');
+    if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 
-    function resetAutoPlay() {
-      clearInterval(autoPlayInterval);
-      startAutoPlay();
-    }
+  function startAutoPlay() {
+    if (autoPlayInterval) clearInterval(autoPlayInterval);
+    autoPlayInterval = setInterval(nextSlide, 8000);
+  }
 
-    // --- 6. Jam Realtime ---
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { 
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-      });
-    }
+  function resetAutoPlay() {
+    clearInterval(autoPlayInterval);
+    startAutoPlay();
+  }
 
-    // --- INIT ---
-    window.onload = () => {
-      renderStudentList();
-      updateMainVisual();
-      startAutoPlay();
-      setInterval(updateClock, 1000);
-      updateClock();
-    };
-  </script>
+  // Jam
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  }
+
+  // Init
+  window.onload = () => {
+    renderStudentList();
+    updateMainVisual();
+    startAutoPlay();
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Event search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', filterList);
+    }
+  };
+</script>
 </body>
 </html>

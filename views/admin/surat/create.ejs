@@ -1,0 +1,94 @@
+<%- include('../../partials/header') %>
+
+<style>
+  .form-card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid rgba(30,58,138,0.1);
+  }
+  .form-header {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    padding: 1.5rem;
+    color: white;
+  }
+  .form-header h3 {
+    font-weight: 700;
+    margin: 0;
+  }
+  .form-body {
+    padding: 2rem;
+  }
+  .btn-primary-custom {
+    background: linear-gradient(105deg, #1e3a8a, #3b82f6);
+    border: none;
+    border-radius: 60px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: 0.2s;
+  }
+  .btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(30,58,138,0.25);
+  }
+  .form-label {
+    font-weight: 600;
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="form-card">
+    <div class="form-header">
+      <h3><i class="bi bi-envelope-paper me-2"></i>Kirim Surat ke Dosen</h3>
+    </div>
+    <div class="form-body">
+      <form method="POST" action="/admin/surat/create" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label">Pilih Dosen <span class="text-danger">*</span></label>
+          <select name="dosenId" class="form-select" required>
+            <option value="">-- Pilih Dosen --</option>
+            <% if (dosenList && dosenList.length) { %>
+              <% dosenList.forEach(d => { %>
+                <option value="<%= d.id %>"><%= d.nama %> (NIP: <%= d.nip || '-' %>)</option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Jenis Surat <span class="text-danger">*</span></label>
+          <select name="jenisSurat" class="form-select" required>
+            <option value="">-- Pilih Jenis --</option>
+            <option value="Surat Tugas">Surat Tugas</option>
+            <option value="Surat Keterangan">Surat Keterangan</option>
+            <option value="Surat Rekomendasi">Surat Rekomendasi</option>
+            <option value="Surat Pengantar">Surat Pengantar</option>
+            <option value="Surat Undangan">Surat Undangan</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Judul / Keperluan <span class="text-danger">*</span></label>
+          <input type="text" name="keperluan" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Keterangan Tambahan (opsional)</label>
+          <textarea name="isiLain" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">File Surat (PDF) <span class="text-danger">*</span></label>
+          <input type="file" name="file" class="form-control" accept=".pdf" required>
+          <small class="text-muted">Upload file PDF surat yang sudah jadi.</small>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+          <a href="/admin/surat" class="btn btn-outline-secondary rounded-pill px-4">Batal</a>
+          <button type="submit" class="btn btn-primary-custom">Kirim Surat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>

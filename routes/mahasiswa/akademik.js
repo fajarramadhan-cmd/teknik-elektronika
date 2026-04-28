@@ -271,6 +271,101 @@ router.get('/krs/:id', async (req, res) => {
  * POST /mahasiswa/akademik/krs/:id/upload
  * Upload file KRS ke Google Drive (struktur folder otomatis)
  */
+/**
+/**
+ * GET /mahasiswa/akademik/krs/krs_print/:id
+ * Menampilkan halaman cetak KRS
+ */
+router.get('/krs/krs_print/:id', async (req, res) => {
+  try {
+    // 1. Ambil dokumen KRS
+    const krsDoc = await db.collection('krs').doc(req.params.id).get();
+    if (!krsDoc.exists) {
+      return res.status(404).render('error', { title: 'Tidak Ditemukan', message: 'KRS tidak ditemukan' });
+    }
+    const krsData = krsDoc.data();
+    krsData.id = krsDoc.id;
+
+    if (krsData.userId !== req.user.id) {
+      return res.status(403).render('error', { title: 'Akses Ditolak', message: 'Anda tidak memiliki akses ke KRS ini' });
+    }
+
+    // ========================================================================
+    // 2. MENGAMBIL DATA MATA KULIAH (LOGIKA SUPER AMAN)
+    // ========================================================================
+    const mkIds = krsData.mataKuliah || krsData.mkList || [];
+    const mkList = [];
+
+    for (const item of mkIds) {
+      if (!item) continue;
+      
+      try {
+        // PENGAMAN: Cek apakah item di DB berupa string ID ("123") atau Object ({id: "123"})
+        const mkIdString = typeof item === 'object' ? (item.id || item.kode || item.mkId) : String(item);
+        
+        const mkDoc = await db.collection('mataKuliah').doc(mkIdString).get();
+        
+        if (mkDoc.exists) {
+          const dataMk = mkDoc.data();
+          mkList.push({
+            id: mkDoc.id,
+            kode: dataMk.kode || '-',
+            nama: dataMk.nama || dataMk.nama_mk || dataMk.mata_kuliah || '-', // Fallback nama
+            sks: parseFloat(dataMk.sks) || 0 // Paksa jadi angka
+          });
+        } else {
+          console.log(`[WARNING] Data mata kuliah dengan ID ${mkIdString} tidak ditemukan di database.`);
+        }
+      } catch (err) {
+        console.error(`Gagal memuat mata kuliah (${item}):`, err.message);
+      }
+    }
+
+    // ========================================================================
+    // 3. MENGHITUNG IPK & SKS SEBELUMNYA
+    // ========================================================================
+    try {
+      const gradesSnapshot = await db.collection('grades')
+        .where('userId', '==', req.user.id)
+        .get(); 
+
+      let totalSKS = 0;
+      let totalNilai = 0;
+
+      gradesSnapshot.docs.forEach(doc => {
+        const g = doc.data();
+        const sks = parseFloat(g.sks) || 0;
+        const nilai = parseFloat(g.nilai) || 0;
+        totalSKS += sks;
+        totalNilai += (sks * nilai);
+      });
+
+      krsData.ipk = totalSKS > 0 ? (totalNilai / totalSKS).toFixed(2) : "0.00";
+      krsData.sksSebelumnya = totalSKS;
+    } catch (gradeError) {
+      console.error('Gagal menghitung IPK/SKS untuk cetak KRS:', gradeError);
+      krsData.ipk = '-';
+      krsData.sksSebelumnya = '-';
+    }
+
+    // ========================================================================
+    // 4. RENDER KE EJS PRINT
+    // ========================================================================
+    res.render('mahasiswa/krs_print', {
+      title: 'Cetak KRS - ' + req.user.nama,
+      user: req.user,
+      krs: krsData,
+      mkList: mkList // Sekarang mkList pasti berisi data lengkap yang siap dicetak
+    });
+
+  } catch (error) {
+    console.error('Error saat memuat halaman print KRS:', error);
+    res.status(500).render('error', { 
+      title: 'Terjadi Kesalahan Server', 
+      message: 'Gagal memuat halaman cetak KRS.' 
+    });
+  }
+});
 router.post('/krs/:id/upload', upload.single('file'), async (req, res) => {
   try {
     const krsDoc = await db.collection('krs').doc(req.params.id).get();

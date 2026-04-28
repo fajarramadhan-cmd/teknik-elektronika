@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cetak KRS - <%= user.nama %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <style>
+    /* Pengaturan Kertas Default A4 */
+    @page {
+      size: A4;
+      margin: 1.5cm;
+    }
+
+    /* Gaya Umum Menyesuaikan Gambar Referensi */
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000;
+      background-color: #fff;
+      font-size: 10pt;
+    }
+
+    .print-btn, .back-btn {
+      margin: 20px 5px;
+      font-family: Arial, sans-serif;
+    }
+
+    /* === KOP SURAT === */
+    .kop-surat {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .logo-kop {
+      width: 100px;
+      height: auto;
+      margin-right: 20px;
+    }
+    .teks-kop {
+      flex: 1;
+    }
+    .teks-kop .nama-kampus {
+      font-size: 26pt;
+      font-weight: bold;
+      margin: 0;
+      color: #3b60a3; /* Warna biru menyerupai gambar */
+      letter-spacing: 0.5px;
+    }
+    .teks-kop .alamat, .teks-kop .kontak {
+      font-size: 11pt;
+      margin: 2px 0;
+      color: #333;
+    }
+
+    /* === JUDUL & INFO MAHASISWA === */
+    .judul-dokumen {
+      text-align: center;
+      font-size: 12pt;
+      font-weight: bold;
+      margin: 25px 0 20px 0;
+    }
+
+    .info-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .info-table {
+      font-size: 9pt;
+    }
+    .info-table td {
+      padding: 3px 5px 3px 0;
+      vertical-align: top;
+      text-transform: uppercase;
+    }
+    .info-table td.titik-dua {
+      width: 15px;
+      text-align: center;
+    }
+
+    /* === GARIS PEMISAH === */
+    .garis-pemisah {
+      border-top: 1.5px solid #000;
+      margin: 15px 0;
+    }
+
+    /* === KETERANGAN SEMESTER === */
+    .semester-teks {
+      text-align: center;
+      font-weight: bold;
+      font-size: 10.5pt;
+      margin: 20px 0 15px 0;
+    }
+
+    /* === TABEL MATA KULIAH === */
+    .table-krs {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+      font-size: 10pt;
+    }
+    .table-krs th, .table-krs td {
+      border: 1px solid #000;
+      padding: 8px;
+      vertical-align: middle;
+    }
+    .table-krs th {
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    tr {
+      page-break-inside: avoid;
+    }
+    thead {
+      display: table-header-group;
+    }
+
+    /* === TANDA TANGAN === */
+    .tanda-tangan-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      font-size: 10pt;
+    }
+    .kolom-tanda {
+      width: 32%;
+      text-align: left;
+    }
+    .area-ttd {
+      height: 80px; /* Ruang tanda tangan */
+    }
+    .nama-ttd {
+      margin-bottom: 0;
+    }
+    .nip-ttd {
+      margin-top: 0;
+    }
+
+    /* === PENGATURAN CETAK (PRINT) === */
+    @media print {
+      body {
+        margin: 0;
+      }
+      .btn, .print-btn, .back-btn { 
+        display: none !important; 
+      }
+      .table-krs th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid px-4 py-3">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 print-btn">
+      <a href="/mahasiswa/akademik/krs" class="btn btn-outline-secondary btn-sm back-btn">
+        <i class="bi bi-arrow-left"></i> Kembali
+      </a>
+      <button onclick="window.print()" class="btn btn-primary btn-sm print-btn shadow-sm">
+        <i class="bi bi-printer-fill"></i> Cetak Dokumen
+      </button>
+    </div>
+
+    <div class="kop-surat">
+      <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" 
+           alt="Logo Politeknik Dewantara" class="logo-kop">
+      <div class="teks-kop">
+        <h2 class="nama-kampus">POLITEKNIK DEWANTARA</h2>
+        <p class="alamat">Jl. KH. Ahmad Razak 2 No. 7, Kota Palopo. Sulawesi Selatan</p>
+        <p class="kontak">E-mail: sdm@polidewa.ac.id, Website: polidewa.ac.id</p>
+      </div>
+    </div>
+
+    <div class="judul-dokumen">
+      KARTU RENCANA STUDI (KRS)
+    </div>
+    
+    <% 
+      // PERHITUNGAN SKS DI AWAL AGAR BISA DIPAKAI DI HEADER DAN FOOTER TABEL
+      let totalRen = 0;
+      if (mkList && mkList.length > 0) {
+        mkList.forEach(m => {
+          totalRen += (Number(m.sks) || 0);
+        });
+      }
+    %>
+
+    <div class="info-container">
+      <table class="info-table" style="width: 48%;">
+        <tr>
+          <td width="20%">NIM</td>
+          <td class="titik-dua">:</td>
+          <td><%= user.nim || '-' %></td>
+        </tr>
+        <tr>
+          <td>NAMA</td>
+          <td class="titik-dua">:</td>
+          <td><%= user.nama || '-' %></td>
+        </tr>
+        <tr>
+          <td>PRODI</td>
+          <td class="titik-dua">:</td>
+          <td>TEKNIK ELEKTRONIKA</td>
+        </tr>
+      </table>
+
+      <table class="info-table" style="width: 48%;">
+        <tr>
+          <td width="55%">IPK</td>
+          <td class="titik-dua">:</td>
+          <td><%= krs.ipk !== undefined ? krs.ipk : '-' %></td>
+        </tr>
+        <tr>
+          <td>SKS s/d Smt Sebelumnya</td>
+          <td class="titik-dua">:</td>
+          <td><%= krs.sksSebelumnya !== undefined ? krs.sksSebelumnya + ' SKS' : '-' %></td>
+        </tr>
+        <tr>
+          <td>SKS yang Direncanakan</td>
+          <td class="titik-dua">:</td>
+          <td><%= totalRen %> SKS</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="garis-pemisah"></div>
+
+    <div class="semester-teks">
+      <td>Semester</td>
+      <%= krs.semester || 'Semester Genap Tahun Akademik 2025/2026' %>
+    </div>
+
+    <table class="table-krs">
+      <thead>
+        <tr>
+          <th width="5%">No</th>
+          <th width="15%">Kode MK</th>
+          <th width="70%">Nama Mata Kuliah</th>
+          <th width="10%">SKS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (mkList && mkList.length > 0) { %>
+          <% mkList.forEach((mk, index) => { %>
+          <tr>
+            <td style="text-align: center;"><%= index + 1 %>.</td>
+            <td style="text-align: center;"><%= mk.kode || '-' %></td>
+            <td><%= mk.nama || mk.nama_mk || mk.mata_kuliah || '-' %></td>
+            <td style="text-align: center;"><%= mk.sks || '0' %></td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="4" style="text-align: center; font-style: italic; padding: 15px;">Data mata kuliah belum tersedia atau gagal dimuat dari database.</td>
+          </tr>
+        <% } %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="text-align: center; font-weight: bold;">Total SKS</td>
+          <td style="text-align: center; font-weight: bold;">
+            <%= totalRen %>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="garis-pemisah"></div>
+
+    <div class="tanda-tangan-container">
+      
+      <div class="kolom-tanda">
+        <p class="mb-0">Mengetahui</p>
+        <p>Ketua Program Studi,</p>
+        <div class="area-ttd"></div>
+        <p class="nama-ttd">Fajar Ramadhan, S.Pd.,M.T</p>
+        <p class="nip-ttd">NIDN. 8559777678130153</p>
+      </div>
+
+      <div class="kolom-tanda">
+        <p class="mb-0">Disetujui</p>
+        <p>Pembimbing Akademik,</p>
+        <div class="area-ttd"></div>
+        <p class="nama-ttd">Ariani Amri, S.Pd.,M.Pd.</p>
+        <p class="nip-ttd">NIDN. 0918029701</p>
+      </div>
+
+      <div class="kolom-tanda">
+        <p class="mb-0">Palopo, <%= new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+        <p>Mahasiswa,</p>
+        <div class="area-ttd"></div>
+        <p class="nama-ttd text-capitalize"><%= user.nama || '-' %></p>
+        <p class="nip-ttd">NIM. <%= user.nim || '-' %></p>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+</html>

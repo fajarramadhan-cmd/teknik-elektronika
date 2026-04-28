@@ -303,11 +303,16 @@
         <p class="text-muted">Belum ada file yang diupload.</p>
       <% } %>
 
-      <div class="mt-4">
+      <div class="mt-4 d-flex gap-3">
         <a href="/mahasiswa/akademik/krs" class="btn-outline-secondary">
           <i class="bi bi-arrow-left me-2"></i>Kembali
         </a>
-      </div>
+        
+       <a href="/mahasiswa/akademik/krs/krs_print/<%= krs.id %>" target="_blank" class="btn-outline-info">
+  <i class="bi bi-printer-fill me-2"></i> Cetak KRS
+</a>
+
+        </div>
     </div>
   </div>
 </div>

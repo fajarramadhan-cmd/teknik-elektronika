@@ -14,6 +14,7 @@ const drive = require('../../config/googleDrive');
 const { Readable } = require('stream');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const { getCurrentAcademicSemester } = require('../../helpers/academicHelper');
 
 // Konstanta folder utama Data WEB
 const DATA_WEB_FOLDER_ID = '17Z02_5zOImG1GYfi_5gvWL97-p6dW5t0';
@@ -74,6 +75,84 @@ async function getSuratFolderDosen(nip, tahunAkademik) {
   return nipFolder;
 }
 
+// Helper: generate kode validasi unik
+function generateKodeValidasi() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `ELK${timestamp}${random}`;
+}
+
+// ============================================================================
+// FITUR ADMIN: Kirim Surat Langsung ke Dosen (tanpa pengajuan)
+// ============================================================================
+
+// GET: Form kirim surat ke dosen
+router.get('/create', async (req, res) => {
+  try {
+    const dosenSnapshot = await db.collection('dosen').orderBy('nama').get();
+    const dosenList = dosenSnapshot.docs.map(doc => ({ id: doc.id, nama: doc.data().nama, nip: doc.data().nip }));
+    res.render('admin/surat/create', { title: 'Kirim Surat ke Dosen', dosenList });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Gagal memuat data dosen');
+  }
+});
+
+// POST: Proses kirim surat langsung ke dosen
+router.post('/create', upload.single('file'), async (req, res) => {
+  try {
+    const { dosenId, jenisSurat, keperluan, isiLain } = req.body;
+    const file = req.file;
+    if (!dosenId || !jenisSurat || !keperluan || !file) {
+      return res.status(400).send('Semua field wajib diisi');
+    }
+
+    const dosenDoc = await db.collection('dosen').doc(dosenId).get();
+    if (!dosenDoc.exists) return res.status(404).send('Dosen tidak ditemukan');
+    const dosenData = dosenDoc.data();
+    const dosenIdFirestore = dosenDoc.id; // ID dokumen (bukan field dalam data)
+
+    const tahunAkademik = getCurrentAcademicSemester().tahunAkademik;
+    const folderId = await getSuratFolderDosen(dosenData.nip || dosenIdFirestore, tahunAkademik);
+
+    const fileName = `${dosenData.nip || dosenIdFirestore}_${jenisSurat.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+    const fileMetadata = { name: fileName, parents: [folderId] };
+    const media = { mimeType: file.mimetype, body: Readable.from(file.buffer) };
+    const driveResponse = await drive.files.create({ resource: fileMetadata, media, fields: 'id' });
+    await drive.permissions.create({ fileId: driveResponse.data.id, requestBody: { role: 'reader', type: 'anyone' } });
+    const fileUrl = `https://drive.google.com/uc?export=view&id=${driveResponse.data.id}`;
+    const fileId = driveResponse.data.id;
+
+    const kodeValidasi = generateKodeValidasi();
+    const suratData = {
+      dosenId: dosenIdFirestore,                // perbaikan: gunakan ID dokumen
+      dosenNama: dosenData.nama,
+      nip: dosenData.nip || '',
+      email: dosenData.email || '',
+      jenisSurat,
+      keperluan,
+      isiLain: isiLain || '',
+      kodeValidasi,
+      status: 'completed',
+      fileUrl,
+      fileId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      dikirimOleh: req.user.id,
+      dikirimOlehNama: req.user.nama || 'Admin',
+      history: [{
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        catatan: `Surat dikirim langsung oleh ${req.user.nama || 'Admin'}`
+      }]
+    };
+    await db.collection('surat_dosen').add(suratData);
+    res.redirect('/admin/surat');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Gagal mengirim surat: ' + err.message);
+  }
+});
 // ============================================================================
 // DAFTAR SURAT (GABUNGAN MAHASISWA & DOSEN)
 // ============================================================================
@@ -185,7 +264,7 @@ router.post('/:id/:role/upload', upload.single('file'), async (req, res) => {
     const file = req.file;
     if (!file) return res.status(400).send('File tidak ada');
 
-    let suratRef, surat, identitas, tahunAkademik, nimOrNip;
+    let suratRef, surat, identitas, tahunAkademik;
     if (role === 'mahasiswa') {
       suratRef = db.collection('surat').doc(id);
       const doc = await suratRef.get();
@@ -193,8 +272,7 @@ router.post('/:id/:role/upload', upload.single('file'), async (req, res) => {
       surat = doc.data();
       const mahasiswa = await getMahasiswa(surat.userId);
       identitas = mahasiswa.nim;
-      nimOrNip = mahasiswa.nim;
-      tahunAkademik = surat.tahunAkademik || new Date().getFullYear() + '/' + (new Date().getFullYear() + 1);
+      tahunAkademik = surat.tahunAkademik || getCurrentAcademicSemester().tahunAkademik;
       const folderId = await getSuratFolderMahasiswa(identitas, tahunAkademik);
       const fileName = `${identitas}_${surat.jenis.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
       const fileMetadata = { name: fileName, parents: [folderId] };
@@ -216,8 +294,7 @@ router.post('/:id/:role/upload', upload.single('file'), async (req, res) => {
       surat = doc.data();
       const dosen = await getDosen(surat.dosenId);
       identitas = dosen.nip;
-      nimOrNip = dosen.nip;
-      tahunAkademik = surat.tahunAkademik || new Date().getFullYear() + '/' + (new Date().getFullYear() + 1);
+      tahunAkademik = surat.tahunAkademik || getCurrentAcademicSemester().tahunAkademik;
       const folderId = await getSuratFolderDosen(identitas, tahunAkademik);
       const fileName = `${identitas}_${surat.jenisSurat?.replace(/\s+/g, '_') || 'surat'}_${Date.now()}.pdf`;
       const fileMetadata = { name: fileName, parents: [folderId] };
@@ -236,7 +313,6 @@ router.post('/:id/:role/upload', upload.single('file'), async (req, res) => {
       return res.status(400).send('Role tidak valid');
     }
 
-    // Redirect kembali ke halaman detail sesuai role
     res.redirect(`/admin/surat/${id}/${role}`);
   } catch (error) {
     console.error('Error upload surat:', error);

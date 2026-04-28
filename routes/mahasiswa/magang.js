@@ -640,7 +640,7 @@ router.post('/logbook/:id/delete', async (req, res) => {
       }
     }
     await docRef.delete();
-    res.redirect('back');
+    res.redirect('/mahasiswa/magang/logbook?periodId=${existingData.pdkId}');
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send('Gagal hapus logbook');

@@ -146,6 +146,28 @@
   .panduan-text ul { margin-bottom: 0; padding-left: 1.2rem; }
   .panduan-text li { margin-bottom: 0.3rem; }
 
+  /* ===== INFO PEMBIMBING ===== */
+  .info-pembimbing {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .info-pembimbing-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .info-pembimbing-item i {
+    color: var(--primary-start);
+    font-size: 1.2rem;
+  }
+
   /* ===== TABEL ===== */
   .table-container {
     background: white;
@@ -349,6 +371,20 @@
     </div>
   </div>
 
+  <!-- INFORMASI PEMBIMBING (tambahan) -->
+  <% if (pembimbing) { %>
+    <div class="info-pembimbing">
+      <div class="info-pembimbing-item">
+        <i class="bi bi-person-badge"></i>
+        <strong>Pembimbing 1:</strong> <%= pembimbing.pembimbing1 ? pembimbing.pembimbing1.nama : '-' %>
+      </div>
+      <div class="info-pembimbing-item">
+        <i class="bi bi-person-badge"></i>
+        <strong>Pembimbing 2:</strong> <%= pembimbing.pembimbing2 ? pembimbing.pembimbing2.nama : '-' %>
+      </div>
+    </div>
+  <% } %>
+
   <!-- TABEL LOGBOOK -->
   <div class="table-container">
     <div class="table-responsive">
@@ -412,8 +448,14 @@
                     <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Menunggu</span>
                   <% } else if (item.status === 'approved') { %>
                     <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Disetujui</span>
+                    <% if (item.approvedByNama) { %>
+                      <div class="small text-muted mt-1">Oleh: <%= item.approvedByNama %></div>
+                    <% } %>
                   <% } else if (item.status === 'rejected') { %>
                     <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Ditolak</span>
+                    <% if (item.rejectedByNama) { %>
+                      <div class="small text-muted mt-1">Oleh: <%= item.rejectedByNama %></div>
+                    <% } %>
                   <% } %>
                 </td>
                 <td>
@@ -478,11 +520,10 @@
               <textarea class="form-control" id="kegiatan" name="kegiatan" rows="4" required></textarea>
             </div>
             <div class="col-md-12">
-              <label for="images" class="form-label">Dokumentasi ( 1 Gambar)</label>
+              <label for="images" class="form-label">Dokumentasi (Maks 5 gambar)</label>
               <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
               <small class="text-muted">Format JPG/PNG, masing-masing maks 2MB</small>
             </div>
-            <!-- Kirim periodId -->
             <input type="hidden" name="periodId" value="<%= selectedPeriod ? selectedPeriod.id : '' %>">
           </div>
         </div>
@@ -503,7 +544,7 @@
         <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Logbook</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="POST" action="" id="editForm">
+      <form method="POST" action="" id="editForm" enctype="multipart/form-data">
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-6">
@@ -571,7 +612,7 @@
         document.getElementById('editKegiatan').value = data.kegiatan || '';
         document.getElementById('editLokasi').value = data.lokasi || '';
         document.getElementById('editDurasi').value = data.durasi || '';
-        document.getElementById('editForm').action = `/mahasiswa/magang/logbook/${id}`;
+        document.getElementById('editForm').action = `/mahasiswa/magang/logbook/${id}/edit`;
         new bootstrap.Modal(document.getElementById('editLogbookModal')).show();
       })
       .catch(err => alert('Gagal memuat data: ' + err.message));
