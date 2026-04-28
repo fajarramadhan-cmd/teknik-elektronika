@@ -79,18 +79,17 @@
       <h3><i class="bi bi-pencil-square me-2"></i><%= berita ? 'Edit Berita' : 'Tambah Berita' %></h3>
     </div>
     <div class="form-body">
-      <!-- Hapus enctype -->
-      <form method="POST" action="<%= berita ? '/admin/berita/' + berita.id + '/update' : '/admin/berita' %>">
+      <form method="POST" action="<%= berita ? '/admin/berita/' + berita.id + '/update' : '/admin/berita' %>" enctype="multipart/form-data">
         <div class="mb-3">
           <label for="judul" class="form-label">Judul <span class="text-danger">*</span></label>
           <input type="text" class="form-control" id="judul" name="judul" value="<%= berita ? berita.judul : '' %>" required>
         </div>
         <div class="mb-3">
-  <label for="tanggal" class="form-label">Tanggal Berita</label>
-  <input type="date" class="form-control" id="tanggal" name="tanggal" 
-         value="<%= berita && berita.tanggal ? new Date(berita.tanggal).toISOString().split('T')[0] : '' %>">
-  <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
-</div>
+          <label for="tanggal" class="form-label">Tanggal Berita</label>
+          <input type="date" class="form-control" id="tanggal" name="tanggal" 
+                 value="<%= berita && berita.tanggal ? new Date(berita.tanggal).toISOString().split('T')[0] : '' %>">
+          <small class="text-muted">Kosongkan untuk menggunakan tanggal hari ini</small>
+        </div>
         <div class="mb-3">
           <label for="isi" class="form-label">Isi Berita <span class="text-danger">*</span></label>
           <textarea class="form-control" id="isi" name="isi" rows="8" required><%= berita ? berita.isi : '' %></textarea>
@@ -98,23 +97,23 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="penulis" class="form-label">Penulis</label>
-            <input type="text" class="form-control" id="penulis" name="penulis" value="<%= berita ? berita.penulis : user.nama %>">
+            <input type="text" class="form-control" id="penulis" name="penulis" value="<%= berita ? berita.penulis : (typeof user !== 'undefined' ? user.nama : 'Admin') %>">
           </div>
           <div class="col-md-6 mb-3">
             <label for="sumber" class="form-label">Sumber (opsional)</label>
             <input type="text" class="form-control" id="sumber" name="sumber" value="<%= berita ? berita.sumber : '' %>">
           </div>
         </div>
-        <div class="mb-3">
-          <label for="gambar" class="form-label">URL Gambar Utama</label>
-          <% if (berita && berita.gambar) { %>
-            <div class="mb-2">
-              <img src="<%= berita.gambar %>" alt="gambar" class="preview-image">
-            </div>
-          <% } %>
-          <input type="url" class="form-control" id="gambar" name="gambar" value="<%= berita ? berita.gambar : '' %>" placeholder="https://contoh.com/gambar.jpg">
-          <small class="text-muted">Masukkan URL gambar (opsional)</small>
-        </div>
+    <div class="mb-3">
+  <label for="gambarUrl" class="form-label">URL Gambar (opsional)</label>
+  <input type="url" class="form-control" id="gambarUrl" name="gambarUrl" value="<%= berita ? berita.gambar : '' %>" placeholder="https://i.ibb.co.com/xxx/xxx.jpg">
+  <small class="text-muted">Atau upload file di bawah (jika ingin upload ke Drive)</small>
+</div>
+<div class="mb-3">
+  <label for="gambar" class="form-label">Upload File Gambar (opsional)</label>
+  <input type="file" class="form-control" id="gambar" name="gambar" accept="image/jpeg,image/png,image/jpg">
+  <small class="text-muted">Kosongkan jika hanya menggunakan URL</small>
+</div>
         <div class="d-flex justify-content-between mt-4">
           <a href="/admin/berita" class="btn-outline-gradient">
             <i class="bi bi-arrow-left me-2"></i>Kembali
