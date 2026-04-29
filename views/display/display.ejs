@@ -2,502 +2,307 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Dashboard Magang - Teknik Elektronika</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title><%= title %></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Orbitron:wght@500;700&display=swap');
-
-    :root {
-      --bg-main: #020617;
-      --bg-panel: #0f172a;
-      --bg-card: #1e293b;
-      --accent-blue: #38bdf8;
-      --accent-gold: #fbbf24;
-      --accent-red: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-light: rgba(255, 255, 255, 0.1);
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      padding: 1.5vh;
-      gap: 1.5vh;
-    }
-
-    /* ================= HEADER ================= */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--bg-panel);
-      padding: 1.5vh 2vw;
-      border-radius: 1.5vh;
-      border: 1px solid var(--border-light);
-      height: 10vh;
-      flex-shrink: 0;
-    }
-
-    .header-logo { display: flex; align-items: center; gap: 1vw; }
-    .header-logo img { height: 6vh; }
-    .header-text p:first-child { font-size: 1.2vh; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;}
-    .header-text p:last-child { font-size: 2vh; color: var(--accent-gold); font-weight: 800;}
-
-    .header-title h1 { font-size: 2.5vh; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;}
-    
-    .clock { font-family: 'Orbitron', sans-serif; font-size: 3vh; color: var(--accent-blue); font-weight: 700;}
-
-    /* ================= MAIN CONTENT ================= */
-    .main-wrapper {
-      flex: 1;
-      display: flex;
-      gap: 1.5vw;
-      min-height: 0;
-    }
-
-    /* KOLOM KIRI */
-    .col-left {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5vh;
-      min-width: 350px;
-    }
-
-    /* 4 Grid Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5vh;
-      flex-shrink: 0;
-    }
-
-    .stat-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-light);
-      border-radius: 1.5vh;
-      padding: 2vh;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top right, #1a3a4a, #030a10);
+      color: #fff;
+      min-height: 100vh;
       display: flex;
       align-items: center;
-      gap: 1vw;
-    }
-    .stat-card i { font-size: 3.5vh; color: var(--accent-blue); width: 4vh; text-align: center; }
-    .stat-info { display: flex; flex-direction: column; }
-    .stat-num { font-family: 'Orbitron', sans-serif; font-size: 3.5vh; font-weight: 700; line-height: 1; }
-    .stat-lbl { font-size: 1.2vh; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 0.5vh;}
-    
-    .stat-card.warning { border-bottom: 3px solid var(--accent-red); }
-    .stat-card.warning i, .stat-card.warning .stat-num { color: var(--accent-red); }
-
-    /* List Mahasiswa */
-    .list-container {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-light);
-      border-radius: 1.5vh;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
+      justify-content: center;
+      padding: 15px;
       overflow: hidden;
     }
 
-    .list-header {
-      padding: 2vh;
-      border-bottom: 1px solid var(--border-light);
-    }
-    .search-box {
+    .tv-screen {
       width: 100%;
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      color: white;
-      padding: 1.5vh;
-      border-radius: 1vh;
-      font-family: inherit;
-      outline: none;
-    }
-    .search-box:focus { border-color: var(--accent-blue); }
-
-    .student-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1vh;
+      max-width: 1600px;
+      height: 92vh;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 50px 100px rgba(0,0,0,0.8);
       display: flex;
       flex-direction: column;
-      gap: 0.5vh;
-    }
-
-    .student-item {
-      background: var(--bg-card);
-      padding: 1.5vh;
-      border-radius: 1vh;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: 0.2s;
-    }
-    .student-item:hover { background: #334155; }
-    .student-item.active { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.1); }
-    
-    .st-name { font-size: 1.6vh; font-weight: 700; color: var(--accent-gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .st-company { font-size: 1.3vh; color: var(--text-muted); margin-bottom: 1vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .mini-progress-bg { height: 0.8vh; background: rgba(255,255,255,0.1); border-radius: 1vh; overflow: hidden; }
-    .mini-progress-fill { height: 100%; background: var(--accent-blue); }
-
-    /* KOLOM KANAN */
-    .col-right {
-      flex: 2.2;
-      background: var(--bg-panel);
-      border: 1px solid var(--border-light);
-      border-radius: 1.5vh;
+      padding: 25px;
       position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
     }
 
-    .slide-img {
+    /* Header Styling */
+    .tv-header {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px 30px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 217, 102, 0.3);
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 15px; }
+    .logo-area img { height: 55px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+    .title h1 { font-size: 1.1rem; letter-spacing: 1px; color: #ffd966; text-transform: uppercase; }
+    .title p { font-size: 0.7rem; opacity: 0.7; }
+
+    .center-title h2 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(to bottom, #fff, #ffd966);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .clock-container { text-align: right; }
+    .clock {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #ffd966;
+      text-shadow: 0 0 15px rgba(255, 217, 102, 0.5);
+    }
+
+    /* Layout Main */
+    .main-content {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    /* Side Panels */
+    .panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .col-left { flex: 1.3; border-left: 4px solid #ffd966; }
+    .col-right { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+
+    /* Student Info Card */
+    .info-group { margin-bottom: 20px; transition: all 0.5s ease; }
+    .info-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .info-label { font-size: 0.7rem; color: #ffd966; text-transform: uppercase; font-weight: 600; }
+    .info-value { font-size: 1rem; color: #eee; }
+    .name-value { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+
+    /* Middle Slide */
+    .col-middle {
+      flex: 2.5;
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .slide-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-      transition: opacity 0.4s ease;
-      opacity: 0;
+      transition: transform 1s ease;
     }
-    .slide-img.loaded { opacity: 1; }
+    .active .slide-image { transform: scale(1.05); }
 
-    .slide-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: linear-gradient(to top, rgba(2,6,23,1) 0%, rgba(2,6,23,0.8) 50%, transparent 100%);
-      z-index: 2;
-      padding: 4vh 3vw 3vh 3vw;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5vh;
+    /* Stats Cards */
+    .stat-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+      padding: 15px;
+      border-radius: 18px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
     }
+    .stat-card i { color: #ffd966; font-size: 1.2rem; margin-bottom: 5px; }
+    .stat-number { font-family: 'Orbitron', sans-serif; font-size: 2rem; color: #fff; }
+    .stat-label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
 
-    .detail-top { display: flex; justify-content: space-between; align-items: flex-end; }
-    .d-name { font-size: 4vh; font-weight: 800; color: var(--accent-gold); line-height: 1.1; }
-    .d-nim { font-size: 2vh; font-family: 'Orbitron'; color: var(--text-muted); }
-    .d-company { font-size: 2vh; font-weight: 600; display: flex; align-items: center; gap: 1vh; margin-top: 0.5vh;}
-    
-    .d-caption { font-size: 1.8vh; font-style: italic; color: #cbd5e1; border-left: 3px solid var(--accent-blue); padding-left: 1vw; margin: 1vh 0; }
-
-    .d-stats { display: flex; gap: 2vw; font-size: 1.5vh; color: var(--text-muted); flex-wrap: wrap; }
-    .d-stats span { display: flex; align-items: center; gap: 0.5vw; }
-
-    .main-progress-container { margin-top: 1vh; }
-    .prog-text { display: flex; justify-content: space-between; font-size: 1.4vh; font-weight: 600; margin-bottom: 0.5vh; color: var(--accent-blue);}
-    .main-progress-bg { height: 1.5vh; background: rgba(255,255,255,0.2); border-radius: 1vh; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);}
-    .main-progress-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); box-shadow: 0 0 10px rgba(56,189,248,0.5); transition: width 0.5s ease; }
+    /* Progress Bar */
+    .progress-wrapper { margin-top: 15px; }
+    .progress-bg { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #ffd966, #ffb700); box-shadow: 0 0 10px #ffd966; transition: width 1s ease; }
 
     /* Footer */
-    .footer {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-light);
-      border-radius: 1vh;
-      height: 6vh;
-      display: flex;
-      align-items: center;
-      padding: 0 2vw;
-      flex-shrink: 0;
+    .footer-ticker {
+      margin-top: 20px;
+      background: rgba(255, 217, 102, 0.1);
+      border: 1px solid rgba(255, 217, 102, 0.3);
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
     }
-    marquee { font-size: 1.6vh; font-weight: 600; color: var(--text-main); }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-panel); }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-
-    /* Responsive */
-    @media (max-width: 800px) {
-      .d-name { font-size: 2.5vh; }
-      .d-caption { font-size: 1.5vh; }
-      .d-stats { font-size: 1.2vh; gap: 1vw; }
-      .col-left { min-width: 280px; }
+    /* Animation */
+    .fade-up { animation: fadeUp 0.8s ease forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-logo">
-    <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo" onerror="this.src='https://placehold.co/100?text=PD'">
-    <div class="header-text">
-      <p>POLITEKNIK DEWANTARA</p>
-      <p>TEKNIK ELEKTRONIKA</p>
+<div class="tv-screen">
+  <header class="tv-header">
+    <div class="logo-area">
+      <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" alt="Logo">
+      <div class="title">
+        <h1>TEKNIK ELEKTRONIKA</h1>
+        <p>POLITEKNIK DEWANTARA</p>
+      </div>
     </div>
-  </div>
-  <div class="header-title">
-    <h1>Dashboard Eksplorasi Magang</h1>
-  </div>
-  <div class="clock" id="liveClock">--:--:--</div>
-</header>
+    <div class="center-title">
+      <h2>DASHBOARD MONITORING MAGANG</h2>
+    </div>
+    <div class="clock-container">
+      <div class="clock" id="liveClock">00:00:00</div>
+    </div>
+  </header>
 
-<div class="main-wrapper">
-  <div class="col-left">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <i class="fas fa-folder-open"></i>
-        <div class="stat-info">
-          <span class="stat-num"><%= stats.totalLogbook || 0 %></span>
-          <span class="stat-lbl">Total Logbook</span>
+  <div class="main-content">
+    <aside class="panel col-left" id="infoMahasiswa">
+      <div class="info-group fade-up">
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-user-graduate"></i> Nama Mahasiswa</span>
+            <span class="name-value" id="slideNama">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-id-badge"></i> Nomor Induk Mahasiswa</span>
+            <span class="info-value" id="slideNim">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-building"></i> Penempatan Perusahaan</span>
+            <span class="info-value" id="slidePerusahaan">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-chalkboard-teacher"></i> Dosen Pembimbing</span>
+            <span class="info-value" id="slidePembimbing1">-</span>
+            <span class="info-value" id="slidePembimbing2">-</span>
+        </div>
+        
+        <div class="progress-wrapper">
+            <span class="info-label"><i class="fas fa-chart-line"></i> Progress Logbook: <span id="slideProgress">-</span></span>
+            <div class="progress-bg">
+                <div id="slideProgressBar" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="info-row" style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;">
+            <span class="info-label">Kegiatan Hari Ini:</span>
+            <span class="info-value" id="slideKegiatan">-</span>
         </div>
       </div>
-      <div class="stat-card warning">
-        <i class="fas fa-history"></i>
-        <div class="stat-info">
-          <span class="stat-num"><%= stats.logbookPending || 0 %></span>
-          <span class="stat-lbl">Logbook Pending</span>
-        </div>
+    </aside>
+
+    <main class="col-middle" id="slidesWrapper">
+      </main>
+
+    <aside class="panel col-right">
+      <div class="stat-card">
+        <i class="fas fa-folder-open"></i>
+        <div class="stat-number"><%= stats.totalLogbook %></div>
+        <div class="stat-label">Total Logbook</div>
+      </div>
+      <div class="stat-card" style="border-color: #ff444455;">
+        <i class="fas fa-hourglass-half" style="color: #ff4444;"></i>
+        <div class="stat-number"><%= stats.logbookPending %></div>
+        <div class="stat-label">Pending Approval</div>
       </div>
       <div class="stat-card">
         <i class="fas fa-users"></i>
-        <div class="stat-info">
-          <span class="stat-num"><%= stats.totalMahasiswaMagangAktif || 0 %></span>
-          <span class="stat-lbl">Mhs Magang Aktif</span>
-        </div>
+        <div class="stat-number"><%= stats.totalMahasiswaMagangAktif %></div>
+        <div class="stat-label">Mahasiswa Aktif</div>
       </div>
       <div class="stat-card">
         <i class="fas fa-clipboard-check"></i>
-        <div class="stat-info">
-          <span class="stat-num"><%= stats.tugasAktif || 0 %></span>
-          <span class="stat-lbl">Tugas Aktif</span>
-        </div>
+        <div class="stat-number"><%= stats.tugasAktif %></div>
+        <div class="stat-label">Tugas Perlu Dinilai</div>
       </div>
-    </div>
-
-    <div class="list-container">
-      <div class="list-header">
-        <input type="text" id="searchInput" class="search-box" placeholder="Cari nama atau NIM mahasiswa..." autocomplete="off">
-      </div>
-      <div class="student-list" id="studentListContainer">
-        <!-- Daftar mahasiswa akan diisi JS -->
-      </div>
-    </div>
+    </aside>
   </div>
 
-  <div class="col-right">
-    <img id="mainImage" class="slide-img" src="" alt="Dokumentasi" loading="lazy">
-    
-    <div class="slide-overlay">
-      <div class="detail-top">
-        <div>
-          <div class="d-name" id="mainName">-</div>
-          <div class="d-company"><i class="fas fa-building"></i> <span id="mainCompany">-</span></div>
-        </div>
-        <div class="d-nim" id="mainNim">-</div>
-      </div>
-
-      <div class="d-caption" id="mainCaption">"Memuat kegiatan..."</div>
-
-      <div class="d-stats">
-        <span><i class="fas fa-calendar-alt"></i> <span id="mainDate">-</span></span>
-        <span><i class="fas fa-map-marker-alt"></i> <span id="mainLocation">-</span></span>
-        <span><i class="fas fa-chalkboard-teacher"></i> <span id="mainDospem">-</span></span>
-      </div>
-
-      <div class="main-progress-container">
-        <div class="prog-text">
-          <span>Progress Logbook</span>
-          <span id="mainProgressText">0% (0/0 Hari)</span>
-        </div>
-        <div class="main-progress-bg">
-          <div class="main-progress-fill" id="mainProgressBar" style="width: 0%;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <footer class="footer-ticker">
+    <marquee scrollamount="6">
+      <i class="fas fa-info-circle"></i> Sistem Monitoring Real-time Magang Program Studi Teknik Elektronika (D3) • 
+      Akses Logbook Digital: elk-magang.polidewa.ac.id • 
+      Powered by Fajar Elektrik v.2.0 • Data diperbarui setiap 8 detik secara otomatis.
+    </marquee>
+  </footer>
 </div>
 
-<footer class="footer">
-  <marquee behavior="scroll" direction="left" scrollamount="6">
-    Sistem Monitoring Realtime Magang Mahasiswa Prodi Teknik Elektronika Politeknik Dewantara | Database terintegrasi dari Logbook Digital ELK-Magang | Design by Fajar Elektrik v.2.0.
-  </marquee>
-</footer>
-
 <script>
-  // Data dari server (EJS)
-  var slides = <%- JSON.stringify(slides || []) %>;
-  var stats = <%- JSON.stringify(stats || {}) %>;
-
-  // Variabel global
-  let filteredSlides = [...slides];
+  const slides = <%- JSON.stringify(slides) %>;
   let currentIndex = 0;
-  let autoPlayInterval;
 
-  // Fungsi render daftar mahasiswa
-  function renderStudentList() {
-    const container = document.getElementById('studentListContainer');
-    if (!container) return;
-    container.innerHTML = '';
+  function updateDisplay(index) {
+    const data = slides[index];
+    if (!data) return;
 
-    if (filteredSlides.length === 0) {
-      container.innerHTML = '<div style="padding: 2vh; text-align: center; color: #94a3b8;">Tidak ada data ditemukan.</div>';
-      return;
-    }
-
-    filteredSlides.forEach((student, idx) => {
-      const item = document.createElement('div');
-      item.className = `student-item ${idx === currentIndex ? 'active' : ''}`;
-      item.onclick = () => selectStudent(idx);
-      const progress = student.progressPercent || 0;
-      item.innerHTML = `
-        <div class="st-name">${escapeHtml(student.mahasiswa || 'Tanpa Nama')}</div>
-        <div class="st-company">${escapeHtml(student.perusahaan || '-')} | ${escapeHtml(student.nim || '-')}</div>
-        <div class="mini-progress-bg">
-          <div class="mini-progress-fill" style="width: ${progress}%"></div>
-        </div>
-      `;
-      container.appendChild(item);
-    });
-  }
-
-  // Escape HTML untuk mencegah XSS
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
-
-  // Filter pencarian
-  function filterList() {
-    const query = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (query === '') {
-      filteredSlides = [...slides];
-    } else {
-      filteredSlides = slides.filter(s => 
-        (s.mahasiswa && s.mahasiswa.toLowerCase().includes(query)) ||
-        (s.nim && s.nim.toLowerCase().includes(query))
-      );
-    }
-    currentIndex = 0;
-    renderStudentList();
-    updateMainVisual();
-    resetAutoPlay();
-  }
-
-  // Pilih mahasiswa manual
-  function selectStudent(index) {
-    if (index < 0 || index >= filteredSlides.length) return;
-    currentIndex = index;
-    updateMainVisual();
-    renderStudentList();
-    resetAutoPlay();
-  }
-
-  // Update tampilan kanan (gambar & info)
-  function updateMainVisual() {
-    if (filteredSlides.length === 0) {
-      // tampilkan placeholder kosong
-      document.getElementById('mainName').innerText = '-';
-      document.getElementById('mainNim').innerText = '-';
-      document.getElementById('mainCompany').innerText = '-';
-      document.getElementById('mainCaption').innerText = 'Tidak ada data logbook.';
-      document.getElementById('mainDate').innerText = '-';
-      document.getElementById('mainLocation').innerText = '-';
-      document.getElementById('mainDospem').innerText = '-';
-      document.getElementById('mainProgressText').innerText = '0% (0/0 Hari)';
-      document.getElementById('mainProgressBar').style.width = '0%';
-      const img = document.getElementById('mainImage');
-      img.src = 'https://placehold.co/1280x720/1e293b/38bdf8?text=Belum+Ada+Dokumentasi';
-      img.classList.remove('loaded');
-      setTimeout(() => img.classList.add('loaded'), 50);
-      return;
-    }
-
-    const data = filteredSlides[currentIndex];
-    const img = document.getElementById('mainImage');
-    img.classList.remove('loaded'); // fade out
+    // Update Text with simple animation reset
+    const panel = document.getElementById('infoMahasiswa');
+    panel.style.opacity = 0;
     
-    // Tunggu sebentar lalu ganti src dan fade in
     setTimeout(() => {
-      document.getElementById('mainName').innerText = data.mahasiswa || '-';
-      document.getElementById('mainNim').innerText = data.nim || '-';
-      document.getElementById('mainCompany').innerText = data.perusahaan || '-';
-      document.getElementById('mainCaption').innerText = `"${data.caption || 'Tidak ada keterangan kegiatan'}"`;
-      document.getElementById('mainDate').innerText = data.tanggal || '-';
-      document.getElementById('mainLocation').innerText = data.lokasi || '-';
-      const dosen = `${data.pembimbing1 || '-'} & ${data.pembimbing2 || '-'}`;
-      document.getElementById('mainDospem').innerText = dosen;
+      document.getElementById('slideNama').innerText = data.mahasiswa || '-';
+      document.getElementById('slideNim').innerText = data.nim || '-';
+      document.getElementById('slidePerusahaan').innerText = data.perusahaan || '-';
+      document.getElementById('slidePembimbing1').innerText = `1. ${data.pembimbing1 || '-'}`;
+      document.getElementById('slidePembimbing2').innerText = `2. ${data.pembimbing2 || '-'}`;
+      document.getElementById('slideKegiatan').innerText = data.caption || '-';
       
-      const p = data.progressPercent || 0;
-      const uploaded = data.progressUploaded || 0;
-      const total = data.progressTotal || 0;
-      document.getElementById('mainProgressText').innerText = `${p}% (${uploaded}/${total} Hari)`;
-      document.getElementById('mainProgressBar').style.width = `${p}%`;
+      const percent = data.progressPercent || 0;
+      document.getElementById('slideProgress').innerText = `${percent}% (${data.progressUploaded}/${data.progressTotal} Hari)`;
+      document.getElementById('slideProgressBar').style.width = `${percent}%`;
       
-      const imgUrl = data.imageUrl || 'https://placehold.co/1280x720/1e293b/38bdf8?text=Gambar+Tidak+Tersedia';
-      if (img.src !== imgUrl) {
-        img.src = imgUrl;
-      }
-      // Event load untuk fade in
-      img.onload = () => img.classList.add('loaded');
-      // Jika gambar sudah di cache, mungkin onload tidak terpanggil, kita set timeout
-      if (img.complete) img.classList.add('loaded');
-      else img.classList.add('loaded'); // tetap coba, tapi onload akan override
-    }, 200);
+      panel.style.opacity = 1;
+    }, 400);
+
+    // Update Image
+    const wrapper = document.getElementById('slidesWrapper');
+    wrapper.innerHTML = `
+      <img src="${data.imageUrl}" class="slide-image fade-up" 
+           onerror="this.src='https://via.placeholder.com/1200x800?text=Dokumentasi+Magang'">
+    `;
   }
 
-  // Auto slide
-  function nextSlide() {
-    if (filteredSlides.length === 0) return;
-    currentIndex = (currentIndex + 1) % filteredSlides.length;
-    updateMainVisual();
-    renderStudentList();
-    // Scroll ke item aktif
-    const activeItem = document.querySelector('.student-item.active');
-    if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  function rotate() {
+    currentIndex = (currentIndex + 1) % slides.length;
+    updateDisplay(currentIndex);
   }
 
-  function startAutoPlay() {
-    if (autoPlayInterval) clearInterval(autoPlayInterval);
-    autoPlayInterval = setInterval(nextSlide, 8000);
-  }
-
-  function resetAutoPlay() {
-    clearInterval(autoPlayInterval);
-    startAutoPlay();
-  }
-
-  // Jam
   function updateClock() {
     const now = new Date();
-    document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    document.getElementById('liveClock').innerText = now.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false 
+    });
   }
 
-  // Init
   window.onload = () => {
-    renderStudentList();
-    updateMainVisual();
-    startAutoPlay();
+    if(slides.length > 0) updateDisplay(0);
+    setInterval(rotate, 8000);
     setInterval(updateClock, 1000);
     updateClock();
-
-    // Event search
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-      searchInput.addEventListener('input', filterList);
-    }
   };
 </script>
 </body>

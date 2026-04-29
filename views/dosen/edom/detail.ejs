@@ -1,0 +1,253 @@
+<%- include('../../partials/header') %>
+
+<style>
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.08);
+    --card-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.5rem;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 35px -10px rgba(30,58,138,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header h2 {
+    font-weight: 800;
+    font-size: 1.7rem;
+    margin-bottom: 0.25rem;
+  }
+  .page-header p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+  }
+
+  .detail-card {
+    background: white;
+    border-radius: 1.2rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(30,58,138,0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .detail-card .card-header {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+  }
+  .detail-card .card-header h4 {
+    font-weight: 700;
+    margin: 0;
+    color: #0f172a;
+  }
+  .detail-card .card-body {
+    padding: 1.5rem;
+  }
+
+  .summary-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stats-item {
+    flex: 1;
+    text-align: center;
+  }
+  .stats-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    line-height: 1.2;
+  }
+  .stats-label {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+  .star-rating-large {
+    font-size: 1rem;
+    color: #ffc107;
+    letter-spacing: 2px;
+  }
+
+  .pertanyaan-item {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--primary-start);
+  }
+  .pertanyaan-text {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .rating-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-start);
+  }
+  .komentar-mhs {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+  .btn-back {
+    border: 1.5px solid var(--primary-start);
+    color: var(--primary-start);
+    background: transparent;
+    border-radius: 60px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-back:hover {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-color: transparent;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .page-header { padding: 1.2rem; }
+    .page-header h2 { font-size: 1.4rem; }
+    .summary-stats { flex-direction: column; gap: 0.8rem; }
+    .stats-number { font-size: 1.6rem; }
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-bar-chart-steps me-2"></i> Detail Evaluasi</h2>
+      <p><%= mkNama %> (<%= mkKode %>) - Periode: <%= periodeNama %></p>
+    </div>
+    <a href="/dosen/edom" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+  </div>
+
+  <!-- Ringkasan -->
+  <div class="summary-stats">
+    <div class="stats-item">
+      <div class="stats-number"><%= rataNilai.toFixed(2) %></div>
+      <div class="stats-label">Rata-rata Nilai</div>
+      <div class="star-rating-large mt-1">
+        <% 
+          let fullStars = Math.floor(rataNilai);
+          let halfStar = (rataNilai % 1) >= 0.5;
+          for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) { %>
+              <i class="bi bi-star-fill"></i>
+            <% } else if (i === fullStars+1 && halfStar) { %>
+              <i class="bi bi-star-half"></i>
+            <% } else { %>
+              <i class="bi bi-star"></i>
+            <% }
+          }
+        %>
+      </div>
+    </div>
+    <div class="stats-item">
+      <div class="stats-number"><%= totalResponden %></div>
+      <div class="stats-label">Jumlah Responden</div>
+    </div>
+    <div class="stats-item">
+      <div class="stats-number"><%= jumlahPertanyaan %></div>
+      <div class="stats-label">Pertanyaan Dinilai</div>
+    </div>
+  </div>
+
+  <!-- Daftar Pertanyaan dan Rata-rata per pertanyaan -->
+  <div class="detail-card">
+    <div class="card-header">
+      <h4><i class="bi bi-question-circle me-2"></i> Rekap Per Pertanyaan</h4>
+    </div>
+    <div class="card-body">
+      <% if (pertanyaanList && pertanyaanList.length) { %>
+        <% pertanyaanList.forEach((q, idx) => { %>
+          <div class="pertanyaan-item">
+            <div class="pertanyaan-text"><%= idx+1 %>. <%= q.pertanyaan %></div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <span class="rating-value"><%= q.rataNilai.toFixed(2) %> / 5.00</span>
+              <span class="star-rating">
+                <% 
+                  let starFull = Math.floor(q.rataNilai);
+                  let starHalf = (q.rataNilai % 1) >= 0.5;
+                  for (let i = 1; i <= 5; i++) {
+                    if (i <= starFull) { %>
+                      <i class="bi bi-star-fill"></i>
+                    <% } else if (i === starFull+1 && starHalf) { %>
+                      <i class="bi bi-star-half"></i>
+                    <% } else { %>
+                      <i class="bi bi-star"></i>
+                    <% }
+                  }
+                %>
+              </span>
+            </div>
+            <!-- Tampilkan komentar anonim untuk pertanyaan ini (opsional) -->
+            <% if (q.komentarList && q.komentarList.length) { %>
+              <div class="komentar-mhs mt-2">
+                <strong><i class="bi bi-chat-dots"></i> Komentar:</strong>
+                <ul class="mb-0 mt-1">
+                  <% q.komentarList.slice(0,5).forEach(k => { %>
+                    <li><%= k %></li>
+                  <% }) %>
+                  <% if (q.komentarList.length > 5) { %>
+                    <li><em>... dan <%= q.komentarList.length - 5 %> komentar lainnya</em></li>
+                  <% } %>
+                </ul>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="text-muted">Belum ada data pertanyaan.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Semua Komentar Anonim (opsional, bisa dijadikan satu) -->
+  <% if (semuaKomentar && semuaKomentar.length) { %>
+    <div class="detail-card">
+      <div class="card-header">
+        <h4><i class="bi bi-chat-dots-fill me-2"></i> Semua Komentar Anonim</h4>
+      </div>
+      <div class="card-body">
+        <div class="komentar-list" style="max-height: 300px; overflow-y: auto;">
+          <% semuaKomentar.forEach(k => { %>
+            <div class="komentar-item">
+              <i class="bi bi-person-circle me-2"></i> <%= k %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Tombol cetak (opsional) -->
+<div class="text-end mt-4">
+  <a href="/dosen/edom/print?mkId=<%= mkId %>&periode=<%= periodeId %>" class="btn btn-primary" target="_blank">
+    <i class="bi bi-printer me-1"></i> Cetak Laporan
+  </a>
+</div>
+</div>
+
+<%- include('../../partials/footer') %>

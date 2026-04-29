@@ -12,7 +12,6 @@ const cache = {
 };
 const TTL = 50 * 60 * 1000; // 50 menit
 
-// Helper untuk menyimpan cache dengan auto-expire
 function setCache(map, key, value) {
   map.set(key, value);
   setTimeout(() => map.delete(key), TTL);
@@ -122,7 +121,7 @@ async function getStatistikProdi() {
 
 router.get('/', async (req, res) => {
   try {
-    // Batasi jumlah logbook yang diambil untuk mengurangi kuota
+    // ========== DATA LOGBOOK MAGANG ==========
     const logbookSnapshot = await db.collection('logbookMagang')
       .where('status', '==', 'approved')
       .limit(30)
@@ -180,10 +179,61 @@ router.get('/', async (req, res) => {
 
     const stats = await getStatistikProdi();
 
+    // ========== DATA TAMBAHAN UNTUK TV ==========
+    // Berita terbaru
+    const beritaSnapshot = await db.collection('berita').orderBy('tanggal', 'desc').limit(5).get();
+    const beritaTerbaru = beritaSnapshot.docs.map(doc => ({
+      id: doc.id,
+      judul: doc.data().judul,
+      tanggal: doc.data().tanggal
+    }));
+
+    // Jadwal penting mendatang
+    const today = new Date().toISOString().split('T')[0];
+    const jadwalSnapshot = await db.collection('jadwalPenting')
+      .where('tanggal', '>=', today)
+      .orderBy('tanggal', 'asc')
+      .limit(5)
+      .get();
+    const jadwalPenting = jadwalSnapshot.docs.map(doc => ({
+      id: doc.id,
+      judul: doc.data().judul,
+      tanggal: doc.data().tanggal,
+      kategori: doc.data().kategori || 'umum'
+    }));
+
+    // Statistik umum prodi
+    const jumlahMahasiswa = (await db.collection('users').where('role', '==', 'mahasiswa').get()).size;
+    const jumlahDosen = (await db.collection('dosen').get()).size;
+    const jumlahMK = (await db.collection('mataKuliah').get()).size;
+
+    // Progress perkuliahan (5 MK dengan progress terbaru)
+    const mkSnapshot = await db.collection('mataKuliah')
+      .orderBy('updatedAt', 'desc')
+      .limit(5)
+      .get();
+    const mkProgress = mkSnapshot.docs.map(doc => {
+      const data = doc.data();
+      const materi = data.materi || [];
+      const terlaksana = materi.filter(m => m.status === 'selesai').length;
+      const persen = Math.round((terlaksana / 16) * 100);
+      return {
+        kode: data.kode,
+        nama: data.nama,
+        persen
+      };
+    });
+
     res.render('display/display', {
-      title: 'TV Prodi - Galeri Magang',
+      title: 'TV Prodi - Dashboard Informasi',
       slides,
-      stats
+      stats,
+      beritaTerbaru,
+      jadwalPenting,
+      jumlahMahasiswa,
+      jumlahDosen,
+      jumlahMK,
+      mkProgress
     });
   } catch (error) {
     console.error('Error display TV:', error);
