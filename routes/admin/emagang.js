@@ -239,6 +239,7 @@ router.get('/mahasiswa/:userId', async (req, res) => {
     const { periodId, semester } = req.query;
 
     clearCache();
+    const bimbingan = await getBimbingan(userId);
     const mahasiswa = await getMahasiswa(userId);
     if (!mahasiswa.nama || mahasiswa.nama === 'Unknown') {
       return res.status(404).send('Mahasiswa tidak ditemukan');
@@ -314,6 +315,7 @@ router.get('/mahasiswa/:userId', async (req, res) => {
       selectedPeriod,
       pdkStats,
       pdkList,
+      bimbingan,
       user: req.user
     });
   } catch (error) {

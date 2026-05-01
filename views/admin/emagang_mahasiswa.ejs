@@ -34,7 +34,11 @@
     return null;
   };
 %>
-
+<%
+  if (typeof bimbingan === 'undefined') {
+    var bimbingan = null;
+  }
+%>
 <style>
   :root {
     --primary-start: #1e3a8a;

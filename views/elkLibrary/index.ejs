@@ -298,32 +298,7 @@
     <p class="mb-0">Repositori laporan magang mahasiswa dan artikel dosen Teknik Elektronika</p>
   </div>
 
-  <%
-    // Hitung statistik berdasarkan items yang tampil (setelah filter)
-    const totalItems = items.length;
-    const totalLaporan = items.filter(i => i._type === 'laporan').length;
-    const totalArtikel = items.filter(i => i._type === 'artikel').length;
-  %>
-
-  <!-- Statistik Ringkasan -->
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-icon"><i class="bi bi-journals"></i></div>
-      <div class="stat-number"><%= totalItems %></div>
-      <div class="stat-label">Total Karya</div>
-    </div>
-    <div class="stat-card text-success">
-      <div class="stat-icon"><i class="bi bi-file-earmark-text"></i></div>
-      <div class="stat-number"><%= totalLaporan %></div>
-      <div class="stat-label">Laporan Magang</div>
-    </div>
-    <div class="stat-card text-info">
-      <div class="stat-icon"><i class="bi bi-newspaper"></i></div>
-      <div class="stat-number"><%= totalArtikel %></div>
-      <div class="stat-label">Artikel Dosen</div>
-    </div>
-  </div>
-
+  
   <!-- Pencarian dan Filter -->
   <div class="search-card">
     <form method="GET" class="row g-3 align-items-end">

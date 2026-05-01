@@ -1,178 +1,270 @@
 <%- include('../partials/header-landing') %>
 
 <style>
-  @media (max-width: 480px) {
-    body {
-        zoom: 0.50; 
-    }
-}
+  /* ===== VARIABEL & BASE ===== */
   :root {
-    --primary-start: #2147b0;
-    --primary-end: #6d8bed;
-    --primary-light: rgba(33, 66, 176, 0.1);
-    --primary-dark: #1a438f;
+    --primary-blue: #1e3a8a;
+    --accent-blue: #3b82f6;
+    --soft-bg: #f8fafc;
+    --text-slate: #1e293b;
+    --text-muted: #64748b;
   }
 
-  /* ===== HEADER DETAIL ===== */
-  .detail-header {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-radius: 2rem;
-    padding: 3rem;
+  body {
+    background-color: var(--soft-bg);
+    color: var(--text-slate);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* ===== BREADCRUMB ===== */
+  .breadcrumb-nav {
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== HEADER AREA ===== */
+  .detail-hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    border-radius: 1.5rem;
+    padding: 3rem 2rem;
     color: white;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 15px 30px rgba(33,147,176,0.25);
-  }
-  .detail-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -5%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    transform: rotate(15deg);
-  }
-  .detail-header h1 {
-    font-weight: 700;
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 1;
-  }
-  .detail-header p {
-    margin-bottom: 0.2rem;
-    opacity: 0.9;
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.2);
   }
 
-  /* ===== ABSTRACT CARD ===== */
-  .abstract-card {
-    background: white;
-    border-radius: 1.5rem;
-    padding: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    margin-bottom: 2rem;
-    border: 1px solid rgba(33,147,176,0.1);
-    transition: transform 0.3s;
+  .detail-hero h1 {
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    max-width: 900px;
   }
-  .abstract-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(33,147,176,0.1);
+
+  .meta-badge-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
-  .abstract-card h5 {
-    font-weight: 700;
-    color: #1e293b;
+
+  .meta-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border-bottom: 2px solid var(--primary-light);
-    padding-bottom: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* ===== CONTENT CARDS ===== */
+  .main-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 2.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .section-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+  }
+
+  .abstract-text {
+    line-height: 1.8;
+    color: #334155;
+    font-size: 1.05rem;
+    text-align: justify;
+  }
+
+  /* ===== SIDEBAR AREA ===== */
+  .sidebar-card {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
     margin-bottom: 1.5rem;
   }
-  .abstract-card p {
-    color: #475569;
-    line-height: 1.8;
-    font-size: 1rem;
-  }
-  .kata-kunci {
-    background: var(--primary-light);
-    padding: 1rem 1.5rem;
-    border-radius: 1rem;
-    color: var(--primary-dark);
-    font-weight: 500;
-  }
 
-  /* ===== TOMBOL DOWNLOAD ===== */
-  .btn-download {
-    background: linear-gradient(135deg, #28a745, #5cb85c);
-    border: none;
-    color: white;
-    border-radius: 50px;
-    padding: 0.8rem 2.5rem;
+  .keyword-pill {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 0.35rem 0.85rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(40,167,69,0.2);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    margin: 0.25rem;
+    border: 1px solid #dbeafe;
   }
-  .btn-download:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(40,167,69,0.3);
+
+  /* ===== ACTION BUTTONS ===== */
+  .btn-download-full {
+    background: #10b981;
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  }
+
+  .btn-download-full:hover {
+    background: #059669;
+    transform: translateY(-2px);
     color: white;
   }
 
-  /* ===== TOMBOL KEMBALI ===== */
-  .btn-back {
-    background: transparent;
-    border: 2px solid var(--primary-start);
-    color: var(--primary-start);
-    border-radius: 50px;
-    padding: 0.6rem 2rem;
-    font-weight: 500;
-    transition: all 0.3s;
+  .btn-back-outline {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 2rem;
+    transition: color 0.2s;
   }
-  .btn-back:hover {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-color: transparent;
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.3);
+
+  .btn-back-outline:hover { color: var(--primary-blue); }
+
+  @media (max-width: 768px) {
+    .detail-hero h1 { font-size: 1.75rem; }
+    .main-card { padding: 1.5rem; }
   }
 </style>
 
-<div class="container mt-4">
-  <!-- Header Detail -->
-  <div class="detail-header">
+<div class="container mt-4 mb-5">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-nav">
+    <a href="/" class="text-decoration-none text-muted">Home</a> / 
+    <a href="/elk-library" class="text-decoration-none text-muted">Library</a> / 
+    <span class="text-dark fw-semibold">Detail Karya</span>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="detail-hero">
     <% 
       const judul = item.judulPublik || item.title || '(Judul tidak tersedia)';
       const penulis = item.nama || item.penulis || 'Anonim';
-      const tahun = item.tahun ? `Tahun: ${item.tahun}` : '';
     %>
     <h1><%= judul %></h1>
-    <p><i class="bi bi-person-badge"></i> <%= penulis %></p>
-    <!-- Tampilkan dosen pembimbing jika ada (khusus laporan magang) -->
-    <% if (item.pembimbing) { %>
-      <p><i class="bi bi-person-video3"></i> Pembimbing: <%= item.pembimbing %></p>
-    <% } %>
-    <p><i class="bi bi-calendar3"></i> <%= tahun %></p>
-  </div>
-
-  <!-- Abstrak -->
-  <div class="abstract-card">
-    <h5><i class="bi bi-file-text" style="color: var(--primary-start);"></i> Abstrak</h5>
-    <p class="mb-4"><%= item.abstrak || item.abstract || 'Tidak ada abstrak.' %></p>
-    <% if (item.kataKunci) { %>
-      <div class="kata-kunci">
-        <i class="bi bi-tags"></i> <strong>Kata Kunci:</strong> <%= item.kataKunci.join(', ') %>
+    
+    <div class="meta-badge-group">
+      <div class="meta-badge">
+        <i class="bi bi-person-circle"></i> <%= penulis %>
       </div>
-    <% } %>
-  </div>
+      <% if (item.tahun) { %>
+      <div class="meta-badge">
+        <i class="bi bi-calendar-check"></i> <%= item.tahun %>
+      </div>
+      <% } %>
+      <div class="meta-badge">
+        <i class="bi bi-file-earmark-lock2"></i> Open Access
+      </div>
+    </div>
+  </header>
 
-  <!-- Tombol Download (hanya tampil jika ada fileUrl) -->
-  <% if (item.fileUrl) { %>
-    <div class="text-center mb-5">
-      <a href="<%= item.fileUrl %>" target="_blank" class="btn-download">
-        <i class="bi bi-file-earmark-pdf fs-5"></i> Lihat / Unduh Dokumen
+  <div class="row">
+    <!-- Main Content: Abstract -->
+    <div class="col-lg-8">
+      <article class="main-card">
+        <h5 class="section-title">
+          <i class="bi bi-text-paragraph"></i> Abstrak
+        </h5>
+        <div class="abstract-text">
+          <%= item.abstrak || item.abstract || 'Abstrak tidak tersedia untuk dokumen ini.' %>
+        </div>
+
+        <hr class="my-5 opacity-50">
+
+        <% if (item.kataKunci) { %>
+        <h5 class="section-title">
+          <i class="bi bi-tags"></i> Kata Kunci
+        </h5>
+        <div class="ms-n1">
+          <% item.kataKunci.forEach(function(key) { %>
+            <span class="keyword-pill"><%= key %></span>
+          <% }); %>
+        </div>
+        <% } %>
+      </article>
+      
+      <a href="/elk-library" class="btn-back-outline">
+        <i class="bi bi-arrow-left"></i> Kembali ke Katalog Perpustakaan
       </a>
     </div>
-  <% } %>
 
-  <!-- Tombol Kembali -->
-  <div class="text-center">
-    <a href="/elk-library" class="btn-back">
-      <i class="bi bi-arrow-left"></i> Kembali ke Library
-    </a>
+    <!-- Sidebar: Metadata & Download -->
+    <div class="col-lg-4">
+      <!-- Download Box -->
+      <% if (item.fileUrl) { %>
+      <div class="sidebar-card border-success bg-light bg-opacity-10">
+        <h6 class="fw-bold mb-3">Dokumen Lengkap</h6>
+        <a href="<%= item.fileUrl %>" target="_blank" class="btn-download-full">
+          <i class="bi bi-file-earmark-pdf fs-4"></i> Lihat PDF Lengkap
+        </a>
+        <p class="text-muted small text-center mt-3 mb-0">
+          <i class="bi bi-info-circle me-1"></i> Klik untuk membuka file di tab baru
+        </p>
+      </div>
+      <% } %>
+
+      <!-- Author/Supervisor Box -->
+      <div class="sidebar-card">
+        <h6 class="fw-bold mb-3 border-bottom pb-2">Informasi Kontributor</h6>
+        
+        <div class="mb-3">
+          <label class="text-muted small d-block">Penulis Utama</label>
+          <span class="fw-semibold"><%= penulis %></span>
+        </div>
+
+        <% if (item.pembimbing) { %>
+        <div class="mb-0">
+          <label class="text-muted small d-block">Dosen Pembimbing</label>
+          <span class="fw-semibold"><i class="bi bi-mortarboard me-1"></i> <%= item.pembimbing %></span>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- Type/Category Box -->
+      <div class="sidebar-card">
+        <h6 class="fw-bold mb-3 border-bottom pb-2">Detail Publikasi</h6>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Tipe Dokumen</span>
+          <span class="badge bg-primary rounded-pill small"><%= item._type === 'laporan' ? 'Laporan Magang' : 'Artikel Ilmiah' %></span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted small">ID Arsip</span>
+          <span class="text-dark fw-medium small">#<%= (item.id || '').substring(0,8).toUpperCase() %></span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

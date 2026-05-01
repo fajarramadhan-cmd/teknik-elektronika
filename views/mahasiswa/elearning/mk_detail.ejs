@@ -37,8 +37,8 @@
     background-color: #f8fafc;
   }
 
-  /* ===== HEADER TUGAS ===== */
-  .tugas-header {
+  /* ===== HEADER MATA KULIAH ===== */
+  .mk-header {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border-radius: 1.5rem;
     padding: 2rem;
@@ -48,7 +48,7 @@
     position: relative;
     overflow: hidden;
   }
-  .tugas-header::before {
+  .mk-header::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -59,36 +59,33 @@
     border-radius: 50%;
     transform: rotate(25deg);
   }
-  .tugas-header h2 {
+  .mk-header h2 {
     font-weight: 700;
     font-size: 1.8rem;
     margin-bottom: 0.5rem;
     position: relative;
     z-index: 1;
   }
-  .tugas-header p {
+  .mk-header p {
     font-size: 1rem;
     opacity: 0.9;
     position: relative;
     z-index: 1;
   }
-  .tugas-header .btn-light {
-    background: white;
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    font-weight: 500;
-    color: var(--primary-start);
+  .btn-back {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
     border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-    font-size: 0.95rem;
+    color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.2s;
     text-decoration: none;
-    display: inline-block;
   }
-  .tugas-header .btn-light:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    color: var(--primary-dark);
+  .btn-back:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
   }
 
   /* ===== INFO CARD ===== */
@@ -113,353 +110,157 @@
     color: var(--primary-start);
   }
 
-  /* ===== DEADLINE CARD ===== */
-  .deadline-card {
-    border-left: 5px solid #dc3545;
-    background: #fff5f5;
+  /* ===== TABEL MATERI ===== */
+  .table-materi th {
+    background: #f8fafc;
+    font-weight: 600;
   }
-
-  /* ===== BADGE STATUS ===== */
   .badge-status {
-    padding: 0.3rem 1rem;
+    padding: 0.2rem 0.7rem;
     border-radius: 50px;
-    font-weight: 500;
-    font-size: 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
+    font-size: 0.7rem;
+  }
+  .badge-selesai {
+    background: #d1fae5;
+    color: #065f46;
   }
   .badge-belum {
-    background: var(--warning-bg);
-    color: var(--warning-text);
-  }
-  .badge-dikumpulkan {
-    background: var(--success-bg);
-    color: var(--success-text);
-  }
-  .badge-dinilai {
-    background: var(--info-bg);
-    color: var(--info-text);
+    background: #fef3c7;
+    color: #b45309;
   }
 
-  /* ===== TOMBOL GRADIEN ===== */
-  .btn-gradient {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.6rem 2rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(30,58,138,0.2);
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    font-size: 0.95rem;
-  }
-  .btn-gradient:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(30,58,138,0.4);
-    color: white;
-  }
-  .btn-gradient.btn-sm {
-    padding: 0.4rem 1.2rem;
-    font-size: 0.85rem;
-  }
-
-  .btn-outline-gradient {
-    background: transparent;
-    border: 2px solid var(--primary-start);
-    color: var(--primary-start);
-    font-weight: 500;
-    padding: 0.6rem 2rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 0.95rem;
-  }
-  .btn-outline-gradient:hover {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-color: transparent;
-    color: white;
-  }
-
-  .btn-warning {
-    background: #ffc107;
-    border: none;
-    color: #212529;
-    font-weight: 500;
-    padding: 0.6rem 2rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 0.95rem;
-  }
-  .btn-warning:hover {
-    background: #e0a800;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(255,193,7,0.4);
-    color: #212529;
-  }
-
-  .btn-danger {
-    background: #dc3545;
-    border: none;
-    color: white;
-    font-weight: 500;
-    padding: 0.6rem 2rem;
-    border-radius: 50px;
-    transition: all 0.3s;
-    font-size: 0.95rem;
-  }
-  .btn-danger:hover {
-    background: #c82333;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(220,53,69,0.4);
-    color: white;
-  }
-
-  /* ===== FILE INFO ===== */
-  .file-info {
-    background: #f8fafc;
-    padding: 1rem;
+  /* ===== TUGAS CARD ===== */
+  .tugas-card {
+    background: white;
     border-radius: 1rem;
-    margin-top: 1rem;
-    border: 1px solid #e2e8f0;
-  }
-
-  /* ===== NILAI DISPLAY ===== */
-  .nilai-display {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-start);
-  }
-
-  /* ===== MODAL ===== */
-  .modal-content {
-    border: none;
-    border-radius: 1.5rem;
-    overflow: hidden;
-  }
-  .modal-header {
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    color: white;
-    border-bottom: none;
-    padding: 1.2rem 1.5rem;
-  }
-  .modal-header .btn-close {
-    background: rgba(255,255,255,0.8);
-    opacity: 0.8;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(30,58,138,0.1);
     transition: all 0.2s;
   }
-  .modal-header .btn-close:hover {
-    opacity: 1;
-    transform: rotate(90deg);
+  .tugas-card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
   }
-  .modal-body {
-    padding: 1.5rem;
+  .tugas-judul {
+    font-weight: 700;
+    font-size: 1rem;
   }
-  .modal-footer {
-    border-top: 1px solid #e9ecef;
-    padding: 1rem 1.5rem;
+  .tugas-deadline {
+    font-size: 0.8rem;
+    color: #ef4444;
   }
-  .form-label {
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
-  }
-  .form-control {
-    border-radius: 0.9rem;
-    padding: 0.6rem 1rem;
-    border: 1px solid #cbd5e1;
-    transition: all 0.3s;
-  }
-  .form-control:focus {
-    border-color: var(--primary-start);
-    box-shadow: 0 0 0 0.2rem rgba(30,58,138,0.25);
-  }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 768px) {
-    html { font-size: 15px; }
-    .tugas-header { padding: 1.5rem; }
-    .tugas-header h2 { font-size: 1.6rem; }
-    .tugas-header p { font-size: 0.95rem; }
-    .tugas-header .btn-light { padding: 0.4rem 1.2rem; font-size: 0.9rem; }
-    .info-card { padding: 1.2rem; }
-    .info-card h5 { font-size: 1.1rem; }
-  }
-
-  @media (max-width: 576px) {
-    html { font-size: 14px; }
-    .tugas-header h2 { font-size: 1.4rem; }
-    .btn-gradient, .btn-outline-gradient, .btn-warning, .btn-danger { padding: 0.5rem 1.5rem; }
-  }
-
-  @media (max-width: 400px) {
-    html { font-size: 13px; }
-    .tugas-header h2 { font-size: 1.2rem; }
+  .btn-tugas {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    border-radius: 50px;
+    padding: 0.3rem 1rem;
+    color: white;
+    font-size: 0.8rem;
+    text-decoration: none;
   }
 </style>
 
 <div class="container mt-4">
-  <!-- Header Tugas -->
-  <div class="tugas-header d-flex flex-wrap justify-content-between align-items-center">
+  <!-- Header MK -->
+  <div class="mk-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
-      <h2><%= tugas.judul %></h2>
-      <p class="mb-0">
-        <i class="bi bi-book me-2"></i><%= mk.kode %> - <%= mk.nama %> |
-        <i class="bi bi-tag me-2"></i><%= tugas.tipe %>
-      </p>
+      <h2><%= mk.kode %> - <%= mk.nama %></h2>
+      <p><%= mk.sks %> SKS | Semester <%= mk.semester %></p>
     </div>
-    <a href="/mahasiswa/elearning/mk/<%= mk.id %>" class="btn-light mt-2 mt-sm-0">
-      <i class="bi bi-arrow-left me-2"></i>Kembali ke MK
+    <a href="/mahasiswa/elearning" class="btn-back mt-2 mt-sm-0">
+      <i class="bi bi-arrow-left me-2"></i>Kembali
     </a>
   </div>
 
   <div class="row">
-    <!-- Kolom Kiri: Detail Tugas -->
-    <div class="col-lg-8">
-      <div class="info-card">
-        <h5><i class="bi bi-info-circle"></i> Deskripsi Tugas</h5>
-        <p><%= tugas.deskripsi || 'Tidak ada deskripsi.' %></p>
-
-        <% if (tugas.fileUrl) { %>
-          <div class="file-info">
-            <i class="bi bi-file-earmark-text me-2"></i>File Soal: 
-            <a href="<%= tugas.fileUrl %>" target="_blank" class="btn-outline-gradient btn-sm ms-2">
-              <i class="bi bi-download"></i> Unduh
-            </a>
-          </div>
-        <% } %>
-      </div>
-    </div>
-
-    <!-- Kolom Kanan: Deadline & Status -->
+    <!-- Kolom Kiri: Informasi MK & Dosen -->
     <div class="col-lg-4">
-      <div class="info-card deadline-card">
-        <h5><i class="bi bi-calendar-event"></i> Deadline</h5>
-        <p class="mb-1"><%= new Date(tugas.deadline).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) %></p>
-        <% if (deadlineLewat) { %>
-          <span class="badge-status" style="background:#fee2e2; color:#991b1b;">Deadline telah lewat</span>
-        <% } else { %>
-          <span class="badge-status" style="background:#d1fae5; color:#065f46;">Deadline masih aktif</span>
-        <% } %>
-      </div>
-
       <div class="info-card">
-        <h5><i class="bi bi-check-circle"></i> Status Pengumpulan</h5>
-        <% if (pengumpulan) { %>
-          <span class="badge-status badge-dikumpulkan">
-            <i class="bi bi-check-circle"></i> Sudah dikumpulkan
-          </span>
-          <p class="mt-3 mb-1">
-            <i class="bi bi-clock me-2"></i>
-            <%= new Date(pengumpulan.submittedAt).toLocaleString('id-ID') %>
-          </p>
-          <% if (pengumpulan.revisionCount > 0) { %>
-            <p class="text-muted small">
-              <i class="bi bi-arrow-repeat me-1"></i>
-              Revisi ke-<%= pengumpulan.revisionCount %>
-            </p>
-          <% } %>
-          <div class="file-info">
-            <i class="bi bi-file-earmark me-2"></i>File Jawaban:
-            <a href="<%= pengumpulan.fileUrl %>" target="_blank" class="btn-outline-gradient btn-sm ms-2">
-              <i class="bi bi-eye"></i> Lihat
-            </a>
-          </div>
-          <% if (pengumpulan.nilai !== null) { %>
-            <hr>
-            <h5 class="fw-bold mb-2">Nilai & Komentar</h5>
-            <div class="nilai-display"><%= pengumpulan.nilai %></div>
-            <% if (pengumpulan.komentar) { %>
-              <p class="mt-2"><i class="bi bi-chat"></i> <%= pengumpulan.komentar %></p>
-            <% } %>
-          <% } %>
+        <h5><i class="bi bi-person-badge"></i> Dosen Pengampu</h5>
+        <% if (dosenList && dosenList.length) { %>
+          <% dosenList.forEach(d => { %>
+            <p><i class="bi bi-person-circle me-2"></i> <%= d.nama %></p>
+          <% }) %>
         <% } else { %>
-          <span class="badge-status badge-belum">
-            <i class="bi bi-hourglass"></i> Belum dikumpulkan
-          </span>
+          <p>Belum ada dosen pengampu.</p>
         <% } %>
       </div>
-
-      <!-- Form Upload (hanya jika belum dikumpul dan deadline belum lewat) -->
-      <% if (!pengumpulan && !deadlineLewat) { %>
-        <div class="info-card">
-          <h5><i class="bi bi-cloud-upload"></i> Kumpulkan Tugas</h5>
-          <form method="POST" action="/mahasiswa/elearning/tugas/<%= tugas.id %>/kumpul" enctype="multipart/form-data">
-            <div class="mb-3">
-              <label for="file" class="form-label">Pilih file (PDF, DOC, ZIP)</label>
-              <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx,.zip" required>
-              <small class="text-muted">Maksimal 10MB</small>
-            </div>
-            <button type="submit" class="btn-gradient w-100">Upload Tugas</button>
-          </form>
-        </div>
-      <% } %>
-
-      <!-- Tombol Revisi (hanya jika sudah kumpul, belum dinilai, dan deadline belum lewat) -->
-      <% if (pengumpulan && !deadlineLewat && !pengumpulan.nilai) { %>
-        <div class="info-card">
-          <h5><i class="bi bi-arrow-repeat"></i> Revisi Jawaban</h5>
-          <p class="text-muted small">Anda dapat mengganti file jawaban Anda sebelum deadline.</p>
-          <button type="button" class="btn-warning w-100" data-bs-toggle="modal" data-bs-target="#revisiModal">
-            <i class="bi bi-arrow-repeat me-2"></i> Revisi Jawaban
-          </button>
-        </div>
-      <% } %>
-
-      <!-- Tombol Hapus (jika sudah dikumpul, belum dinilai, dan deadline belum lewat) -->
-      <% if (pengumpulan && !deadlineLewat && !pengumpulan.nilai) { %>
-        <div class="info-card">
-          <form method="POST" action="/mahasiswa/elearning/tugas/<%= tugas.id %>/hapus" onsubmit="return confirm('Yakin ingin menghapus pengumpulan? File jawaban akan dihapus.')">
-            <button type="submit" class="btn-danger w-100">
-              <i class="bi bi-trash me-2"></i> Hapus Pengumpulan
-            </button>
-          </form>
-        </div>
-      <% } %>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL REVISI TUGAS -->
-<div class="modal fade" id="revisiModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="bi bi-arrow-repeat me-2"></i>Revisi Jawaban Tugas
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <div class="info-card">
+        <h5><i class="bi bi-calendar-week"></i> Jadwal</h5>
+        <p><%= jadwal || 'Belum diatur' %></p>
       </div>
-      <form method="POST" action="/mahasiswa/elearning/tugas/<%= tugas.id %>/revisi" enctype="multipart/form-data">
-        <div class="modal-body">
-          <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <strong>Perhatian!</strong> Revisi akan mengganti file jawaban Anda sebelumnya.
-            File lama akan dihapus dan diganti dengan file baru.
-          </div>
-          <div class="mb-3">
-            <label for="revisiFile" class="form-label">File Jawaban Baru</label>
-            <input type="file" class="form-control" id="revisiFile" name="file" accept=".pdf,.doc,.docx,.zip" required>
-            <small class="text-muted">Maksimal 10MB, format PDF/DOC/ZIP</small>
-          </div>
-          <div class="alert alert-info mt-3">
-            <i class="bi bi-info-circle me-2"></i>
-            Setelah revisi, nilai Anda (jika sudah ada) akan direset dan perlu dinilai ulang oleh dosen.
-          </div>
+      <div class="info-card">
+        <h5><i class="bi bi-people"></i> Mahasiswa</h5>
+        <p>Jumlah mahasiswa: <strong><%= jumlahMahasiswa || 0 %></strong></p>
+      </div>
+    </div>
+
+    <!-- Kolom Kanan: Materi & Tugas -->
+    <div class="col-lg-8">
+      <!-- Materi Perkuliahan -->
+      <div class="info-card">
+        <h5><i class="bi bi-journal-bookmark-fill"></i> Materi Perkuliahan (16 Pertemuan)</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-materi">
+            <thead>
+              <tr><th>Pertemuan</th><th>Topik</th><th>Tanggal</th><th>Status</th><th>File</th></tr>
+            </thead>
+            <tbody>
+              <% materi.forEach(m => { %>
+                <tr>
+                  <td class="text-center"><%= m.pertemuan %></td>
+                  <td><%= m.topik %></td>
+                  <td><%= m.tanggal ? new Date(m.tanggal).toLocaleDateString('id-ID') : '-' %></td>
+                  <td>
+                    <span class="badge-status <%= m.status === 'selesai' ? 'badge-selesai' : 'badge-belum' %>">
+                      <%= m.status === 'selesai' ? 'Selesai' : 'Belum' %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if (m.fileUrl) { %>
+                      <a href="<%= m.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary">Lihat</a>
+                    <% } else { %>-<% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn-warning">
-            <i class="bi bi-arrow-repeat me-2"></i>Upload Revisi
-          </button>
-        </div>
-      </form>
+      </div>
+
+      <!-- Daftar Tugas -->
+      <div class="info-card">
+        <h5><i class="bi bi-list-task"></i> Daftar Tugas</h5>
+        <% if (tugasList && tugasList.length) { %>
+          <% tugasList.forEach(t => { 
+            const deadline = new Date(t.deadline);
+            const now = new Date();
+            const isOverdue = deadline < now;
+          %>
+            <div class="tugas-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="tugas-judul"><%= t.judul %></div>
+                  <div class="tugas-deadline <%= isOverdue ? 'text-danger' : 'text-warning' %>">
+                    <i class="bi bi-calendar"></i> Deadline: <%= deadline.toLocaleString('id-ID') %>
+                  </div>
+                  <div class="text-muted small mt-1"><%= t.deskripsi ? t.deskripsi.substring(0, 100) : '' %></div>
+                </div>
+                <div>
+                  <% if (t.pengumpulan) { %>
+                    <span class="badge bg-success">Sudah Dikumpul</span>
+                    <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-tugas btn-sm ms-2">Detail</a>
+                  <% } else { %>
+                    <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-tugas btn-sm">Kumpul</a>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p class="text-muted">Belum ada tugas.</p>
+        <% } %>
+      </div>
     </div>
   </div>
 </div>
