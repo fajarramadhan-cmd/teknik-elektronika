@@ -5,7 +5,6 @@
   if (typeof user === 'undefined') user = { nama: 'Mahasiswa', email: '', nim: '-', foto: null };
   if (typeof tagihan === 'undefined') tagihan = [];
   if (typeof upcomingEvents === 'undefined') upcomingEvents = [];
-  if (typeof events === 'undefined') events = [];
   if (typeof tugasAktif === 'undefined') tugasAktif = [];
   if (typeof totalSks === 'undefined') totalSks = 0;
   if (typeof semesterSekarang === 'undefined') semesterSekarang = 'Genap 2025/2026';
@@ -110,7 +109,7 @@
     font-size: 1rem;
   }
 
-  /* ===== BADGE TOTAL TAGIHAN (mirip badge tugas) ===== */
+  /* ===== BADGE TOTAL TAGIHAN ===== */
   .badge-total-tagihan {
     background: rgba(255,255,255,0.2);
     color: white;
@@ -130,7 +129,7 @@
     transform: translateY(-2px);
   }
 
-  /* ===== BADGE STATUS (lunas & belum lunas) ===== */
+  /* ===== BADGE STATUS ===== */
   .badge-lunas {
     background: linear-gradient(135deg, #10b981, #34d399);
     color: white;
@@ -363,7 +362,6 @@
   }
 </style>
 
-<!-- Gunakan container agar lebar konten selaras dengan navbar di desktop -->
 <div class="container mt-4">
   <!-- Notifikasi Upload Sukses -->
   <% if (uploadSuccess) { %>
@@ -401,7 +399,7 @@
     </div>
   </div>
 
-  <!-- Card Ringkasan (hanya Jadwal Penting + Tugas Aktif) -->
+  <!-- Card Ringkasan (Jadwal Penting + Tugas Aktif) -->
   <div class="ringkasan-card">
     <div class="ringkasan-header d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0"><i class="bi bi-mortarboard me-2"></i>Informasi Mahasiswa</h5>
@@ -409,7 +407,7 @@
     </div>
     <div class="card-body p-4">
       <!-- Jadwal Penting Mendatang -->
-      <% if (upcomingEvents.length > 0) { %>
+      <% if (upcomingEvents && upcomingEvents.length > 0) { %>
         <div class="mb-4">
           <h6 class="fw-semibold mb-3"><i class="bi bi-calendar-event me-2"></i>Jadwal Penting</h6>
           <div class="d-flex flex-wrap gap-3">
@@ -474,7 +472,6 @@
   <div class="tagihan-card">
     <div class="tagihan-header d-flex flex-wrap justify-content-between align-items-center">
       <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin me-2"></i>Tagihan SPP</h5>
-      <!-- Badge ringkasan tagihan sebagai link ke halaman tagihan -->
       <div class="d-flex align-items-center gap-3 mt-2 mt-sm-0">
         <a href="/mahasiswa/tagihan" class="text-decoration-none">
           <span class="badge-total-tagihan">
@@ -548,7 +545,7 @@
       <h6 class="menu-title">Tracer Study</h6>
       <p class="menu-desc">Survei alumni</p>
     </a>
-        <a href="/mahasiswa/edom" class="menu-card">
+    <a href="/mahasiswa/edom" class="menu-card">
       <div class="menu-icon" style="background: rgba(30,58,138,0.1); color: #f59e0b;"><i class="bi bi-star-fill"></i></div>
       <h6 class="menu-title">EDOM</h6>
       <p class="menu-desc">Evaluasi Dosen</p>

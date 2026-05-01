@@ -13,7 +13,7 @@
 %>
 
 <style>
-  /* ===== VARIABEL WARNA (sesuai navbar) ===== */
+  /* ===== VARIABEL WARNA ===== */
   :root {
     --primary-start: #1e3a8a;
     --primary-end: #3b82f6;
@@ -23,7 +23,7 @@
   }
 
   html {
-    font-size: 16px; /* basis desktop */
+    font-size: 16px;
   }
 
   body {
@@ -34,275 +34,251 @@
   /* ===== HEADER ===== */
   .page-header {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-radius: 1.5rem;
-    padding: 2rem;
+    border-radius: 1.2rem;
+    padding: 1.2rem;
     color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 15px 30px rgba(30,58,138,0.25);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 20px rgba(30,58,138,0.2);
     position: relative;
     overflow: hidden;
-  }
-  .page-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    transform: rotate(25deg);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
   }
   .page-header h2 {
     font-weight: 700;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 1;
+    font-size: 1.4rem;
+    margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.8rem;
+    gap: 0.4rem;
   }
   .page-header p {
-    margin-bottom: 0;
+    font-size: 0.8rem;
     opacity: 0.9;
-    position: relative;
-    z-index: 1;
-    font-size: 1rem;
+    margin: 0.2rem 0 0;
   }
   .btn-back {
-    background: white;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
     border-radius: 50px;
-    padding: 0.5rem 1.5rem;
+    padding: 0.4rem 1rem;
     font-weight: 500;
-    color: var(--primary-start);
+    color: white;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    border: none;
-    font-size: 0.95rem;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    transition: 0.2s;
   }
   .btn-back:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    color: var(--primary-dark);
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+    color: white;
   }
 
-  /* ===== COURSE CARD ===== */
-  .course-card {
+  /* ===== TABEL RESPONSIF ===== */
+  .table-wrapper {
     background: white;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border-radius: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    overflow-x: auto;
     border: 1px solid rgba(30,58,138,0.1);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
   }
-  .course-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 35px rgba(30,58,138,0.15);
-    border-color: transparent;
+  .table-mk {
+    width: 100%;
+    min-width: 500px; /* Agar tabel tidak terlalu sempit di hp, bisa di-scroll */
+    margin-bottom: 0;
   }
-  .course-image {
-    height: 140px;
-    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 3.5rem;
-    transition: all 0.3s;
-  }
-  .course-card:hover .course-image {
-    transform: scale(1.02);
-  }
-  .course-body {
-    padding: 1.5rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .course-code {
-    color: var(--primary-start);
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: var(--primary-light);
-    display: inline-block;
-    padding: 0.2rem 0.8rem;
-    border-radius: 50px;
-    align-self: flex-start;
-  }
-  .course-name {
+  .table-mk th {
+    background: #f8fafc;
     font-weight: 700;
-    font-size: 1.2rem;
-    color: #1e293b;
-    margin: 0.75rem 0 0.5rem;
-    line-height: 1.4;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    padding: 0.7rem 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: center;
   }
-  .course-detail {
-    color: #64748b;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    flex-grow: 1;
+  .table-mk td {
+    padding: 0.7rem 0.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+    font-size: 0.8rem;
+    text-align: center;
   }
-  .course-detail i {
-    color: var(--primary-start);
-    width: 1.2rem;
+  .table-mk td:first-child {
+    text-align: left;
+    font-weight: 500;
   }
-  .btn-gradient {
+  .table-mk tr:hover {
+    background: #fefce8;
+  }
+  .progress-bar-bg {
+    background: #e2e8f0;
+    height: 6px;
+    border-radius: 3px;
+    width: 100%;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .progress-bar-fill {
+    background: linear-gradient(90deg, var(--primary-start), var(--primary-end));
+    height: 100%;
+    border-radius: 3px;
+  }
+  .progress-text {
+    font-size: 0.7rem;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .badge-tugas {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.2rem 0.5rem;
+    border-radius: 50px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .badge-tidak {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .btn-detail {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
-    font-weight: 500;
-    padding: 0.6rem 1.5rem;
+    padding: 0.25rem 0.7rem;
     border-radius: 50px;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(30,58,138,0.2);
+    font-size: 0.7rem;
+    transition: 0.2s;
     text-decoration: none;
     display: inline-block;
-    text-align: center;
-    font-size: 0.95rem;
+    white-space: nowrap;
   }
-  .btn-gradient:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(30,58,138,0.4);
+  .btn-detail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(30,58,138,0.3);
     color: white;
   }
 
   /* ===== EMPTY STATE ===== */
   .empty-state {
-    background: white;
-    border-radius: 1.5rem;
-    padding: 4rem 2rem;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid rgba(30,58,138,0.1);
+    padding: 2rem;
   }
   .empty-state i {
-    font-size: 4rem;
-    color: #adb5bd;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    color: #cbd5e1;
   }
-  .empty-state h4 {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.5rem;
-    font-size: 1.5rem;
-  }
-  .empty-state p {
-    color: #6c757d;
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
+  .empty-state h5 {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
   }
 
   /* ===== RESPONSIVE UNTUK HP ===== */
   @media (max-width: 768px) {
     html { font-size: 15px; }
-    .page-header { padding: 1.5rem; }
-    .page-header h2 { font-size: 1.6rem; }
-    .page-header p { font-size: 0.95rem; }
-    .btn-back { padding: 0.4rem 1.2rem; font-size: 0.9rem; }
-    .course-image { height: 120px; font-size: 3rem; }
-    .course-body { padding: 1.2rem; }
-    .course-name { font-size: 1.1rem; }
-    .empty-state { padding: 3rem 1.5rem; }
-    .empty-state i { font-size: 3.5rem; }
-    .empty-state h4 { font-size: 1.4rem; }
-  }
-
-  @media (max-width: 576px) {
-    html { font-size: 14px; }
-    .page-header h2 { font-size: 1.4rem; }
-    .page-header p { font-size: 0.9rem; }
-    .btn-back { padding: 0.3rem 1rem; font-size: 0.85rem; }
-    .course-image { height: 100px; font-size: 2.5rem; }
-    .course-body { padding: 1rem; }
-    .course-code { font-size: 0.8rem; }
-    .course-name { font-size: 1rem; }
-    .course-detail { font-size: 0.85rem; }
-    .btn-gradient { padding: 0.5rem 1rem; font-size: 0.9rem; }
-    .empty-state { padding: 2.5rem 1rem; }
-    .empty-state i { font-size: 3rem; }
-    .empty-state h4 { font-size: 1.3rem; }
-  }
-
-  @media (max-width: 400px) {
-    html { font-size: 13px; }
+    .page-header { padding: 1rem; }
     .page-header h2 { font-size: 1.3rem; }
-    .page-header p { font-size: 0.85rem; }
-    .btn-back { padding: 0.3rem 0.8rem; }
-    .course-image { height: 90px; font-size: 2.2rem; }
-    .course-name { font-size: 0.95rem; }
-    .course-detail { font-size: 0.8rem; }
-    .btn-gradient { padding: 0.4rem 0.8rem; }
-    .empty-state h4 { font-size: 1.2rem; }
+    .btn-back { padding: 0.3rem 0.8rem; font-size: 0.75rem; }
+    .table-mk th { font-size: 0.65rem; padding: 0.5rem 0.3rem; }
+    .table-mk td { padding: 0.5rem 0.3rem; font-size: 0.75rem; }
+    .badge-tugas { font-size: 0.6rem; padding: 0.15rem 0.4rem; }
+    .btn-detail { font-size: 0.65rem; padding: 0.2rem 0.6rem; }
+    .progress-text { font-size: 0.65rem; }
   }
 
-  @media (max-width: 340px) {
-    html { font-size: 12px; }
-    .page-header h2 { font-size: 1.2rem; }
-    .page-header p { font-size: 0.8rem; }
-    .course-image { height: 80px; font-size: 2rem; }
-    .course-name { font-size: 0.9rem; }
-    .btn-gradient { padding: 0.3rem 0.6rem; }
-    .empty-state h4 { font-size: 1.1rem; }
+  @media (max-width: 480px) {
+    .table-mk { min-width: 480px; }
+    .table-mk th { font-size: 0.6rem; }
+    .table-mk td { font-size: 0.7rem; }
+    .btn-detail { font-size: 0.6rem; padding: 0.2rem 0.5rem; }
+    .badge-tugas { font-size: 0.55rem; }
+    .progress-text { font-size: 0.6rem; }
+  }
+
+  @media (max-width: 360px) {
+    .table-mk { min-width: 420px; }
+    .table-mk th, .table-mk td { padding: 0.4rem 0.2rem; }
   }
 </style>
 
-<div class="container mt-4"> <!-- Ubah container-fluid menjadi container agar selaras dengan navbar -->
-  <!-- Header dengan gradien -->
-  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+<div class="container mt-3">
+  <!-- Header responsif -->
+  <div class="page-header">
     <div>
       <h2><i class="bi bi-laptop"></i> ELK‑Learning</h2>
-      <p class="mb-0">Mata kuliah yang Anda ambil dan materi perkuliahan</p>
+      <p>Mata kuliah Anda dengan progres & tugas</p>
     </div>
-    <a href="/mahasiswa/dashboard" class="btn-back mt-2 mt-sm-0">
-      <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+    <a href="/mahasiswa/dashboard" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
-  <!-- Daftar Mata Kuliah -->
-  <div class="row g-4">
-    <% if (mkList.length === 0) { %>
-      <div class="col-12">
-        <div class="empty-state">
-          <i class="bi bi-book"></i>
-          <h4>Belum Ada Mata Kuliah</h4>
-          <p class="text-muted">Anda belum terdaftar di mata kuliah manapun.</p>
-          <a href="/mahasiswa/akademik/krs" class="btn-gradient">
-            <i class="bi bi-pencil-square me-2"></i>Buat KRS
-          </a>
-        </div>
-      </div>
-    <% } else { %>
-      <% mkList.forEach(mk => { %>
-        <div class="col-md-4">
-          <div class="course-card">
-            <div class="course-image">
-              <i class="bi bi-journal-bookmark-fill"></i>
-            </div>
-            <div class="course-body">
-              <span class="course-code"><%= mk.kode %></span>
-              <h5 class="course-name"><%= mk.nama %></h5>
-              <div class="course-detail">
-                <p class="mb-1"><i class="bi bi-calendar me-1"></i> <%= mk.semester %></p>
-                <p class="mb-0"><i class="bi bi-people me-1"></i> <%= mk.jumlahMahasiswa || 0 %> mahasiswa terdaftar</p>
-              </div>
-              <a href="/mahasiswa/elearning/mk/<%= mk.id %>" class="btn-gradient w-100">
-                <i class="bi bi-eye me-2"></i>Lihat Detail
-              </a>
-            </div>
-          </div>
-        </div>
-      <% }) %>
-    <% } %>
+  <!-- Tabel Mata Kuliah -->
+  <div class="table-wrapper">
+    <div class="table-responsive">
+      <table class="table table-mk">
+        <thead>
+          <tr>
+            <th>Mata Kuliah</th>
+            <th>Jml Mhs</th>
+            <th>Progress</th>
+            <th>Status Tugas</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (mkList.length === 0) { %>
+            <tr>
+              <td colspan="5" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h5>Belum Ada Mata Kuliah</h5>
+                <p class="text-muted small">Anda belum terdaftar di mata kuliah manapun.</p>
+                <a href="/mahasiswa/akademik/krs" class="btn-detail mt-2">Buat KRS</a>
+              </td>
+            </tr>
+          <% } else { %>
+            <% mkList.forEach(mk => { %>
+              <tr>
+                <td class="fw-semibold text-start"><%= mk.kode %> - <%= mk.nama %></td>
+                <td><%= mk.jumlahMahasiswa || 0 %></td>
+                <td>
+                  <div class="progress-text">
+                    <span><%= mk.progressPertemuan.terlaksana %>/16</span>
+                    <span><%= mk.progressPertemuan.persen %>%</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: <%= mk.progressPertemuan.persen %>%;"></div>
+                  </div>
+                </td>
+                <td>
+                  <% if (mk.adaTugasAktif) { %>
+                    <span class="badge-tugas"><i class="bi bi-check-circle-fill"></i> Ada</span>
+                  <% } else { %>
+                    <span class="badge-tugas badge-tidak"><i class="bi bi-clock-history"></i> Tidak</span>
+                  <% } %>
+                </td>
+                <td>
+                  <a href="/mahasiswa/elearning/mk/<%= mk.id %>" class="btn-detail">
+                    <i class="bi bi-eye"></i> Detail
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

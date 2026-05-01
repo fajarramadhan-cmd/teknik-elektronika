@@ -1,172 +1,173 @@
 <%- include('../../partials/header') %>
 
 <style>
-    @media (max-width: 480px) {
-    body {
-        zoom: 0.72; 
-    }
-}
+  /* ===== VARIABEL WARNA ===== */
+  :root {
+    --primary-start: #1e3a8a;
+    --primary-end: #3b82f6;
+    --primary-light: rgba(30,58,138,0.1);
+    --primary-dark: #0f2b5c;
+  }
+
+  /* Header dengan gradien biru (konsisten) */
   .page-header {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
-    border-radius: 1.5rem;
-    padding: 2rem;
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border-radius: 1.2rem;
+    padding: 1.2rem;
     color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 20px rgba(33,147,176,0.2);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 20px rgba(30,58,138,0.2);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
   }
   .page-header h2 {
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
   .page-header p {
+    font-size: 0.8rem;
     opacity: 0.9;
-    font-size: 1rem;
+    margin: 0.2rem 0 0;
   }
   .btn-back {
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    border: none;
     color: white;
     border-radius: 50px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: 0.2s;
   }
   .btn-back:hover {
-    background: white;
-    color: #2193b0;
-    border-color: white;
+    background: rgba(255,255,255,0.3);
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    color: white;
   }
+
+  /* Container tabel responsif */
   .table-card {
     background: white;
-    border-radius: 1.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid #f1f5f9;
+    border-radius: 1.2rem;
+    padding: 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(30,58,138,0.1);
+    overflow-x: auto;
   }
   .tugas-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 0.5rem;
+    min-width: 600px; /* Membuat tabel bisa di-scroll horizontal di HP */
+    margin-bottom: 0;
   }
   .tugas-table thead th {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     color: white;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     letter-spacing: 0.5px;
+    padding: 0.8rem;
     border: none;
-    padding: 1rem 1.2rem;
-    white-space: nowrap;
-  }
-  .tugas-table thead th:first-child {
-    border-top-left-radius: 1rem;
-    border-bottom-left-radius: 1rem;
-  }
-  .tugas-table thead th:last-child {
-    border-top-right-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-  }
-  .tugas-table tbody tr {
-    background: white;
-    border-radius: 1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-    margin-bottom: 0.5rem;
-  }
-  .tugas-table tbody tr:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(33,147,176,0.15);
-    background: white;
   }
   .tugas-table tbody td {
-    padding: 1.2rem 1.2rem;
-    border: none;
+    padding: 0.8rem;
     vertical-align: middle;
-    font-size: 0.95rem;
+    border-bottom: 1px solid #f0f2f5;
+    font-size: 0.85rem;
   }
-  .tugas-table tbody td:first-child {
-    border-top-left-radius: 1rem;
-    border-bottom-left-radius: 1rem;
+  .tugas-table tbody tr:hover {
+    background-color: #fefce8;
   }
-  .tugas-table tbody td:last-child {
-    border-top-right-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-  }
+
+  /* Badge status */
   .badge-status {
-    padding: 0.4rem 1rem;
+    padding: 0.25rem 0.7rem;
     border-radius: 50px;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
+    white-space: nowrap;
   }
-  .badge-belum {
-    background: #fff3cd;
-    color: #856404;
-  }
-  .badge-sudah {
-    background: #d4edda;
-    color: #155724;
-  }
-  .deadline {
-    font-weight: 600;
-  }
-  .deadline-lewat {
-    color: #dc3545;
-    font-weight: 600;
-  }
+  .badge-belum { background: #fef3c7; color: #b45309; }
+  .badge-sudah { background: #d1fae5; color: #065f46; }
+
+  /* Deadline */
+  .deadline-lewat { color: #dc3545; font-weight: 600; }
+
+  /* Tombol */
   .btn-detail {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     color: white;
     border-radius: 50px;
-    padding: 0.4rem 1.2rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s;
+    padding: 0.25rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
     text-decoration: none;
     display: inline-block;
   }
   .btn-detail:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(33,147,176,0.4);
+    box-shadow: 0 4px 8px rgba(30,58,138,0.3);
     color: white;
   }
+
+  /* Empty state */
   .empty-state {
-    background: #f8fafc;
-    border-radius: 1.5rem;
-    padding: 3rem;
     text-align: center;
+    padding: 2rem;
   }
   .empty-state i {
-    font-size: 4rem;
+    font-size: 2.5rem;
     color: #cbd5e1;
   }
-  .empty-state p {
-    color: #64748b;
-    font-size: 1.1rem;
-    margin-top: 1rem;
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .page-header h2 { font-size: 1.3rem; }
+    .btn-back { padding: 0.3rem 0.8rem; font-size: 0.75rem; }
+    .tugas-table thead th { font-size: 0.7rem; padding: 0.6rem; }
+    .tugas-table tbody td { font-size: 0.8rem; padding: 0.6rem; }
+    .badge-status { font-size: 0.65rem; padding: 0.2rem 0.5rem; }
+    .btn-detail { font-size: 0.7rem; padding: 0.2rem 0.7rem; }
+  }
+
+  @media (max-width: 576px) {
+    .page-header h2 { font-size: 1.2rem; }
+    .page-header p { font-size: 0.7rem; }
+    .btn-back { font-size: 0.7rem; }
+    .tugas-table { min-width: 520px; }
+    .tugas-table thead th { font-size: 0.65rem; }
   }
 </style>
 
-<div class="container-fluid mt-4">
-  <!-- Page Header -->
-  <div class="page-header d-flex flex-wrap justify-content-between align-items-center">
+<div class="container mt-3">
+  <!-- Header -->
+  <div class="page-header">
     <div>
-      <h2><i class="bi bi-list-task me-2"></i>Tugas Aktif</h2>
-      <p class="mb-0">Daftar tugas yang masih dapat dikerjakan</p>
+      <h2><i class="bi bi-list-task"></i> Tugas Aktif</h2>
+      <p>Daftar tugas yang masih dapat dikerjakan</p>
     </div>
-    <a href="/mahasiswa/elearning" class="btn btn-back">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+    <a href="/mahasiswa/elearning" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
-  <!-- Table Card -->
+  <!-- Tabel -->
   <div class="table-card">
     <div class="table-responsive">
       <table class="tugas-table">
@@ -180,12 +181,12 @@
           </tr>
         </thead>
         <tbody>
-          <% if (tugasList.length === 0) { %>
+          <% if (tugasList && tugasList.length === 0) { %>
             <tr>
-              <td colspan="5" class="text-center py-5">
+              <td colspan="5" class="text-center py-4">
                 <div class="empty-state">
                   <i class="bi bi-inbox"></i>
-                  <p>Tidak ada tugas aktif.</p>
+                  <p class="mt-2 mb-0">Tidak ada tugas aktif</p>
                 </div>
               </td>
             </tr>
@@ -197,36 +198,33 @@
             %>
               <tr>
                 <td>
-                  <div><strong><%= t.mkKode %></strong></div>
+                  <strong><%= t.mkKode %></strong><br>
                   <small class="text-muted"><%= t.mkNama %></small>
                 </td>
                 <td>
                   <strong><%= t.judul %></strong>
                   <% if (t.deskripsi) { %>
-                    <br><small class="text-muted"><%= t.deskripsi.substring(0, 30) %><%= t.deskripsi.length > 30 ? '...' : '' %></small>
+                    <br><small class="text-muted"><%= t.deskripsi.substring(0, 40) %><%= t.deskripsi.length > 40 ? '...' : '' %></small>
                   <% } %>
                 </td>
                 <td class="<%= deadlineLewat ? 'deadline-lewat' : '' %>">
-                  <i class="bi bi-calendar-event me-1"></i>
-                  <%= deadline.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %>
-                  <br>
-                  <i class="bi bi-clock me-1"></i>
-                  <%= deadline.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %>
+                  <i class="bi bi-calendar-event"></i> <%= deadline.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %><br>
+                  <i class="bi bi-clock"></i> <%= deadline.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %>
                 </td>
                 <td>
                   <% if (t.pengumpulan) { %>
                     <span class="badge-status badge-sudah">
-                      <i class="bi bi-check-circle-fill"></i> Sudah dikumpul
+                      <i class="bi bi-check-circle-fill"></i> Sudah
                     </span>
                   <% } else { %>
                     <span class="badge-status badge-belum">
-                      <i class="bi bi-hourglass-split"></i> Belum dikumpul
+                      <i class="bi bi-hourglass-split"></i> Belum
                     </span>
                   <% } %>
                 </td>
                 <td>
                   <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-detail">
-                    <i class="bi bi-eye me-1"></i>Detail
+                    <i class="bi bi-eye"></i> Detail
                   </a>
                 </td>
               </tr>

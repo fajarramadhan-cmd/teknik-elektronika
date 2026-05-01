@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Surat Keterangan Aktif Kuliah - <%= nama %></title>
+  <style>
+    /* Pengaturan Kertas Default */
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+    
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      line-height: 1.5;
+      color: #000;
+      background-color: #fff;
+      position: relative; /* Menjadi acuan untuk elemen absolute/fixed */
+    }
+
+    /* === KOP SURAT STANDAR === */
+    .kop-surat {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 3px double #000;
+      padding-bottom: 10px;
+    }
+    .logo-kop {
+      width: 90px;
+      height: auto;
+      margin-right: 20px;
+    }
+    .teks-kop {
+      flex: 1;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .teks-kop .nama-kampus {
+      font-size: 27pt;
+      font-weight: bold;
+      margin: 0;
+      color: #3b60a3;
+      text-transform: uppercase;
+    }
+    .teks-kop .alamat, 
+    .teks-kop .kontak {
+      font-size: 13pt;
+      margin: 0;
+      color: #333;
+    }
+
+    /* === JUDUL & ISI SURAT === */
+    .judul-surat {
+      text-align: center;
+      margin: 30px 0 20px 0;
+    }
+    .judul-surat h3 {
+      font-size: 14pt;
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    .judul-surat p {
+      margin: 5px 0 0 0;
+      font-size: 12pt;
+    }
+
+    .isi {
+      text-align: justify;
+      margin: 20px 0;
+    }
+    
+    /* Tabel Data Mahasiswa */
+    .tabel-data {
+      width: 100%;
+      margin: 15px 0 15px 30px;
+      border-collapse: collapse;
+    }
+    .tabel-data td {
+      padding: 3px 0;
+      vertical-align: top;
+    }
+    .col-label {
+      width: 200px;
+    }
+    .col-titik {
+      width: 15px;
+    }
+
+    /* === TANDA TANGAN === */
+    .tanda-tangan-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 50px;
+    }
+    .tanda-tangan {
+      width: 280px;
+      text-align: left;
+    }
+    
+    /* Area TTD Overlap (Menimpa Teks) */
+    .area-ttd {
+      position: relative; 
+      height: 50px; 
+    }
+    .img-ttd {
+      position: absolute;
+      top: -55px; 
+      left: -20px; 
+      height: 180px; 
+      width: auto;
+      z-index: 10; 
+      mix-blend-mode: multiply; 
+    }
+
+    .nama-ttd {
+      font-weight: bold;
+      text-decoration: underline;
+      margin-bottom: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .nip-ttd {
+      margin-top: 0;
+    }
+
+    /* === FOOTER VALIDASI === */
+    .footer {
+      margin-top: 50px;
+      font-size: 8pt;
+      text-align: left;
+      font-family: Arial, sans-serif;
+      color: #555;
+      border-top: 1px dashed #ccc;
+      padding-top: 10px;
+    }
+
+    /* === KODE VALIDASI (BARU) === */
+    .kode-validasi-print {
+      position: absolute; /* Menempel di pojok area konten saat dilihat di layar */
+      bottom: 0;
+      right: 0;
+      font-size: 8pt; /* Ukuran kecil */
+     color: #555;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Sembunyikan di layar jika memang khusus untuk print saja (opsional) */
+    @media screen {
+      .print-only {
+        /* Hapus atau jadikan komentar baris di bawah ini jika ingin tetap terlihat di layar monitor */
+        /* display: none; */ 
+      }
+    }
+
+    /* === PENGATURAN CETAK === */
+    @media print {
+      body {
+        margin: 0;
+      }
+      .footer {
+        position: fixed;
+        bottom: 20px; /* Memberi sedikit jarak agar tidak bertabrakan dengan kode validasi */
+        width: 100%;
+      }
+      .img-ttd {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .kode-validasi-print {
+        position: fixed; /* Memastikan terkunci di pojok kanan bawah kertas saat diprint */
+        bottom: 0;
+        right: 0;
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- KOP SURAT -->
+  <div class="kop-surat">
+    <img src="/images/logo.png" alt="Logo Politeknik Dewantara" class="logo-kop">
+    <div class="teks-kop">
+      <h2 class="nama-kampus">POLITEKNIK DEWANTARA</h2>
+      <p class="alamat">Jl. KH. Ahmad Razak 2 No. 7, Kota Palopo. Sulawesi Selatan</p>
+      <p class="kontak">E-mail: sdm@polidewa.ac.id | Website: polidewa.ac.id</p>
+    </div>
+  </div>
+
+  <!-- JUDUL SURAT -->
+  <div class="judul-surat">
+    <h3>SURAT KETERANGAN AKTIF KULIAH</h3>
+    <p>Nomor: <%= nomorSurat %></p>
+  </div>
+
+  <!-- ISI SURAT -->
+  <div class="isi">
+    <p>Yang bertanda tangan di bawah ini, Ketua Program Studi Teknik Elektronika Politeknik Dewantara, menerangkan dengan sesungguhnya bahwa:</p>
+    
+    <table class="tabel-data">
+      <tr>
+        <td class="col-label">Nama Lengkap</td>
+        <td class="col-titik">:</td>
+        <td><strong><%= nama %></strong></td>
+      </tr>
+      <tr>
+        <td class="col-label">NIM</td>
+        <td class="col-titik">:</td>
+        <td><%= nim %></td>
+      </tr>
+      <tr>
+        <td class="col-label">Tempat, Tanggal Lahir</td>
+        <td class="col-titik">:</td>
+        <td><%= tempatLahir %>, <%= new Date(tanggalLahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></td>
+      </tr>
+      <tr>
+        <td class="col-label">Program Studi</td>
+        <td class="col-titik">:</td>
+        <td>Teknik Elektronika</td>
+      </tr>
+      <tr>
+        <td class="col-label">Semester</td>
+        <td class="col-titik">:</td>
+        <td><%= semester %></td>
+      </tr>
+      <tr>
+        <td class="col-label">Tahun Akademik</td>
+        <td class="col-titik">:</td>
+        <td><%= tahunAkademik %></td>
+      </tr>
+    </table>
+
+    <p>Adalah benar mahasiswa yang bersangkutan berstatus <strong>AKTIF</strong> pada Program Studi Teknik Elektronika Politeknik Dewantara hingga saat surat ini diterbitkan, dan sedang menjalani kegiatan perkuliahan pada semester tersebut.</p>
+    
+    <p>Surat keterangan ini diberikan kepada yang bersangkutan untuk keperluan: <strong><%= keperluan %></strong>.</p>
+    
+    <p>Demikian surat keterangan ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.</p>
+  </div>
+
+  <!-- TANDA TANGAN -->
+  <div class="tanda-tangan-wrapper">
+    <div class="tanda-tangan">
+      <p style="position: relative; z-index: 1;">Palopo, <%= new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %><br>
+      Ketua Program Studi,</p>
+      
+      <div class="area-ttd">
+        <img src="/images/ttd.png" alt="Tanda Tangan Kaprodi" class="img-ttd">
+      </div>
+      
+      <p class="nama-ttd">Fajar Ramadhan, S.Pd., M.T.</p>
+      <p class="nip-ttd" style="position: relative; z-index: 1;">NUPTK. 8559777678130153</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>Dokumen ini dicetak dan disahkan secara digital oleh Sistem Informasi Elektronika Polidewa.<br>
+    Periksa keaslian dokumen di: <em>https://elektronika.polidewa.ac.id</em></p>
+  </div>
+
+  <!-- KODE VALIDASI DI POJOK KANAN BAWAH -->
+  <div class="kode-validasi-print print-only">
+    Kode Validasi: <strong><%= kodeValidasi %></strong>
+  </div>
+
+</body>
+</html>

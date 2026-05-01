@@ -149,20 +149,43 @@ async function getOrCreateJawabanFolder(mk, nim, tahunAjaran) {
 }
 
 // ============================================================================
-// HALAMAN UTAMA E‑LEARNING
+// HALAMAN UTAMA E‑LEARNING (TABEL)
 // ============================================================================
 
 router.get('/', async (req, res) => {
   try {
-    const mkList = await getMataKuliahDiambil(req.user.id);
+    let mkList = await getMataKuliahDiambil(req.user.id);
+    
+    // Filter: JANGAN tampilkan mata kuliah PDK (Praktik Dunia Kerja)
+    mkList = mkList.filter(mk => !mk.isPDK);
+    
+    const now = new Date();
     
     for (let mk of mkList) {
+      // Hitung jumlah mahasiswa terdaftar di MK ini
       const countSnapshot = await db.collection('enrollment')
         .where('mkId', '==', mk.id)
         .where('status', '==', 'active')
         .count()
         .get();
       mk.jumlahMahasiswa = countSnapshot.data().count;
+
+      // Hitung progress perkuliahan (dari field materi)
+      const materi = mk.materi || [];
+      const terlaksana = materi.filter(m => m.status === 'selesai').length;
+      mk.progressPertemuan = {
+        total: 16,
+        terlaksana: terlaksana,
+        persen: Math.round((terlaksana / 16) * 100)
+      };
+
+      // Cek apakah ada tugas aktif (deadline > sekarang)
+      const tugasSnapshot = await db.collection('tugas')
+        .where('mkId', '==', mk.id)
+        .where('deadline', '>', now.toISOString())
+        .limit(1)
+        .get();
+      mk.adaTugasAktif = !tugasSnapshot.empty;
     }
 
     res.render('mahasiswa/elearning/index', { title: 'ELK‑Learning', mkList });

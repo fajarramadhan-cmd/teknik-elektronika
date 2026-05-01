@@ -214,6 +214,21 @@
           </form>
         </div>
       </div>
+      <!-- Generate Surat Otomatis -->
+<div class="col-md-6 mb-4">
+  <div class="info-card border-primary border-top border-4">
+    <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-magic"></i> Generate Surat Otomatis</h5>
+    <form method="POST" action="/admin/surat/<%= surat.id %>/<%= role %>/generate">
+      <div class="mb-3">
+        <label class="form-label">Nomor Surat <span class="text-danger">*</span></label>
+        <input type="text" name="nomorSurat" class="form-control" placeholder="Contoh: 001/ELK/PDW/V/2025" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100 btn-action" onclick="return confirm('Generate surat otomatis? File PDF akan dibuat dan diupload.')">
+        <i class="bi bi-file-earmark-pdf me-2"></i>Generate & Upload PDF
+      </button>
+    </form>
+  </div>
+</div>
       <div class="col-md-6 mb-4">
         <div class="info-card border-danger border-top border-4">
           <h5 class="fw-bold mb-3 text-danger">Tolak Permohonan</h5>

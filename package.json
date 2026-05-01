@@ -27,6 +27,7 @@
     "googleapis": "^171.4.0",
     "multer": "^2.0.2",
     "pdf-lib": "^1.17.1",
+    "puppeteer": "^24.42.0",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.5"
   },

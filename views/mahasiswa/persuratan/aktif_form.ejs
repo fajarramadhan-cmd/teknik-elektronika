@@ -5,7 +5,7 @@
     body {
         zoom: 0.72; 
     }
-}
+  }
   .form-card {
     border: none;
     border-radius: 1rem;
@@ -34,7 +34,6 @@
     padding: 0.6rem 2rem;
     border-radius: 50px;
     transition: all 0.3s;
-    border: none;
   }
   .btn-gradient:hover {
     transform: translateY(-2px);
@@ -100,6 +99,18 @@
           <div class="col-md-6">
             <label class="form-label">Semester</label>
             <p class="form-control-static"><%= semesterSekarang %></p>
+          </div>
+        </div>
+
+        <!-- Tambahan: Tempat dan Tanggal Lahir -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="tempatLahir" class="form-label">Tempat Lahir <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="tempatLahir" name="tempatLahir" required>
+          </div>
+          <div class="col-md-6">
+            <label for="tanggalLahir" class="form-label">Tanggal Lahir <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="tanggalLahir" name="tanggalLahir" required>
           </div>
         </div>
 

@@ -5,7 +5,7 @@
     body {
         zoom: 0.72; 
     }
-}
+  }
   .detail-header {
     background: linear-gradient(135deg, #2193b0, #6dd5ed);
     border-radius: 1rem;
@@ -101,6 +101,17 @@
         <p><strong>Tahun Akademik:</strong> <%= surat.tahunAkademik %></p>
       </div>
     </div>
+    <!-- Tempat dan Tanggal Lahir (jika ada) -->
+    <% if (surat.tempatLahir) { %>
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <p><strong>Tempat Lahir:</strong> <%= surat.tempatLahir %></p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Tanggal Lahir:</strong> <%= new Date(surat.tanggalLahir).toLocaleDateString('id-ID') %></p>
+        </div>
+      </div>
+    <% } %>
   </div>
 
   <!-- Keperluan -->
@@ -109,7 +120,7 @@
     <p><%= surat.keperluan %></p>
   </div>
 
-  <!-- Kode Validasi (jika approved) -->
+  <!-- Kode Validasi (jika approved atau completed) -->
   <% if (surat.status === 'approved' || surat.status === 'completed') { %>
     <div class="info-card">
       <h5 class="fw-bold mb-3">Kode Validasi</h5>
@@ -147,7 +158,7 @@
   <% } %>
 
   <!-- Tombol Aksi -->
-  <div class="d-flex gap-3">
+  <div class="d-flex gap-3 mb-4">
     <% if (surat.status === 'pending') { %>
       <form method="POST" action="/mahasiswa/persuratan/<%= surat.id %>/batal" onsubmit="return confirm('Batalkan pengajuan surat ini?')">
         <button type="submit" class="btn btn-warning">Batalkan Pengajuan</button>

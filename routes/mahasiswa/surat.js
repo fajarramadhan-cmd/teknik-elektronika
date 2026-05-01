@@ -90,15 +90,14 @@ router.get('/aktif-kuliah', (req, res) => {
 
 router.post('/aktif-kuliah', async (req, res) => {
   try {
-    const { keperluan } = req.body;
-    if (!keperluan) {
-      return res.status(400).send('Keperluan harus diisi');
+    const { keperluan, tempatLahir, tanggalLahir } = req.body;
+    if (!keperluan || !tempatLahir || !tanggalLahir) {
+      return res.status(400).send('Keperluan, tempat lahir, dan tanggal lahir harus diisi');
     }
 
-    const current = getCurrentAcademicSemester(); // panggil helper
+    const current = getCurrentAcademicSemester();
     const semester = current.label;
-    const tahunAkademik = current.tahunAkademik; // sekarang sudah ada
-
+    const tahunAkademik = current.tahunAkademik;
     const kodeValidasi = generateKodeValidasi();
 
     const suratData = {
@@ -108,6 +107,8 @@ router.post('/aktif-kuliah', async (req, res) => {
       jenis: 'Aktif Kuliah',
       kodeValidasi,
       keperluan,
+      tempatLahir,
+      tanggalLahir,
       semester,
       tahunAkademik,
       status: 'pending',

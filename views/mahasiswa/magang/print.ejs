@@ -26,52 +26,39 @@
       font-family: Arial, sans-serif;
     }
 
-    /* === KOP SURAT FORMAL (Rata Kiri) === */
+    /* === KOP SURAT (Diterapkan dari EDOM) === */
     .kop-surat {
       display: flex;
       align-items: center;
-      position: relative;
       margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 3px solid #000;
+      border-bottom: 3px double #000;
+      padding-bottom: 10px;
     }
-    .kop-surat::after {
-      content: "";
-      position: absolute;
-      bottom: -5px;
-      left: 0;
-      width: 100%;
-      border-bottom: 1px solid #000;
-    }
+
     .logo-kop {
-      width: 90px; /* Logo sedikit diperkecil */
+      width: 90px;
       height: auto;
       margin-right: 20px;
     }
+
     .teks-kop {
       flex: 1;
-      text-align: left;
+      font-family: Arial, Helvetica, sans-serif; /* Menggunakan Arial khusus untuk Kop */
     }
+
     .teks-kop .nama-kampus {
-      font-family: Arial, sans-serif;
-      font-size: 24pt; /* Diperkecil dari 24pt */
+      font-size: 27pt;
       font-weight: bold;
       margin: 0;
-      color: #035a94;
-      letter-spacing: 1px;
-    }
-    .teks-kop .prodi {
-      font-size: 13pt; /* Diperkecil dari 16pt */
-      font-weight: bold;
-      font-weight: bold;
-      margin: 3px 0;
-      color: #000;
+      color: #3b60a3;
       text-transform: uppercase;
     }
-    .teks-kop .alamat {
-      font-size: 10pt; /* Diperkecil */
+
+    .teks-kop .alamat, 
+    .teks-kop .kontak {
+      font-size: 13pt;
       margin: 0;
-      color: #000;
+      color: #333;
     }
 
     /* === INFORMASI MAHASISWA & MAGANG (Dalam Kotak) === */
@@ -207,15 +194,17 @@
       </button>
     </div>
 
+    <!-- KOP SURAT BARU -->
     <div class="kop-surat">
       <img src="https://polidewa.ac.id/wp-content/uploads/2025/11/Desain-tanpa-judul-1.png" 
            alt="Logo Politeknik Dewantara" class="logo-kop">
       <div class="teks-kop">
         <h2 class="nama-kampus">POLITEKNIK DEWANTARA</h2>
-        <h3 class="prodi">PROGRAM STUDI TEKNIK ELEKTRONIKA</h3>
-        <p class="alamat">Jl. KH Ahmad Razak 2, No. 7, Kota Palopo, Sulawesi Selatan</p>
+        <p class="alamat">Jl. KH. Ahmad Razak 2 No. 7, Kota Palopo. Sulawesi Selatan</p>
+        <p class="kontak">E-mail: sdm@polidewa.ac.id | Website: polidewa.ac.id</p>
       </div>
     </div>
+    <!-- AKHIR KOP SURAT -->
 
     <div class="judul-dokumen">
       <h4>LOGBOOK  MAGANG</h4>

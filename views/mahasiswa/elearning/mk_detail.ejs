@@ -40,11 +40,11 @@
   /* ===== HEADER MATA KULIAH ===== */
   .mk-header {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-    border-radius: 1.5rem;
-    padding: 2rem;
+    border-radius: 1.2rem;
+    padding: 1.5rem;
     color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 15px 30px rgba(30,58,138,0.25);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 20px rgba(30,58,138,0.2);
     position: relative;
     overflow: hidden;
   }
@@ -53,24 +53,23 @@
     position: absolute;
     top: -50%;
     right: -10%;
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height: 250px;
     background: rgba(255,255,255,0.1);
     border-radius: 50%;
     transform: rotate(25deg);
   }
   .mk-header h2 {
     font-weight: 700;
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
     position: relative;
     z-index: 1;
   }
   .mk-header p {
-    font-size: 1rem;
+    font-size: 0.85rem;
     opacity: 0.9;
-    position: relative;
-    z-index: 1;
+    margin-bottom: 0;
   }
   .btn-back {
     background: rgba(255,255,255,0.2);
@@ -78,47 +77,58 @@
     border: none;
     color: white;
     border-radius: 50px;
-    padding: 0.5rem 1.2rem;
-    transition: all 0.2s;
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: 0.2s;
   }
   .btn-back:hover {
     background: rgba(255,255,255,0.3);
-    color: white;
     transform: translateY(-2px);
+    color: white;
   }
 
   /* ===== INFO CARD ===== */
   .info-card {
     background: white;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    border-radius: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
     border: 1px solid rgba(30,58,138,0.1);
   }
   .info-card h5 {
     font-weight: 700;
     color: #1e293b;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
   }
   .info-card h5 i {
     color: var(--primary-start);
   }
 
-  /* ===== TABEL MATERI ===== */
+  /* ===== TABEL MATERI (Responsif) ===== */
   .table-materi th {
     background: #f8fafc;
     font-weight: 600;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+  .table-materi td {
+    font-size: 0.8rem;
+    padding: 0.5rem;
   }
   .badge-status {
-    padding: 0.2rem 0.7rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 50px;
     font-size: 0.7rem;
+    white-space: nowrap;
   }
   .badge-selesai {
     background: #d1fae5;
@@ -132,35 +142,68 @@
   /* ===== TUGAS CARD ===== */
   .tugas-card {
     background: white;
-    border-radius: 1rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border-radius: 0.8rem;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
     border: 1px solid rgba(30,58,138,0.1);
     transition: all 0.2s;
   }
   .tugas-card:hover {
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.05);
   }
   .tugas-judul {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   .tugas-deadline {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #ef4444;
   }
   .btn-tugas {
     background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     border: none;
     border-radius: 50px;
-    padding: 0.3rem 1rem;
+    padding: 0.25rem 0.8rem;
     color: white;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     text-decoration: none;
+    display: inline-block;
+  }
+  .btn-tugas-sm {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  /* ===== RESPONSIVE UNTUK HP ===== */
+  @media (max-width: 768px) {
+    html { font-size: 15px; }
+    .mk-header { padding: 1rem; }
+    .mk-header h2 { font-size: 1.3rem; }
+    .mk-header p { font-size: 0.8rem; }
+    .btn-back { padding: 0.3rem 0.8rem; font-size: 0.75rem; }
+    .info-card { padding: 1rem; margin-bottom: 1rem; }
+    .info-card h5 { font-size: 1rem; }
+    .table-materi th, .table-materi td { font-size: 0.7rem; padding: 0.4rem; }
+    .badge-status { font-size: 0.65rem; padding: 0.15rem 0.5rem; }
+    .tugas-card { padding: 0.7rem; }
+    .tugas-judul { font-size: 0.85rem; }
+    .tugas-deadline { font-size: 0.65rem; }
+    .btn-tugas { font-size: 0.65rem; padding: 0.2rem 0.6rem; }
+  }
+
+  @media (max-width: 576px) {
+    html { font-size: 14px; }
+    .mk-header h2 { font-size: 1.2rem; }
+    .btn-back { padding: 0.2rem 0.7rem; font-size: 0.7rem; }
+    .info-card { padding: 0.8rem; }
+    .table-materi th, .table-materi td { font-size: 0.65rem; padding: 0.3rem; }
+    .badge-status { font-size: 0.6rem; }
+    .tugas-judul { font-size: 0.8rem; }
+    .btn-tugas { font-size: 0.6rem; padding: 0.15rem 0.5rem; }
   }
 </style>
 
-<div class="container mt-4">
+<div class="container mt-3">
   <!-- Header MK -->
   <div class="mk-header d-flex flex-wrap justify-content-between align-items-center">
     <div>
@@ -168,11 +211,11 @@
       <p><%= mk.sks %> SKS | Semester <%= mk.semester %></p>
     </div>
     <a href="/mahasiswa/elearning" class="btn-back mt-2 mt-sm-0">
-      <i class="bi bi-arrow-left me-2"></i>Kembali
+      <i class="bi bi-arrow-left"></i> Kembali
     </a>
   </div>
 
-  <div class="row">
+  <div class="row g-3"> <!-- g-3 mengurangi gap -->
     <!-- Kolom Kiri: Informasi MK & Dosen -->
     <div class="col-lg-4">
       <div class="info-card">
@@ -182,7 +225,7 @@
             <p><i class="bi bi-person-circle me-2"></i> <%= d.nama %></p>
           <% }) %>
         <% } else { %>
-          <p>Belum ada dosen pengampu.</p>
+          <p class="text-muted small">Belum ada dosen pengampu.</p>
         <% } %>
       </div>
       <div class="info-card">
@@ -203,7 +246,13 @@
         <div class="table-responsive">
           <table class="table table-bordered table-materi">
             <thead>
-              <tr><th>Pertemuan</th><th>Topik</th><th>Tanggal</th><th>Status</th><th>File</th></tr>
+              <tr>
+                <th>Pertemuan</th>
+                <th>Topik</th>
+                <th>Tanggal</th>
+                <th>Status</th>
+                <th>File</th>
+              </tr>
             </thead>
             <tbody>
               <% materi.forEach(m => { %>
@@ -218,7 +267,7 @@
                   </td>
                   <td>
                     <% if (m.fileUrl) { %>
-                      <a href="<%= m.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary">Lihat</a>
+                      <a href="<%= m.fileUrl %>" target="_blank" class="btn btn-sm btn-outline-primary btn-sm py-0 px-2">Lihat</a>
                     <% } else { %>-<% } %>
                   </td>
                 </tr>
@@ -238,27 +287,27 @@
             const isOverdue = deadline < now;
           %>
             <div class="tugas-card">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
+              <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                <div class="flex-grow-1">
                   <div class="tugas-judul"><%= t.judul %></div>
                   <div class="tugas-deadline <%= isOverdue ? 'text-danger' : 'text-warning' %>">
                     <i class="bi bi-calendar"></i> Deadline: <%= deadline.toLocaleString('id-ID') %>
                   </div>
-                  <div class="text-muted small mt-1"><%= t.deskripsi ? t.deskripsi.substring(0, 100) : '' %></div>
+                  <div class="text-muted small mt-1"><%= t.deskripsi ? t.deskripsi.substring(0, 80) + (t.deskripsi.length > 80 ? '...' : '') : '' %></div>
                 </div>
-                <div>
+                <div class="text-end">
                   <% if (t.pengumpulan) { %>
-                    <span class="badge bg-success">Sudah Dikumpul</span>
-                    <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-tugas btn-sm ms-2">Detail</a>
+                    <span class="badge bg-success mb-1 d-inline-block">Sudah Dikumpul</span>
+                    <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-tugas btn-tugas-sm">Detail</a>
                   <% } else { %>
-                    <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-tugas btn-sm">Kumpul</a>
+                    <a href="/mahasiswa/elearning/tugas/<%= t.id %>" class="btn-tugas">Kumpul</a>
                   <% } %>
                 </div>
               </div>
             </div>
           <% }) %>
         <% } else { %>
-          <p class="text-muted">Belum ada tugas.</p>
+          <p class="text-muted small">Belum ada tugas.</p>
         <% } %>
       </div>
     </div>
